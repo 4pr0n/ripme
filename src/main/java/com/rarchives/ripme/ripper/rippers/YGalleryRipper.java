@@ -220,6 +220,18 @@ public class YGalleryRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
+        //Collabs page
+        Pattern p2 = Pattern.compile("^.*y-gallery\\.net/collabs/([a-zA-Z0-9\\-_]+).*$");
+        Matcher m2 = p2.matcher(url.toExternalForm());
+        if (m2.matches()) {
+            return m2.group(1) + "_collabs";
+        }
+        //From others page
+        Pattern p3 = Pattern.compile("^.*y-gallery\\.net/fromothers/([a-zA-Z0-9\\-_]+).*$");
+        Matcher m3 = p3.matcher(url.toExternalForm());
+        if (m3.matches()) {
+            return m3.group(1) + "_fromothers";
+        }
         throw new MalformedURLException(
                 "Expected y-gallery gallery format: "
                         + "y-gallery.net/gallery/USERNAME[/subgallery/]"
