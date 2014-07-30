@@ -129,6 +129,42 @@ public class DownloadFileThread extends Thread {
                     		logger.info("HF 404 on the .jpg, other format succesful: " + url.toExternalForm());
                     	}
                     	
+	                 } else if (statusCode == 404 && this.url.toString().matches("http://www\\.y-gallery\\.net/files/data/.*")) {
+	                     	String pngVersion = this.url.toString().replaceAll("\\.jpg", ".png");
+	                     	logger.error("YG 404 on the .jpg, trying .png : " + this.url.toExternalForm());                    	
+	                     	this.url = new URL(pngVersion);
+	                     	this.saveAs = new File(this.saveAs.toString().replaceAll("\\.jpg", ".png"));                    	
+	                     	//throw new IOException("HF 404 on the .jpg, trying .png : " + url.toExternalForm());
+	                     	huc = httpRequest();
+	                     	statusCode = huc.getResponseCode();
+	                     	
+	                     	if (statusCode == 404) {
+	 	                    	String gifVersion = url.toString().replaceAll("\\.png", ".gif");
+	 	                    	logger.error("YG 404 on the .png, trying .gif : " + this.url.toExternalForm());
+	 	                    	this.url = new URL(gifVersion);
+	 	                    	this.saveAs = new File(this.saveAs.toString().replaceAll("\\.png", ".gif"));
+	 	                    	huc = httpRequest();
+	 	                    	statusCode = huc.getResponseCode();
+	 	                    
+	 	                    	if (statusCode == 404) {
+									String swfVersion = url.toString().replaceAll("\\.gif", ".swf");
+									logger.error("YG 404 on the .png, trying .swf : " + this.url.toExternalForm());
+									this.url = new URL(swfVersion);
+									this.saveAs = new File(this.saveAs.toString().replaceAll("\\.gif", ".swf"));
+									huc = httpRequest();
+									statusCode = huc.getResponseCode();
+								
+									if (statusCode == 404) {
+										logger.error("YG 404 on the .swf, quitting : " + this.url.toExternalForm());
+										observer.downloadErrored(originalURL, "HF 404 on the .swf, quitting : " + url.toExternalForm());
+										return; // Not retriable, drop out.
+									}
+	 							}
+	 						}
+	                     	if (statusCode == 200) {                  
+	                     		observer.downloadCompleted(originalURL,saveAs);
+	                     		logger.info("YG 404 on the .jpg, other format succesful: " + url.toExternalForm());
+	                     	}
 	                 } else {
 	                	logger.error("[!] Non-retriable status code " + statusCode + " while downloading from " + url);
 	                    observer.downloadErrored(url, "Non-retriable status code " + statusCode + " while downloading " + url.toExternalForm());
