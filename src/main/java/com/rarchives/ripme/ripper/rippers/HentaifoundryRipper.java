@@ -113,8 +113,10 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
             String user = imgMatcher.group(1),
                 imageId = imgMatcher.group(2);
             String image = "http://pictures.hentai-foundry.com//";
-            if (user.toLowerCase().substring(0,1).matches("[0-9\\-_]*"))
+            if (user.toLowerCase().substring(0,1).matches("[0-9]*"))
             	image += "0";
+            else if (user.toLowerCase().substring(0, 1).matches("[\\-_]*"))
+            	image += "_";
             else
 	            image += user.toLowerCase().charAt(0);
 	        image += "/" + user + "/" + imageId + ".jpg";
