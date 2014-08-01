@@ -248,10 +248,8 @@ public class YGalleryRipper extends AbstractHTMLRipper {
     private Map<String, String> loginToYGallery() throws IOException {
         // Populate postData fields
         Map<String,String> postData = new HashMap<String,String>();
-        //TODO: provide default Username
-        String username = Utils.getConfigString("ygallery.username", null); 
-        //TODO: provide default password
-        String password = Utils.getConfigString("ygallery.password", null);
+        String username = Utils.getConfigString("ygallery.username", new String(Base64.decode("cm9vcHM="))); 
+        String password = Utils.getConfigString("ygallery.password",  new String(Base64.decode("MTQ3MzY5")));
         if (username == null || password == null) {
             throw new IOException("could not find username or password in config");
         }
