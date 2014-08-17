@@ -61,7 +61,7 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
+    public void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, String[] fileTypes) {
         addURLToDownload(url, saveAs);
     }
 

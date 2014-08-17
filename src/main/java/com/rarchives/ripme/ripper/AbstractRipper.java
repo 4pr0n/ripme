@@ -95,9 +95,9 @@ public abstract class AbstractRipper
      *      Path of the local file to save the content to.
      */
     public abstract void addURLToDownload(URL url, File saveAs);
-    public abstract void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies);
+    public abstract void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, String[] fileTypes);
 
-    public void addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies) {
+    public void addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies, String[] fileTypes) {
         try {
             stopCheck();
         } catch (IOException e) {
@@ -129,7 +129,11 @@ public abstract class AbstractRipper
             logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
-        addURLToDownload(url, saveFileAs, referrer, cookies);
+        addURLToDownload(url, saveFileAs, referrer, cookies, fileTypes);
+    }
+    
+    public void addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies) {
+    	addURLToDownload(url, prefix, subdirectory, referrer, cookies, null);
     }
     
     /**
@@ -142,7 +146,7 @@ public abstract class AbstractRipper
      *      Sub-directory of the working directory to save the images to.
      */
     public void addURLToDownload(URL url, String prefix, String subdirectory) {
-        addURLToDownload(url, prefix, subdirectory, null, null);
+        addURLToDownload(url, prefix, subdirectory, null, null, null);
     }
 
     /**
@@ -157,6 +161,22 @@ public abstract class AbstractRipper
         // Use empty subdirectory
         addURLToDownload(url, prefix, "");
     }
+    
+    /**
+     * Queues image to be downloaded and saved.
+     * Uses filename from URL (and 'prefix') to decide filename.
+     * @param url
+     *      URL to download
+     * @param prefix
+     *      Text to append to saved filename.
+     * @param fileTypes
+     * 		String array of possible filetypes for 
+     */
+    public void addURLToDownload(URL url, String prefix, String[] fileTypes) {
+        // File format fall back support version
+        addURLToDownload(url, prefix, "", null, null, fileTypes);
+    }
+    
     /**
      * Waits for downloading threads to complete.
      */

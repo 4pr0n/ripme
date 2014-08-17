@@ -24,6 +24,7 @@ import com.rarchives.ripme.utils.Utils;
 public class HentaifoundryRipper extends AbstractHTMLRipper {
 
     private Map<String,String> cookies = new HashMap<String,String>();
+    private final String[] FILETYPES = {"jpg", "png", "gif", "swf"};
     public HentaifoundryRipper(URL url) throws IOException {
         super(url);
     }
@@ -127,7 +128,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
     
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+		addURLToDownload(url, getPrefix(index), FILETYPES);
     }
 
     private Map<String, String> loginToHentaiFoundry() throws IOException {

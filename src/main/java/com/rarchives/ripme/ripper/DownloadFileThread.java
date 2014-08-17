@@ -28,6 +28,7 @@ public class DownloadFileThread extends Thread {
 
     private String referrer = "";
     private Map<String,String> cookies = new HashMap<String,String>();
+    private String[] fileTypes = null;
 
     private URL url;
     private URL originalURL;
@@ -54,6 +55,9 @@ public class DownloadFileThread extends Thread {
     }
     public void setCookies(Map<String,String> cookies) {
         this.cookies = cookies;
+    }
+    public void setFileTypes(String[] fileTypes) {
+    	this.fileTypes = fileTypes;
     }
 
     /**
@@ -91,85 +95,30 @@ public class DownloadFileThread extends Thread {
 
                 int statusCode = huc.getResponseCode();
                 if (statusCode / 100 == 4) { // 4xx errors
-                    //HF format hack
-                	if (statusCode == 404 && this.url.toString().matches("http://pictures\\.hentai-foundry\\.com//./[A-z0-9_\\-]*/[0-9]*\\.jpg")) {
-                    	String pngVersion = this.url.toString().replaceAll("\\.jpg", ".png");
-                    	logger.error("HF 404 on the .jpg, trying .png : " + this.url.toExternalForm());                    	
-                    	this.url = new URL(pngVersion);
-                    	this.saveAs = new File(this.saveAs.toString().replaceAll("\\.jpg", ".png"));                    	
-                    	//throw new IOException("HF 404 on the .jpg, trying .png : " + url.toExternalForm());
-                    	huc = httpRequest();
-                    	statusCode = huc.getResponseCode();
-                    	
-                    	if (statusCode == 404) {
-	                    	String gifVersion = url.toString().replaceAll("\\.png", ".gif");
-	                    	logger.error("HF 404 on the .png, trying .gif : " + this.url.toExternalForm());
-	                    	this.url = new URL(gifVersion);
-	                    	this.saveAs = new File(this.saveAs.toString().replaceAll("\\.png", ".gif"));
-	                    	huc = httpRequest();
-	                    	statusCode = huc.getResponseCode();
-	                    
-	                    	if (statusCode == 404) {
-	                        	String swfVersion = url.toString().replaceAll("\\.gif", ".swf");
-	                        	logger.error("HF 404 on the .png, trying .swf : " + this.url.toExternalForm());
-	                        	this.url = new URL(swfVersion);
-	                        	this.saveAs = new File(this.saveAs.toString().replaceAll("\\.gif", ".swf"));
-	                        	huc = httpRequest();
-		                    	statusCode = huc.getResponseCode();
-	                    	
-								if (statusCode == 404) {
-		                        	logger.error("HF 404 on the .swf, quitting : " + this.url.toExternalForm());
-		    	                    observer.downloadErrored(originalURL, "HF 404 on the .swf, quitting : " + url.toExternalForm());
-		    	                    return; // Not retriable, drop out.
-	                        	}
-							}
-						}
-                    	if (statusCode == 200) {                  
-                    		observer.downloadCompleted(originalURL,saveAs);
-                    		logger.info("HF 404 on the .jpg, other format succesful: " + url.toExternalForm());
-                    	}
-                    	
-	                 } else if (statusCode == 404 && this.url.toString().matches("http://www\\.y-gallery\\.net/files/data/.*")) {
-	                     	String pngVersion = this.url.toString().replaceAll("\\.jpg", ".png");
-	                     	logger.error("YG 404 on the .jpg, trying .png : " + this.url.toExternalForm());                    	
-	                     	this.url = new URL(pngVersion);
-	                     	this.saveAs = new File(this.saveAs.toString().replaceAll("\\.jpg", ".png"));                    	
-	                     	//throw new IOException("HF 404 on the .jpg, trying .png : " + url.toExternalForm());
-	                     	huc = httpRequest();
-	                     	statusCode = huc.getResponseCode();
-	                     	
-	                     	if (statusCode == 404) {
-	 	                    	String gifVersion = url.toString().replaceAll("\\.png", ".gif");
-	 	                    	logger.error("YG 404 on the .png, trying .gif : " + this.url.toExternalForm());
-	 	                    	this.url = new URL(gifVersion);
-	 	                    	this.saveAs = new File(this.saveAs.toString().replaceAll("\\.png", ".gif"));
-	 	                    	huc = httpRequest();
-	 	                    	statusCode = huc.getResponseCode();
-	 	                    
-	 	                    	if (statusCode == 404) {
-									String swfVersion = url.toString().replaceAll("\\.gif", ".swf");
-									logger.error("YG 404 on the .png, trying .swf : " + this.url.toExternalForm());
-									this.url = new URL(swfVersion);
-									this.saveAs = new File(this.saveAs.toString().replaceAll("\\.gif", ".swf"));
-									huc = httpRequest();
-									statusCode = huc.getResponseCode();
-								
-									if (statusCode == 404) {
-										logger.error("YG 404 on the .swf, quitting : " + this.url.toExternalForm());
-										observer.downloadErrored(originalURL, "HF 404 on the .swf, quitting : " + url.toExternalForm());
-										return; // Not retriable, drop out.
-									}
-	 							}
-	 						}
-	                     	if (statusCode == 200) {                  
-	                     		observer.downloadCompleted(originalURL,saveAs);
-	                     		logger.info("YG 404 on the .jpg, other format succesful: " + url.toExternalForm());
-	                     	}
-	                 } else {
-	                	logger.error("[!] Non-retriable status code " + statusCode + " while downloading from " + url);
-	                    observer.downloadErrored(url, "Non-retriable status code " + statusCode + " while downloading " + url.toExternalForm());
-	                    return; // Not retriable, drop out.
-                    }
+                	//Check for 404s that should be ignored due to file type fallback support
+                	if (fileTypes != null && statusCode == 404) {
+                		for (int i=0; i<fileTypes.length-1; i++) {
+                			String nextFormat = this.url.toString().replaceAll("\\." + fileTypes[i], "." + fileTypes[i+1]);
+                        	logger.error("404 on the ." + fileTypes[i] + ", trying ." + fileTypes[i+1] + " : " + this.url.toExternalForm());                    	
+                        	this.url = new URL(nextFormat);
+                        	this.saveAs = new File(this.saveAs.toString().replaceAll("\\." + fileTypes[i], "." + fileTypes[i+1]));                    	
+                        	huc = httpRequest();
+                        	statusCode = huc.getResponseCode();
+                        	if (statusCode == 200)
+                        		break;
+                		}
+                		if (statusCode == 404) {
+	                        logger.error("404 on the ." + fileTypes[fileTypes.length-1] + ", quitting : " + this.url.toExternalForm());
+	    	                observer.downloadErrored(originalURL, "404 on the ." + fileTypes[fileTypes.length-1] + ", quitting : " + this.url.toExternalForm());
+		                    return; // Not retriable, drop out.
+                		}
+                	}
+                	//Check if still 4XX error or if fileType fallback worked
+                	if (statusCode / 100 == 4) {
+	                    logger.error("[!] Non-retriable status code " + statusCode + " while downloading from " + url);
+		                observer.downloadErrored(url, "Non-retriable status code " + statusCode + " while downloading " + url.toExternalForm());
+		                return; // Not retriable, drop out.\
+                	}
                 }
                 if (statusCode / 100 == 5) { // 5xx errors
                     observer.downloadErrored(url, "Retriable status code " + statusCode + " while downloading " + url.toExternalForm());
@@ -211,8 +160,7 @@ public class DownloadFileThread extends Thread {
                 return;
             }
         } while (true);
-        if (this.url == originalURL)
-        	observer.downloadCompleted(url, saveAs);
+        observer.downloadCompleted(originalURL, saveAs);
         logger.info("[+] Saved " + url + " as " + this.prettySaveAs);
     }
     

@@ -27,6 +27,7 @@ public class YGalleryRipper extends AbstractHTMLRipper {
     private Map<String,String> cookies = new HashMap<String,String>();
     private Map<String,String> imageNames = new HashMap<String,String>();
     private List<String> subGalleries = new ArrayList<String>();
+    private final String[] FILETYPES = {"jpg", "png", "gif", "swf"};
     
 	public YGalleryRipper(URL url) throws IOException {
 		super(url);
@@ -204,7 +205,7 @@ public class YGalleryRipper extends AbstractHTMLRipper {
         Matcher imgMatcher = imgRegex.matcher(url.toExternalForm());
         imgMatcher.matches();
         String fileName = imageNames.get(imgMatcher.group(3));
-		addURLToDownload(url, getPrefix(index) + fileName + " - ");
+		addURLToDownload(url, getPrefix(index) + fileName + " - ", FILETYPES);
 	}
     
 	@Override
