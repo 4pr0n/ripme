@@ -16,6 +16,8 @@ import org.jsoup.select.Elements;
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
+import com.rarchives.ripme.utils.Utils;
 
 public class ChanRipper extends AbstractHTMLRipper {
     public static List<ChanSite> explicit_domains = Arrays.asList(
@@ -181,8 +183,24 @@ public class ChanRipper extends AbstractHTMLRipper {
                     }
                 }
             } else {
+<<<<<<< HEAD
                 //TODO also grab imgur/flickr albums (And all other supported rippers) Maybe add a setting?
             }
+=======
+                //Copied code from RedditRipper, getFilesFromURL should also implement stuff like flickr albums
+                URL originalURL;
+                try {
+                    originalURL = new URL(href);
+                } catch (MalformedURLException e) {
+                    continue;
+                }
+
+                List<URL> urls = RipUtils.getFilesFromURL(originalURL);                
+                for (int i = 0; i < urls.size(); i++) {                        
+                    imageURLs.add(urls.get(i).toString());
+                }                
+            }            
+>>>>>>> Added same imgur and stuff album downloaders characteristics to ChanRipper.
 
             if (isStopped()) {
                 break;
