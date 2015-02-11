@@ -17,7 +17,6 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
-import com.rarchives.ripme.utils.Utils;
 
 public class ChanRipper extends AbstractHTMLRipper {
     public static List<ChanSite> explicit_domains = Arrays.asList(
@@ -92,7 +91,11 @@ public class ChanRipper extends AbstractHTMLRipper {
      * For example the archives are all known. (Check 4chan-x)
      * Should be based on the software the specific chan uses.
      * FoolFuuka uses the same (url) layout as 4chan
-     * */
+     *
+     * @param url
+     * @return 
+     *      The thread id in string form
+     * @throws java.net.MalformedURLException */
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p;
@@ -183,10 +186,6 @@ public class ChanRipper extends AbstractHTMLRipper {
                     }
                 }
             } else {
-<<<<<<< HEAD
-                //TODO also grab imgur/flickr albums (And all other supported rippers) Maybe add a setting?
-            }
-=======
                 //Copied code from RedditRipper, getFilesFromURL should also implement stuff like flickr albums
                 URL originalURL;
                 try {
@@ -196,11 +195,11 @@ public class ChanRipper extends AbstractHTMLRipper {
                 }
 
                 List<URL> urls = RipUtils.getFilesFromURL(originalURL);                
-                for (int i = 0; i < urls.size(); i++) {                        
-                    imageURLs.add(urls.get(i).toString());
+                //for (int i = 0; i < urls.size(); i++) {  
+                for(URL imageurl : urls){
+                    imageURLs.add(imageurl.toString());
                 }                
             }            
->>>>>>> Added same imgur and stuff album downloaders characteristics to ChanRipper.
 
             if (isStopped()) {
                 break;
