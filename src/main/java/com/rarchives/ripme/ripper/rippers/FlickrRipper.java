@@ -31,6 +31,9 @@ public class FlickrRipper extends AbstractHTMLRipper {
     private Set<String> attempted = new HashSet<String>();
     private Document albumDoc = null;
     private DownloadThreadPool flickrThreadPool;
+    private Map<String, String> _cookies;
+    private String _cookieString;
+    
     @Override
     public DownloadThreadPool getThreadPool() {
         return flickrThreadPool;
@@ -39,6 +42,25 @@ public class FlickrRipper extends AbstractHTMLRipper {
     public FlickrRipper(URL url) throws IOException {
         super(url);
         flickrThreadPool = new DownloadThreadPool();
+        _cookies = new HashMap<String, String>();
+        
+        // check for "flickr.cookies2encode" string and encode into "flickr.cookies"
+        String flickrEncode = Utils.getConfigString("flickr.cookies2encode", null);
+        if (flickrEncode != null && flickrEncode.length() > 0)
+        {
+        	_cookieString = Base64.encode(flickrEncode.getBytes());
+        	Utils.setConfigString("flickr.cookies", _cookieString);
+        	Utils.clearConfigProperty("flickr.cookies2encode");
+        	Utils.saveConfig();
+        }
+        else
+        {
+            // get encoded "flickr.cookies"
+            _cookieString = Utils.getConfigString("flickr.cookies", null);
+            if (_cookieString == null) {
+            	System.err.println("Could not find flickr cookies in configuration. Won't be able to rip pages requiring a login!");
+            }
+        }
     }
 
     @Override
@@ -122,9 +144,29 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
-            albumDoc = Http.url(url).get();
+        if (albumDoc == null)
+        {
+            try {
+            	String decodedCookieString = new String(Base64.decode(_cookieString));
+
+            	String[] cks = decodedCookieString.split(";");
+                for (String s : cks)
+                {
+                	int idx = s.indexOf("=");
+                	if (idx == -1)
+                		continue;
+                	
+                	String key = s.substring(0, idx);
+                	String value = s.substring(idx+1);
+                	
+                	_cookies.put(key, value);
+                }
+    		} catch (Exception e) {
+    		}
+
+            albumDoc = Http.url(url).cookies(_cookies).get();            
         }
+        
         return albumDoc;
     }
 
@@ -134,13 +176,23 @@ public class FlickrRipper extends AbstractHTMLRipper {
             return null;
         }
         // Find how many pages there are
-        int lastPage = 0;
+        /*
         for (Element apage : doc.select("a[data-track^=page-]")) {
             String lastPageStr = apage.attr("data-track").replace("page-", "");
             lastPage = Integer.parseInt(lastPageStr);
         }
+        */
+
+        int nextPage = 0;
+        
+        try {
+        	String nextPageStr = doc.select("span.this-page").first().html(); 
+            nextPage = Integer.parseInt(nextPageStr);
+		} catch (Exception e) {
+		}
+        
         // If we're at the last page, stop.
-        if (page >= lastPage) {
+        if (page >= nextPage) {
             throw new IOException("No more pages");
         }
         // Load the next page
@@ -157,7 +209,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
         } catch (InterruptedException e) {
             throw new IOException("Interrupted while waiting to load next page " + nextURL);
         }
-        return Http.url(nextURL).get();
+        return Http.url(nextURL).cookies(_cookies).get();
     }
     
     @Override
@@ -192,6 +244,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
                 break;
             }
         }
+
         return imageURLs;
     }
     
@@ -270,7 +323,8 @@ public class FlickrRipper extends AbstractHTMLRipper {
         
         private Document getLargestImagePageDocument(URL url) throws IOException {
             // Get current page
-            Document doc = Http.url(url).get();
+            Document doc = Http.url(url).cookies(_cookies).get();
+            
             // Look for larger image page
             String largestImagePage = this.url.toExternalForm();
             for (Element olSize : doc.select("ol.sizes-list > li > ol > li")) {
@@ -288,7 +342,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
             }
             if (!largestImagePage.equals(this.url.toExternalForm())) {
                 // Found larger image page, get it.
-                doc = Http.url(largestImagePage).get();
+                doc = Http.url(largestImagePage).cookies(_cookies).get();
             }
             return doc;
         }
