@@ -23,7 +23,7 @@ public class XhamsterRipper extends AlbumRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://[wm.]*xhamster\\.com/photos/gallery/[0-9]+.*$");
+        Pattern p = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/gallery/[0-9]+.*$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
@@ -57,6 +57,12 @@ public class XhamsterRipper extends AlbumRipper {
                     prefix = String.format("%03d_", index);
                 }
                 addURLToDownload(new URL(image), prefix);
+                if (isThisATest()) {
+                    break;
+                }
+            }
+            if (isThisATest()) {
+                break;
             }
             nextURL = null;
             for (Element element : doc.select("a.last")) {

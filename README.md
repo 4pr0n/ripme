@@ -1,4 +1,4 @@
-Ripme
+RipMe [![Build Status](https://travis-ci.org/4pr0n/ripme.svg?branch=master)](https://travis-ci.org/4pr0n/ripme)
 =====
 
 Album ripper for various websites. Runs on your computer. Requires Java 1.6

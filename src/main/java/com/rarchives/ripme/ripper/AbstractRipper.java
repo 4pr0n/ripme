@@ -15,6 +15,7 @@ import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
 
+import com.rarchives.ripme.ui.RipStatusComplete;
 import com.rarchives.ripme.ui.RipStatusHandler;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -27,7 +28,7 @@ public abstract class AbstractRipper
     protected static final Logger logger = Logger.getLogger(AbstractRipper.class);
 
     public static final String USER_AGENT = 
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:29.0) Gecko/20100101 Firefox/29.0";
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:36.0) Gecko/20100101 Firefox/36.0";
 
     protected URL url;
     protected File workingDir;
@@ -41,6 +42,7 @@ public abstract class AbstractRipper
     public abstract String getGID(URL url) throws MalformedURLException;
 
     private boolean shouldStop = false;
+    private boolean thisIsATest = false;
 
     public void stop() {
         shouldStop = true;
@@ -50,7 +52,6 @@ public abstract class AbstractRipper
     }
     protected void stopCheck() throws IOException {
         if (shouldStop) {
-            threadPool.waitForThreads();
             throw new IOException("Ripping interrupted");
         }
     }
@@ -94,15 +95,17 @@ public abstract class AbstractRipper
      * @param saveAs
      *      Path of the local file to save the content to.
      */
-    public abstract void addURLToDownload(URL url, File saveAs);
-    public abstract void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, String[] fileTypes);
+    public abstract boolean addURLToDownload(URL url, File saveAs);
+    public abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, String[] fileTypes);
 
-    public void addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies, String[] fileTypes) {
+    public boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies, String[] fileTypes) {
         try {
             stopCheck();
         } catch (IOException e) {
-            return;
+            logger.debug("Ripper has been stopped");
+            return false;
         }
+        logger.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies);
         String saveAs = url.toExternalForm();
         saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
         if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
@@ -122,19 +125,20 @@ public abstract class AbstractRipper
                     + saveAs);
         } catch (IOException e) {
             logger.error("[!] Error creating save file path for URL '" + url + "':", e);
-            return;
+            return false;
         }
         logger.debug("Downloading " + url + " to " + saveFileAs);
         if (!saveFileAs.getParentFile().exists()) {
             logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
-        addURLToDownload(url, saveFileAs, referrer, cookies, fileTypes);
+        return addURLToDownload(url, saveFileAs, referrer, cookies, fileTypes);
     }
     
-    public void addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies) {
-    	addURLToDownload(url, prefix, subdirectory, referrer, cookies, null);
+    public boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies) {
+    	return addURLToDownload(url, prefix, subdirectory, referrer, cookies, null);
     }
+    
     
     /**
      * Queues file to be downloaded and saved. With options.
@@ -145,8 +149,8 @@ public abstract class AbstractRipper
      * @param subdirectory
      *      Sub-directory of the working directory to save the images to.
      */
-    public void addURLToDownload(URL url, String prefix, String subdirectory) {
-        addURLToDownload(url, prefix, subdirectory, null, null, null);
+    public boolean addURLToDownload(URL url, String prefix, String subdirectory) {
+        return addURLToDownload(url, prefix, subdirectory, null, null, null);
     }
 
     /**
@@ -157,9 +161,9 @@ public abstract class AbstractRipper
      * @param prefix
      *      Text to append to saved filename.
      */
-    public void addURLToDownload(URL url, String prefix) {
+    public boolean addURLToDownload(URL url, String prefix) {
         // Use empty subdirectory
-        addURLToDownload(url, prefix, "");
+        return addURLToDownload(url, prefix, "");
     }
     
     /**
@@ -181,6 +185,7 @@ public abstract class AbstractRipper
      * Waits for downloading threads to complete.
      */
     protected void waitForThreads() {
+        logger.debug("Waiting for threads to finish");
         completed = false;
         threadPool.waitForThreads();
         checkIfComplete();
@@ -216,25 +221,36 @@ public abstract class AbstractRipper
      * @param url
      * @param message
      */
-    public abstract void downloadProblem(URL url, String message);
+    public abstract void downloadExists(URL url, File file);
+
+    /**
+     * @return Number of files downloaded.
+     */
+    public int getCount() {
+        return 1;
+    }
 
     /**
      * Notifies observers and updates state if all files have been ripped.
      */
     protected void checkIfComplete() {
         if (observer == null) {
+            logger.debug("observer is null");
             return;
         }
-        
+
         if (!completed) {
             completed = true;
             logger.info("   Rip completed!");
 
-            RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, workingDir);
+            RipStatusComplete rsc = new RipStatusComplete(workingDir, getCount());
+            RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, rsc);
             observer.update(this, msg);
+
             Logger rootLogger = Logger.getRootLogger();
             FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
             if (fa != null) {
+                logger.debug("Changing log file back to 'ripme.log'");
                 fa.setFile("ripme.log");
                 fa.activateOptions();
             }
@@ -281,6 +297,7 @@ public abstract class AbstractRipper
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             try {
                 AlbumRipper ripper = (AlbumRipper) constructor.newInstance(url);
+                logger.debug("Found album ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
@@ -289,6 +306,7 @@ public abstract class AbstractRipper
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
             try {
                 VideoRipper ripper = (VideoRipper) constructor.newInstance(url);
+                logger.debug("Found video ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (Exception e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
@@ -337,8 +355,12 @@ public abstract class AbstractRipper
         } catch (HttpStatusException e) {
             logger.error("Got exception while running ripper:", e);
             waitForThreads();
-            sendUpdate(STATUS.RIP_ERRORED, "Status=" + e.getStatusCode() + ", URL=" + e.getUrl());
+            sendUpdate(STATUS.RIP_ERRORED, "HTTP status code " + e.getStatusCode() + " for URL " + e.getUrl());
         } catch (IOException e) {
+            logger.error("Got exception while running ripper:", e);
+            waitForThreads();
+            sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
+        } catch (Exception e) {
             logger.error("Got exception while running ripper:", e);
             waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
@@ -360,6 +382,7 @@ public abstract class AbstractRipper
     
     public boolean sleep(int milliseconds) {
         try {
+            logger.debug("Sleeping " + milliseconds + "ms");
             Thread.sleep(milliseconds);
             return true;
         } catch (InterruptedException e) {
@@ -375,6 +398,12 @@ public abstract class AbstractRipper
         // Do nothing
     }
 
-    // Thar be overloaded methods afoot
-    
+    /** Methods for detecting when we're running a test. */
+    public void markAsTest() {
+        logger.debug("THIS IS A TEST RIP");
+        thisIsATest = true;
+    }
+    public boolean isThisATest() {
+        return thisIsATest;
+    }
 }

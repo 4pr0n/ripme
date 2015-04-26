@@ -53,7 +53,6 @@ public class Http {
         connection.method(Method.GET);
         connection.timeout(TIMEOUT);
         connection.maxBodySize(0);
-
     }
 
     // Setters
@@ -118,12 +117,13 @@ public class Http {
 
     public JSONObject getJSON() throws IOException {
         ignoreContentType();
-        String jsonString = response().body().replace("&quot;", "\"");
+        String jsonString = response().body();
         return new JSONObject(jsonString);
     }
 
     public Response response() throws IOException {
         Response response = null;
+        IOException lastException = null;
         int retries = this.retries;
         while (--retries >= 0) {
             try {
@@ -131,9 +131,10 @@ public class Http {
                 return response;
             } catch (IOException e) {
                 logger.warn("Error while loading " + url, e);
+                lastException = e;
                 continue;
             }
         }
-        throw new IOException("Failed to load " + url + " after " + this.retries + " attempts");
+        throw new IOException("Failed to load " + url + " after " + this.retries + " attempts", lastException);
     }
 }

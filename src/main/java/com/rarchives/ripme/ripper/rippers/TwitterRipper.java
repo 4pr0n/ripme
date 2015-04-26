@@ -168,10 +168,10 @@ public class TwitterRipper extends AlbumRipper {
         return tweets;
     }
 
-    private void parseTweet(JSONObject tweet) throws MalformedURLException {
+    private boolean parseTweet(JSONObject tweet) throws MalformedURLException {
         if (!tweet.has("entities")) {
             logger.error("XXX Tweet doesn't have entitites");
-            return;
+            return false;
         }
 
         JSONObject entities = tweet.getJSONObject("entities");
@@ -185,11 +185,16 @@ public class TwitterRipper extends AlbumRipper {
                 url = media.getString("media_url");
                 if (url.contains(".twimg.com/")) {
                     url += ":large";
+                    addURLToDownload(new URL(url));
+                    return true;
                 }
-                addURLToDownload(new URL(url));
+                else {
+                    logger.debug("Unexpected media_url: " + url);
+                }
             }
         }
 
+        /*
         if (entities.has("urls")) {
             JSONArray urls = entities.getJSONArray("urls");
             JSONObject url;
@@ -202,10 +207,8 @@ public class TwitterRipper extends AlbumRipper {
                 }
             }
         }
-    }
-    
-    private void handleTweetedURL(String url) {
-        logger.error("[!] Need to handle URL: " + url);
+        */
+        return false;
     }
 
     @Override
@@ -222,6 +225,7 @@ public class TwitterRipper extends AlbumRipper {
         }
 
         Long lastMaxID = 0L;
+        int parsedCount = 0;
         for (int i = 0; i < MAX_REQUESTS; i++) {
             List<JSONObject> tweets = getTweets(getApiURL(lastMaxID - 1));
             if (tweets.size() == 0) {
@@ -232,12 +236,22 @@ public class TwitterRipper extends AlbumRipper {
             if (tweets.size() == 1 && 
                     lastMaxID.equals(tweets.get(0).getString("id_str"))
                 ) {
+                logger.info("   No more tweet found.");
                 break;
             }
-            
+
             for (JSONObject tweet : tweets) {
                 lastMaxID = tweet.getLong("id");
-                parseTweet(tweet);
+                if (parseTweet(tweet)) {
+                    parsedCount++;
+                }
+                if (isStopped() || (isThisATest() && parsedCount > 0) ) {
+                    break;
+                }
+            }
+
+            if (isStopped() || (isThisATest() && parsedCount > 0) ) {
+                break;
             }
 
             try {

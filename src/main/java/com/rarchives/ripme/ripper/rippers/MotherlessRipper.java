@@ -29,6 +29,11 @@ public class MotherlessRipper extends AlbumRipper {
 
     @Override
     public boolean canRip(URL url) {
+        try {
+            getGID(url);
+        } catch (Exception e) {
+            return false;
+        }
         return url.getHost().endsWith(DOMAIN);
     }
 
@@ -41,25 +46,6 @@ public class MotherlessRipper extends AlbumRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
     }
-    /*
-    @Override
-    public Document getFirstPage() throws IOException {
-        
-    }
-    @Override
-    public Document getNextPage(Document doc) throws IOException {
-        
-    }
-    @Override
-    public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
-        return imageURLs;
-    }
-    @Override
-    public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
-    }
-    */
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
@@ -110,9 +96,17 @@ public class MotherlessRipper extends AlbumRipper {
                     url = new URL(thumbURL);
                 }
                 index += 1;
+
                 // Create thread for finding image at "url" page
                 MotherlessImageThread mit = new MotherlessImageThread(url, index);
                 motherlessThreadPool.addThread(mit);
+
+                if (isThisATest()) {
+                    break;
+                }
+            }
+            if (isThisATest()) {
+                break;
             }
             // Next page
             nextURL = null;
@@ -141,7 +135,7 @@ public class MotherlessRipper extends AlbumRipper {
         @Override
         public void run() {
             try {
-                if (isStopped()) {
+                if (isStopped() && !isThisATest()) {
                     return;
                 }
                 String u = this.url.toExternalForm();

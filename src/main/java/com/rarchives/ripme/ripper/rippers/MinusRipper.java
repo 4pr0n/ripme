@@ -66,8 +66,8 @@ public class MinusRipper extends AlbumRipper {
         // http://minus.com/mw7ztQ6xzP7ae
         // http://vampyr3.minus.com/mw7ztQ6xzP7ae
         String u = url.toExternalForm();
-        u = u.replace("www.minus.com", "minus.com");
-        u = u.replace("i.minus.com", "minus.com");
+        u = u.replace("/www.minus.com", "/minus.com");
+        u = u.replace("/i.minus.com", "/minus.com");
         Pattern p; Matcher m;
 
         p = Pattern.compile("^https?://minus\\.com/m([a-zA-Z0-9]+).*$");
@@ -136,8 +136,12 @@ public class MinusRipper extends AlbumRipper {
                 String title = gallery.getString("name");
                 String albumUrl = "http://" + user + ".minus.com/m" + gallery.getString("reader_id");
                 ripAlbum(new URL(albumUrl), Utils.filesystemSafe(title));
+
+                if (isThisATest()) {
+                    break;
+                }
             }
-            if (page >= json.getInt("total_pages")) {
+            if (page >= json.getInt("total_pages") || isThisATest()) {
                 break;
             }
             page++;
@@ -169,6 +173,9 @@ public class MinusRipper extends AlbumRipper {
                     prefix = String.format("%03d_", i + 1);
                 }
                 addURLToDownload(new URL(image), prefix, subdir);
+                if (isThisATest()) {
+                    break;
+                }
             }
         }
     }

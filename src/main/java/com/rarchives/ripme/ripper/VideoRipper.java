@@ -40,7 +40,7 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public void addURLToDownload(URL url, File saveAs) {
+    public boolean addURLToDownload(URL url, File saveAs) {
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
             String urlFile = this.workingDir + File.separator + "urls.txt";
@@ -53,16 +53,25 @@ public abstract class VideoRipper extends AbstractRipper {
                 observer.update(this, msg);
             } catch (IOException e) {
                 logger.error("Error while writing to " + urlFile, e);
+                return false;
             }
         }
         else {
+            if (isThisATest()) {
+                // Tests shouldn't download the whole video
+                // Just change this.url to the download URL so the test knows we found it.
+                logger.debug("Test rip, found URL: " + url);
+                this.url = url;
+                return true;
+            }
             threadPool.addThread(new DownloadVideoThread(url, saveAs, this));
         }
+        return true;
     }
 
     @Override
-    public void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, String[] fileTypes) {
-        addURLToDownload(url, saveAs);
+    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, String[] fileTypes) {
+        return addURLToDownload(url, saveAs);
     }
 
     @Override
@@ -109,11 +118,11 @@ public abstract class VideoRipper extends AbstractRipper {
         checkIfComplete();
     }
     @Override
-    public void downloadProblem(URL url, String message) {
+    public void downloadExists(URL url, File file) {
         if (observer == null) {
             return;
         }
-        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " : " + message));
+        observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file));
         checkIfComplete();
     }
 

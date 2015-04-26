@@ -19,26 +19,18 @@ public class InstagramRipperTest extends RippersTest {
         testURLs.put(new URL("http://statigr.am/username"), "username");
         for (URL url : testURLs.keySet()) {
             InstagramRipper ripper = new InstagramRipper(url);
+            ripper.setup();
             assertEquals(testURLs.get(url), ripper.getGID(ripper.getURL()));
             deleteDir(ripper.getWorkingDir());
         }
     }
 
     public void testInstagramAlbums() throws IOException {
-        if (!DOWNLOAD_CONTENT) {
-            return;
-        }
         List<URL> contentURLs = new ArrayList<URL>();
-        contentURLs.add(new URL("http://instagram.com/feelgoodincc#"));
+        contentURLs.add(new URL("http://instagram.com/tayloralesia/"));
         for (URL url : contentURLs) {
-            try {
-                InstagramRipper ripper = new InstagramRipper(url);
-                ripper.rip();
-                assert(ripper.getWorkingDir().listFiles().length > 1);
-                deleteDir(ripper.getWorkingDir());
-            } catch (Exception e) {
-                fail("Error while ripping URL " + url + ": " + e.getMessage());
-            }
+            InstagramRipper ripper = new InstagramRipper(url);
+            testRipper(ripper);
         }
     }
 

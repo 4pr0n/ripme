@@ -2,7 +2,6 @@ package com.rarchives.ripme.ripper.rippers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -13,6 +12,7 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
@@ -25,6 +25,8 @@ public class RedditRipper extends AlbumRipper {
 
     private static final String HOST   = "reddit";
     private static final String DOMAIN = "reddit.com";
+    
+    private static final String REDDIT_USER_AGENT = "RipMe:github/4pr0n/ripme:" + UpdateUtils.getThisJarVersion() + " (by /u/4_pr0n)";
 
     private static final int SLEEP_TIME = 2000;
 
@@ -59,7 +61,7 @@ public class RedditRipper extends AlbumRipper {
         URL jsonURL = getJsonURL(this.url);
         while (true) {
             jsonURL = getAndParseAndReturnNext(jsonURL);
-            if (jsonURL == null) {
+            if (jsonURL == null || isThisATest() || isStopped()) {
                 break;
             }
         }
@@ -96,6 +98,13 @@ public class RedditRipper extends AlbumRipper {
                 nextURL = new URL(nextURLString);
             }
         }
+
+        // Wait to avoid rate-limiting against reddit's API
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            logger.warn("Interrupted while sleeping", e);
+        }
         return nextURL;
     }
     
@@ -112,26 +121,20 @@ public class RedditRipper extends AlbumRipper {
         }
         lastRequestTime = System.currentTimeMillis();
 
-        int attempts = 0;
-        logger.info("    Retrieving " + url);
-        JSONObject json = null;
-        while(json == null && attempts++ < 3) {
-            try {
-                json = Http.url(url).getJSON();
-            } catch(SocketTimeoutException ex) {
-                if(attempts >= 3) throw ex;
-                logger.warn(String.format("[!] Connection timed out (attempt %d)", attempts));
-            }
-        }
-        
-        Object jsonObj = new JSONTokener(json.toString()).nextValue();
+        String jsonString = Http.url(url)
+                                .ignoreContentType()
+                                .userAgent(REDDIT_USER_AGENT)
+                                .response()
+                                .body();
+
+        Object jsonObj = new JSONTokener(jsonString).nextValue();
         JSONArray jsonArray = new JSONArray();
         if (jsonObj instanceof JSONObject) {
             jsonArray.put( (JSONObject) jsonObj);
         } else if (jsonObj instanceof JSONArray){
             jsonArray = (JSONArray) jsonObj;
         } else {
-            logger.warn("[!] Unable to parse child: " + json.toString());
+            logger.warn("[!] Unable to parse JSON: " + jsonString);
         }
         return jsonArray;
     }
@@ -185,7 +188,7 @@ public class RedditRipper extends AlbumRipper {
 
         List<URL> urls = RipUtils.getFilesFromURL(originalURL);
         if (urls.size() == 1) {
-            addURLToDownload(urls.get(0), id + "-");
+            addURLToDownload(urls.get(0), id + "-", "", theUrl, null);
         } else if (urls.size() > 1) {
             for (int i = 0; i < urls.size(); i++) {
                 String prefix = id + "-";

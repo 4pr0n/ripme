@@ -52,16 +52,16 @@ public class SeeniveRipper extends AlbumRipper {
             }
             String lastID = null;
             for (Element element : doc.select("a.facebox")) {
-                if (isStopped()) {
-                    break;
-                }
                 String card = element.attr("href"); // "/v/<video_id>"
-                URL videoURL = new URL("https://seenive.com" + card);
+                URL videoURL = new URL("http://seenive.com" + card);
                 SeeniveImageThread vit = new SeeniveImageThread(videoURL);
                 seeniveThreadPool.addThread(vit);
                 lastID = card.substring(card.lastIndexOf('/') + 1);
+                if (isStopped() || isThisATest()) {
+                    break;
+                }
             }
-            if (lastID == null) {
+            if (lastID == null || isStopped() || isThisATest()) {
                 break;
             }
 
@@ -74,8 +74,8 @@ public class SeeniveRipper extends AlbumRipper {
 
             logger.info("[ ] Retrieving " + baseURL + "/next/" + lastID);
             JSONObject json = Http.url(baseURL + "/next/" + lastID)
-                                    .referrer(baseURL)
-                                    .getJSON();
+                                  .referrer(baseURL)
+                                  .getJSON();
             String html = json.getString("Html");
             if (html.equals("")) {
                 break;
@@ -96,7 +96,7 @@ public class SeeniveRipper extends AlbumRipper {
         Pattern p = Pattern.compile("^https?://(www\\.)?seenive\\.com/u/([a-zA-Z0-9]{1,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (!m.matches()) {
-            throw new MalformedURLException("Expected format: https://seenive.com/u/USERID");
+            throw new MalformedURLException("Expected format: http://seenive.com/u/USERID");
         }
         return m.group(m.groupCount());
     }
@@ -116,7 +116,7 @@ public class SeeniveRipper extends AlbumRipper {
         public void run() {
             try {
                 Document doc = Http.url(this.url).get();
-                logger.info("[ ] Retreiving video page " + this.url);
+                logger.info("[ ] Retrieving video page " + this.url);
                 sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
                 for (Element element : doc.select("source")) {
                     String video = element.attr("src");
