@@ -64,8 +64,11 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         Document doc = getFirstPage();
         
+        boolean first = true;
+        
         while (doc != null) {
             List<String> imageURLs = getURLsFromPage(doc);
+
             // Remove all but 1 image
             if (isThisATest()) {
                 while (imageURLs.size() > 1) {
@@ -73,8 +76,15 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                 }
             }
 
+            //if (imageURLs.size() == 0) {
             if (imageURLs.size() == 0) {
-                throw new IOException("No images found at " + doc.location());
+            	if (first) {
+            		throw new IOException("No images found at " + doc.location());
+            	}
+            	else {
+            		logger.info("No images in page...");
+            		break;
+            	}
             }
             
             for (String imageURL : imageURLs) {
@@ -115,6 +125,8 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                 logger.info("Can't get next page: " + e.getMessage());
                 break;
             }
+            
+            first = false;
         }
 
         // If they're using a thread pool, wait for it.
