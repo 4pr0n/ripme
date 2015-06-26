@@ -54,8 +54,6 @@ public class NewsfilterRipper extends AlbumRipper {
                 .execute();
 
         Document doc = resp.parse();
-        //Element gallery  = doc.getElementById("thegalmain");
-        //Elements piclinks = gallery.getElementsByAttributeValue("itemprop","contentURL");
         Pattern pat = Pattern.compile(gid+"/\\d+");
         Elements piclinks = doc.getElementsByAttributeValueMatching("href", pat);
         for (Element picelem : piclinks) {
