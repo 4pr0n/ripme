@@ -43,7 +43,6 @@ public class DownloadFileThread extends Thread {
         super();
         this.url = url;
         this.saveAs = saveAs;
-        logger.info(saveAs);
         this.prettySaveAs = Utils.removeCWD(saveAs);
         this.storage = storage;
         this.observer = observer;
