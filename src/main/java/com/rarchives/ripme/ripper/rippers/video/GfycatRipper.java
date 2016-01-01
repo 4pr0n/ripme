@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
@@ -16,8 +17,8 @@ public class GfycatRipper extends VideoRipper {
 
     private static final String HOST = "gfycat.com";
 
-    public GfycatRipper(URL url) throws IOException {
-        super(url);
+    public GfycatRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

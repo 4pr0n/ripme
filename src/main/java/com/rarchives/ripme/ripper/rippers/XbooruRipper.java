@@ -2,6 +2,7 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.storage.AbstractStorage;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 import java.io.IOException;
@@ -25,8 +26,8 @@ import org.jsoup.nodes.Element;
 public class XbooruRipper extends AbstractHTMLRipper{
 	private static Pattern gidPattern=null;
 
-	public XbooruRipper(URL url) throws IOException {
-		super(url);
+	public XbooruRipper(URL url, AbstractStorage storage) throws IOException {
+		super(url, storage);
 	}
 
 	@Override

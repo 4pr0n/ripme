@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -26,8 +27,8 @@ public class VkRipper extends AlbumRipper {
     private static final String DOMAIN = "vk.com",
                                 HOST   = "vk";
 
-    public VkRipper(URL url) throws IOException {
-        super(url);
+    public VkRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

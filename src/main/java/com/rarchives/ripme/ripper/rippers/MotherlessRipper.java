@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -22,8 +23,8 @@ public class MotherlessRipper extends AlbumRipper {
 
     private DownloadThreadPool motherlessThreadPool;
 
-    public MotherlessRipper(URL url) throws IOException {
-        super(url);
+    public MotherlessRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
         motherlessThreadPool = new DownloadThreadPool();
     }
 

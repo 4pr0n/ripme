@@ -58,6 +58,11 @@
       <artifactId>httpmime</artifactId>
       <version>4.3.3</version>
     </dependency>
+    <dependency>
+      <groupId>net.java.dev.jets3t</groupId>
+      <artifactId>jets3t</artifactId>
+      <version>0.9.4</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

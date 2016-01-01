@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -19,9 +20,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
     private Document albumDoc = null;
     private boolean isNewAlbumType = false;
 
-    public ImagefapRipper(URL url) throws IOException {
-        super(url);
-    }
+    public ImagefapRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {

@@ -14,7 +14,7 @@ public class ChanRipperTest extends RippersTest {
         // URLs that should not work
         for (URL url : failURLs) {
             try {
-                new ChanRipper(url);
+                new ChanRipper(url, null);
                 fail("Instantiated ripper for URL that should not work: " + url);
             } catch (Exception e) {
                 // Expected
@@ -36,7 +36,7 @@ public class ChanRipperTest extends RippersTest {
         passURLs.add(new URL("http://archive.moe/c/thread/2295132/"));
         passURLs.add(new URL("http://drawchan.net/dc/dw/res/114910.html"));
         for (URL url : passURLs) {
-            ChanRipper ripper = new ChanRipper(url);
+            ChanRipper ripper = new ChanRipper(url, null);
             ripper.setup();
             assert(ripper.canRip(url));
             assertNotNull("Ripper for " + url + " did not have a valid working directory.",
@@ -62,7 +62,7 @@ public class ChanRipperTest extends RippersTest {
         // xchan has an HTTPS certificaiton error...
         //contentURLs.add(new URL("http://xchan.pw/porn/res/437.html"));
         for (URL url : contentURLs) {
-            ChanRipper ripper = new ChanRipper(url);
+            ChanRipper ripper = new ChanRipper(url, null);
             testRipper(ripper);
         }
     }

@@ -1,8 +1,6 @@
 package com.rarchives.ripme.ripper;
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,6 +11,7 @@ import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
@@ -32,18 +31,21 @@ public class DownloadFileThread extends Thread {
     private Map<String,String> cookies = new HashMap<String,String>();
 
     private URL url;
-    private File saveAs;
+    private String saveAs;
     private String prettySaveAs;
     private AbstractRipper observer;
+    private AbstractStorage storage;
     private int retries;
 
     private final int TIMEOUT;
 
-    public DownloadFileThread(URL url, File saveAs, AbstractRipper observer) {
+    public DownloadFileThread(URL url, String saveAs, AbstractStorage storage, AbstractRipper observer) {
         super();
         this.url = url;
         this.saveAs = saveAs;
+        logger.info(saveAs);
         this.prettySaveAs = Utils.removeCWD(saveAs);
+        this.storage = storage;
         this.observer = observer;
         this.retries = Utils.getConfigInteger("download.retries", 1);
         this.TIMEOUT = Utils.getConfigInteger("download.timeout", 60000);
@@ -67,10 +69,9 @@ public class DownloadFileThread extends Thread {
             observer.downloadErrored(url, "Download interrupted");
             return;
         }
-        if (saveAs.exists()) {
+        if (storage.fileExists(saveAs)) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
-                logger.info("[!] Deleting existing file" + prettySaveAs);
-                saveAs.delete();
+                logger.info("[!] Overwriting existing file" + prettySaveAs);
             } else {
                 logger.info("[!] Skipping " + url + " -- file already exists: " + prettySaveAs);
                 observer.downloadExists(url, saveAs);
@@ -83,7 +84,7 @@ public class DownloadFileThread extends Thread {
         int tries = 0; // Number of attempts to download
         do {
             tries += 1;
-            InputStream bis = null; OutputStream fos = null;
+            InputStream bis = null;
             try {
                 logger.info("    Downloading file: " + urlToDownload + (tries > 0 ? " Retry #" + tries : ""));
                 observer.sendUpdate(STATUS.DOWNLOAD_STARTED, url.toExternalForm());
@@ -146,8 +147,7 @@ public class DownloadFileThread extends Thread {
 
                 // Save file
                 bis = new BufferedInputStream(huc.getInputStream());
-                fos = new FileOutputStream(saveAs);
-                IOUtils.copy(bis, fos);
+                storage.addFile(saveAs, bis, huc.getContentLengthLong(), huc.getContentType());
                 break; // Download successful: break out of infinite loop
             } catch (HttpStatusException hse) {
                 logger.debug("HTTP status exception", hse);
@@ -163,9 +163,6 @@ public class DownloadFileThread extends Thread {
                 // Close any open streams
                 try {
                     if (bis != null) { bis.close(); }
-                } catch (IOException e) { }
-                try {
-                    if (fos != null) { fos.close(); }
                 } catch (IOException e) { }
             }
             if (tries > this.retries) {

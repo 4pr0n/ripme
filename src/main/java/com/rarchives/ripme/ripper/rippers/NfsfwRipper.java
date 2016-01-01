@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -27,8 +28,8 @@ public class NfsfwRipper extends AlbumRipper {
 
     private DownloadThreadPool nfsfwThreadPool;
 
-    public NfsfwRipper(URL url) throws IOException {
-        super(url);
+    public NfsfwRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
         nfsfwThreadPool = new DownloadThreadPool("NFSFW");
     }
 

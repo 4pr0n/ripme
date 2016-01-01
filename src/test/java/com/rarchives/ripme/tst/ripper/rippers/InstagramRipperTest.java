@@ -18,7 +18,7 @@ public class InstagramRipperTest extends RippersTest {
         testURLs.put(new URL("http://instagram.com/-test-user-"), "-test-user-");
         testURLs.put(new URL("http://statigr.am/username"), "username");
         for (URL url : testURLs.keySet()) {
-            InstagramRipper ripper = new InstagramRipper(url);
+            InstagramRipper ripper = new InstagramRipper(url, null);
             ripper.setup();
             assertEquals(testURLs.get(url), ripper.getGID(ripper.getURL()));
             deleteDir(ripper.getWorkingDir());
@@ -29,7 +29,7 @@ public class InstagramRipperTest extends RippersTest {
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("http://instagram.com/anacheri"));
         for (URL url : contentURLs) {
-            InstagramRipper ripper = new InstagramRipper(url);
+            InstagramRipper ripper = new InstagramRipper(url, null);
             testRipper(ripper);
         }
     }

@@ -11,6 +11,7 @@ import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.apache.log4j.Logger;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -25,16 +26,18 @@ public class DownloadVideoThread extends Thread {
     private static final Logger logger = Logger.getLogger(DownloadVideoThread.class);
 
     private URL url;
-    private File saveAs;
+    private String saveAs;
     private String prettySaveAs;
+    private AbstractStorage storage;
     private AbstractRipper observer;
     private int retries;
 
-    public DownloadVideoThread(URL url, File saveAs, AbstractRipper observer) {
+    public DownloadVideoThread(URL url, String saveAs, AbstractStorage storage, AbstractRipper observer) {
         super();
         this.url = url;
         this.saveAs = saveAs;
         this.prettySaveAs = Utils.removeCWD(saveAs);
+        this.storage = storage;
         this.observer = observer;
         this.retries = Utils.getConfigInteger("download.retries", 1);
     }
@@ -50,10 +53,9 @@ public class DownloadVideoThread extends Thread {
             observer.downloadErrored(url, "Download interrupted");
             return;
         }
-        if (saveAs.exists()) {
+        if (storage.fileExists(saveAs)) {
             if (Utils.getConfigBoolean("file.overwrite", false)) {
-                logger.info("[!] Deleting existing file" + prettySaveAs);
-                saveAs.delete();
+                logger.info("[!] Overwriting existing file" + prettySaveAs);
             } else {
                 logger.info("[!] Skipping " + url + " -- file already exists: " + prettySaveAs);
                 observer.downloadExists(url, saveAs);

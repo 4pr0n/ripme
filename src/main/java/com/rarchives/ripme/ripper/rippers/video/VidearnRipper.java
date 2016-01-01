@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.VideoRipper;
@@ -17,8 +18,8 @@ public class VidearnRipper extends VideoRipper {
 
     private static final String HOST = "videarn";
 
-    public VidearnRipper(URL url) throws IOException {
-        super(url);
+    public VidearnRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

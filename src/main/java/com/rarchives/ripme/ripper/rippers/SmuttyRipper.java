@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -25,8 +26,8 @@ public class SmuttyRipper extends AlbumRipper {
     private static final String DOMAIN = "smutty.com",
                                 HOST   = "smutty";
 
-    public SmuttyRipper(URL url) throws IOException {
-        super(url);
+    public SmuttyRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

@@ -40,7 +40,7 @@ public class VideoRippersTest extends RippersTest {
         contentURLs.add(new URL("http://www.xvideos.com/video1428195/stephanie_first_time_anal"));
         contentURLs.add(new URL("http://www.xvideos.com/video7136868/vid-20140205-wa0011"));
         for (URL url : contentURLs) {
-            XvideosRipper ripper = new XvideosRipper(url);
+            XvideosRipper ripper = new XvideosRipper(url, null);
             videoTestHelper(ripper);
         }
     }
@@ -49,7 +49,7 @@ public class VideoRippersTest extends RippersTest {
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("http://www.pornhub.com/view_video.php?viewkey=993166542"));
         for (URL url : contentURLs) {
-            PornhubRipper ripper = new PornhubRipper(url);
+            PornhubRipper ripper = new PornhubRipper(url, null);
             videoTestHelper(ripper);
         }
     }
@@ -58,7 +58,7 @@ public class VideoRippersTest extends RippersTest {
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("https://vine.co/v/hiqQrP0eUZx"));
         for (URL url : contentURLs) {
-            VineRipper ripper = new VineRipper(url);
+            VineRipper ripper = new VineRipper(url, null);
             videoTestHelper(ripper);
         }
     }
@@ -67,7 +67,7 @@ public class VideoRippersTest extends RippersTest {
         List<URL> contentURLs = new ArrayList<URL>();
         contentURLs.add(new URL("http://www.youporn.com/watch/7669155/mrs-li-amateur-69-orgasm/?from=categ"));
         for (URL url : contentURLs) {
-            YoupornRipper ripper = new YoupornRipper(url);
+            YoupornRipper ripper = new YoupornRipper(url, null);
             videoTestHelper(ripper);
         }
     }

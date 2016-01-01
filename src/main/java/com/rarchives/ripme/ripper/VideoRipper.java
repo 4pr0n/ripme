@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
@@ -16,8 +17,8 @@ public abstract class VideoRipper extends AbstractRipper {
     private int bytesTotal = 1,
                  bytesCompleted = 1;
 
-    public VideoRipper(URL url) throws IOException {
-        super(url);
+    public VideoRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     public abstract boolean canRip(URL url);
@@ -40,7 +41,7 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public boolean addURLToDownload(URL url, File saveAs) {
+    public boolean addURLToDownloadFullPath(URL url, String saveAs) {
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
             String urlFile = this.workingDir + File.separator + "urls.txt";
@@ -64,14 +65,14 @@ public abstract class VideoRipper extends AbstractRipper {
                 this.url = url;
                 return true;
             }
-            threadPool.addThread(new DownloadVideoThread(url, saveAs, this));
+            threadPool.addThread(new DownloadVideoThread(url, saveAs, storage, this));
         }
         return true;
     }
 
     @Override
-    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
-        return addURLToDownload(url, saveAs);
+    public boolean addURLToDownload(URL url, String saveAs, String referrer, Map<String,String> cookies) {
+        return addURLToDownloadFullPath(url, saveAs);
     }
 
     @Override
@@ -95,7 +96,7 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public void downloadCompleted(URL url, File saveAs) {
+    public void downloadCompleted(URL url, String saveAs) {
         if (observer == null) {
             return;
         }
@@ -118,7 +119,7 @@ public abstract class VideoRipper extends AbstractRipper {
         checkIfComplete();
     }
     @Override
-    public void downloadExists(URL url, File file) {
+    public void downloadExists(URL url, String file) {
         if (observer == null) {
             return;
         }
@@ -138,7 +139,6 @@ public abstract class VideoRipper extends AbstractRipper {
         return sb.toString();
     }
 
-    @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
     }

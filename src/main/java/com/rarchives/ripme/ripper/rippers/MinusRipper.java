@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
@@ -29,8 +30,8 @@ public class MinusRipper extends AlbumRipper {
     }
     private ALBUM_TYPE albumType;
 
-    public MinusRipper(URL url) throws IOException {
-        super(url);
+    public MinusRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override
