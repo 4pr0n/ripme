@@ -63,6 +63,11 @@
       <artifactId>jets3t</artifactId>
       <version>0.9.4</version>
     </dependency>
+    <dependency>
+      <groupId>com.github.scribejava</groupId>
+      <artifactId>scribejava-apis</artifactId>
+      <version>2.1.0</version>
+    </dependency>
   </dependencies>
   <build>
     <plugins>

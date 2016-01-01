@@ -44,11 +44,11 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
     @Override
     public String getHost() {
-        return "flickr";
+        return "flargleblargle"; //"flickr";
     }
     @Override
     public String getDomain() {
-        return "flickr.com";
+        return "flargleblargle"; //"flickr.com";
     }
 
     public URL sanitizeURL(URL url) throws MalformedURLException {
