@@ -131,7 +131,7 @@ public class DanbooruRipper extends AlbumRipper {
         URL apiUrl = new URL("https", DOMAIN, "/posts.json?" + query);
         try {
             return new JSONArray(new Http(apiUrl).ignoreContentType().response().body());
-        } catch (SocketTimeoutException e) {
+        } catch (Exception e) {
             retries++;
             return getPage();
         }
