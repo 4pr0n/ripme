@@ -29,15 +29,10 @@ public class FilesystemStorage extends AbstractStorage {
     @Override
     public void addFile(String path, InputStream inputStream, Long length, String contentType) throws IOException, FileAlreadyExistsException {
         String fullPath = downloadPath + File.separator + path;
-        logger.info("Adding file " + fullPath);
         new File(fullPath).getParentFile().mkdirs();
-        logger.info("Made dirs for " + fullPath);
         File outFile = new File(fullPath);
-        logger.info("Made outfile for " + fullPath);
         FileOutputStream fos = new FileOutputStream(outFile);
-        logger.info("Made output stream for " + fullPath);
         IOUtils.copy(inputStream, fos);
-        logger.info("Copied stream to " + fullPath);
         try {
             fos.close();
         } catch (Exception e) {}
