@@ -13,6 +13,7 @@ import java.util.Observable;
 
 import com.rarchives.ripme.storage.AbstractStorage;
 import com.rarchives.ripme.storage.FilesystemStorage;
+import com.rarchives.ripme.storage.GDriveStorage;
 import com.rarchives.ripme.storage.Jets3tStorage;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
@@ -276,6 +277,8 @@ public abstract class AbstractRipper
             storage = new FilesystemStorage();
         } else if (storageModule.equals("jets3t")) {
             storage = new Jets3tStorage();
+        } else if (storageModule.equals("gdrive")) {
+            storage = new GDriveStorage();
         } else {
             throw new Exception("Storage module " + storageModule + " is invalid.");
         }
