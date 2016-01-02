@@ -14,9 +14,6 @@ import java.nio.file.FileAlreadyExistsException;
 public class FilesystemStorage extends AbstractStorage {
     public String downloadPath;
 
-    protected static final Logger logger = Logger.getLogger(FilesystemStorage.class);
-
-
     public FilesystemStorage() throws AuthenticationException, IOException {
         super();
         downloadPath = Utils.getWorkingDirectory().getCanonicalPath();
