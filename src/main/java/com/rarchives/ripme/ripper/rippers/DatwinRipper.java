@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -16,9 +17,7 @@ import com.rarchives.ripme.utils.Http;
 
 public class DatwinRipper extends AbstractHTMLRipper {
 
-    public DatwinRipper(URL url) throws IOException {
-        super(url);
-    }
+    public DatwinRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {

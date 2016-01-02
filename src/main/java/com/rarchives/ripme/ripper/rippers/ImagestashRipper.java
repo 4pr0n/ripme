@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -18,8 +19,8 @@ public class ImagestashRipper extends AbstractJSONRipper {
 
     private int page = 1;
 
-    public ImagestashRipper(URL url) throws IOException {
-        super(url);
+    public ImagestashRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

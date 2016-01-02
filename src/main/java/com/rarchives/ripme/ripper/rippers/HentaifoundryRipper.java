@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,9 +22,7 @@ import com.rarchives.ripme.utils.Http;
 public class HentaifoundryRipper extends AbstractHTMLRipper {
 
     private Map<String,String> cookies = new HashMap<String,String>();
-    public HentaifoundryRipper(URL url) throws IOException {
-        super(url);
-    }
+    public HentaifoundryRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {

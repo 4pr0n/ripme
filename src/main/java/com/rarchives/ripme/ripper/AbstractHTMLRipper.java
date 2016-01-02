@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -17,8 +18,8 @@ import com.rarchives.ripme.utils.Utils;
  */
 public abstract class AbstractHTMLRipper extends AlbumRipper {
 	
-    public AbstractHTMLRipper(URL url) throws IOException {
-        super(url);
+    public AbstractHTMLRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     public abstract String getDomain();

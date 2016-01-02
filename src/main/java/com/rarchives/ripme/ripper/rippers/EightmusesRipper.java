@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -25,9 +26,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
     private Document albumDoc = null;
     private Map<String,String> cookies = new HashMap<String,String>();
 
-    public EightmusesRipper(URL url) throws IOException {
-        super(url);
-    }
+    public EightmusesRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {

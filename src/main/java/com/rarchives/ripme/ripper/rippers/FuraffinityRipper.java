@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import com.rarchives.ripme.utils.Utils;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
@@ -40,9 +41,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         return furaffinityThreadPool;
     }
 
-    public FuraffinityRipper(URL url) throws IOException {
-        super(url);
-    }
+    public FuraffinityRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getDomain() {

@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONObject;
 
 import com.rarchives.ripme.ripper.VideoRipper;
@@ -18,8 +19,8 @@ public class CliphunterRipper extends VideoRipper {
     private static final String decryptString="{'$':':','&':'.','(':'=','-':'-','_':'_','^':'&','a':'h','c':'c','b':'b','e':'v','d':'e','g':'f','f':'o','i':'d','m':'a','l':'n','n':'m','q':'t','p':'u','r':'s','w':'w','v':'p','y':'l','x':'r','z':'i','=':'/','?':'?'}";
     private static final JSONObject decryptDict = new JSONObject(decryptString);
 
-    public CliphunterRipper(URL url) throws IOException {
-        super(url);
+    public CliphunterRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,8 +42,8 @@ public class ImgurRipper extends AlbumRipper {
     };
     private ALBUM_TYPE albumType;
 
-    public ImgurRipper(URL url) throws IOException {
-        super(url);
+    public ImgurRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
         SLEEP_BETWEEN_ALBUMS = 1;
     }
 
@@ -136,7 +137,7 @@ public class ImgurRipper extends AlbumRipper {
         ImgurAlbum album = getImgurAlbum(url);
         for (ImgurImage imgurImage : album.images) {
             stopCheck();
-            String saveAs = workingDir.getCanonicalPath();
+            String saveAs = "";
             if (!saveAs.endsWith(File.separator)) {
                 saveAs += File.separator;
             }
@@ -146,16 +147,12 @@ public class ImgurRipper extends AlbumRipper {
             if (!saveAs.endsWith(File.separator)) {
                 saveAs += File.separator;
             }
-            File subdirFile = new File(saveAs);
-            if (!subdirFile.exists()) {
-                subdirFile.mkdirs();
-            }
             index += 1;
             if (Utils.getConfigBoolean("download.save_order", true)) {
                 saveAs += String.format("%03d_", index);
             }
             saveAs += imgurImage.getSaveAs();
-            addURLToDownload(imgurImage.url, new File(saveAs));
+            addURLToDownload(imgurImage.url, saveAs);
         }
     }
 

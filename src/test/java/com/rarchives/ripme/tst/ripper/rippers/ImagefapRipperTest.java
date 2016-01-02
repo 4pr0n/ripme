@@ -20,7 +20,7 @@ public class ImagefapRipperTest extends RippersTest {
                              "imagefap_fffd68f659befa5535cf78f014e348f1");
 
         for (URL url : testURLs.keySet()) {
-            ImagefapRipper ripper = new ImagefapRipper(url);
+            ImagefapRipper ripper = new ImagefapRipper(url, null);
             testRipper(ripper);
         }
     }

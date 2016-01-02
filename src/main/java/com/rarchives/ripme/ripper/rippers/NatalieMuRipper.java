@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -20,8 +21,8 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
     
     public int news_id = 0;
     
-    public NatalieMuRipper(URL url) throws IOException {
-        super(url);        
+    public NatalieMuRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

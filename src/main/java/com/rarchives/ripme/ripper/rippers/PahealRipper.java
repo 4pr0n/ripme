@@ -1,6 +1,7 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.storage.AbstractStorage;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 import java.io.File;
@@ -37,8 +38,8 @@ public class PahealRipper extends AbstractHTMLRipper{
 		return cookies;
 	}
 
-	public PahealRipper(URL url) throws IOException {
-		super(url);
+	public PahealRipper(URL url, AbstractStorage storage) throws IOException {
+		super(url, storage);
 	}
 
 	@Override
@@ -80,18 +81,16 @@ public class PahealRipper extends AbstractHTMLRipper{
 	@Override
 	public void downloadURL(URL url, int index) {
 		try {
-			String name=url.getPath();
-			String ext=".png";
-			
-			name=name.substring(name.lastIndexOf('/')+1);
-			if(name.indexOf('.')>=0){
-				ext=name.substring(name.lastIndexOf('.'));
-				name=name.substring(0,name.length()-ext.length());
+			String name = url.getPath();
+			String ext = ".png";
+
+			name = name.substring(name.lastIndexOf('/') + 1);
+			if (name.indexOf('.') >= 0) {
+				ext = name.substring(name.lastIndexOf('.'));
+				name = name.substring(0, name.length() - ext.length());
 			}
-			
-			addURLToDownload(url,new File(workingDir.getCanonicalPath()+File.separator+Utils.filesystemSafe(new URI(name).getPath())+ext));
-		} catch (IOException ex) {
-			Logger.getLogger(PahealRipper.class.getName()).log(Level.SEVERE, null, ex);
+
+			addURLToDownloadFullPath(url, Utils.filesystemSafe(new URI(name).getPath()) + ext);
 		} catch (URISyntaxException ex) {
 			Logger.getLogger(PahealRipper.class.getName()).log(Level.SEVERE, null, ex);
 		}
