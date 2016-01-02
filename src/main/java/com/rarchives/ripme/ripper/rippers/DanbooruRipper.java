@@ -29,7 +29,7 @@ public class DanbooruRipper extends AlbumRipper {
     private String login = null;
     private String apiKey = null;
     private Integer retries = 0;
-    private static final Integer retryLimit = 3;
+    private static final Integer retryLimit = 6;
     private static final Integer limit = 100;
     private static final String HOST   = "danbooru";
     private static final String DOMAIN = "danbooru.donmai.us";
@@ -115,6 +115,7 @@ public class DanbooruRipper extends AlbumRipper {
     public JSONArray getPage() throws IOException {
         if (retries >= retryLimit) {
             logger.error("getPage retried too many times.");
+            //throw new IOException();
         }
         logger.info("Getting page " + page.toString());
         LinkedList<NameValuePair> queryParams = new LinkedList<NameValuePair>();
@@ -133,6 +134,7 @@ public class DanbooruRipper extends AlbumRipper {
             return new JSONArray(new Http(apiUrl).ignoreContentType().response().body());
         } catch (Exception e) {
             retries++;
+            sleep((int) (Math.min(Math.pow(4.0, (double) retries) * 1000.0, 1800000.0)));
             return getPage();
         }
     }
