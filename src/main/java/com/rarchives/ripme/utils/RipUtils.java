@@ -79,6 +79,16 @@ public class RipUtils {
             }
             return result;
         }
+        else if (url.toExternalForm().contains("eroshare.com")) {
+            try {
+                logger.info("Getting eroshare album " + url);
+                result.addAll(EroShareRipper.getURLs(url));
+            } catch (IOException e) {
+                // Do nothing
+                logger.warn("Exception while retrieving eroshare page:", e);
+            }
+            return result;
+        }
 
         // Direct link to image
         Pattern p = Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*)\\.(jpg|jpeg|gif|png|mp4)(\\?.*)?)");
