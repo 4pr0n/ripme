@@ -71,12 +71,11 @@ public class FlickrAPIRipper extends AbstractJSONRipper {
         }
 
         signed = Utils.getConfigBoolean("flickr.signed", false);
+        service = new ServiceBuilder().provider(FlickrApi.class).apiKey(apiKey).apiSecret(apiSecret).build();
 
         if (signed) {
             String accessTokenToken = Utils.getConfigString("flickr.accessTokenToken", null);
             String accessTokenSecret = Utils.getConfigString("flickr.accessTokenSecret", null);
-
-            service = new ServiceBuilder().provider(FlickrApi.class).apiKey(apiKey).apiSecret(apiSecret).build();
 
             if (accessTokenToken == null || accessTokenSecret == null) {
                 String verifierString = Utils.getConfigString("flickr.verifier", null);
@@ -118,11 +117,11 @@ public class FlickrAPIRipper extends AbstractJSONRipper {
             }
         }
         try {
+            logger.info("Determining URL type.");
             urlType();
-        } catch (IOException e) {
+        } catch (Exception e) {
             logger.error("Couldn't get URL Type");
             e.printStackTrace();
-            throw e;
         }
 
         if (urlType == -1) {
@@ -184,6 +183,8 @@ public class FlickrAPIRipper extends AbstractJSONRipper {
                         urlType = 2;
                         return;
                 }
+            } else {
+                logger.debug(resObj.toString(2));
             }
         }
     }
@@ -206,14 +207,16 @@ public class FlickrAPIRipper extends AbstractJSONRipper {
     }
 
     public String makeRequest(URL url) throws IOException {
+        OAuthRequest testRequest = new OAuthRequest(Verb.GET, url.toString(), service);
+        Token token;
         if (signed) {
-            OAuthRequest testRequest = new OAuthRequest(Verb.GET, url.toString(), service);
-            service.signRequest(accessToken, testRequest);
-            Response response = testRequest.send();
-            return response.getBody();
+            token = accessToken;
         } else {
-            return new Http(url).ignoreContentType().response().body();
+            token = new Token("", "");
         }
+        service.signRequest(token, testRequest);
+        Response response = testRequest.send();
+        return response.getBody();
     }
 
     @Override
