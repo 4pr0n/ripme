@@ -21,6 +21,7 @@ import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
 import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurImage;
 import com.rarchives.ripme.ripper.rippers.VidbleRipper;
 import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
+import com.rarchives.ripme.ripper.rippers.EroShareRipper;
 
 public class RipUtils {
     private static final Logger logger = Logger.getLogger(RipUtils.class);
