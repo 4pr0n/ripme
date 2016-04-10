@@ -70,7 +70,7 @@ public class RipUtils {
             }
             return result;
         }
-        else if (url.toExternalForm().contains("vidble.com/album/")) {
+        else if (url.toExternalForm().contains("vidble.com/album/") || url.toExternalForm().contains("vidble.com/show/")) {
             try {
                 logger.info("Getting vidble album " + url);
                 result.addAll(VidbleRipper.getURLsFromPage(url));
