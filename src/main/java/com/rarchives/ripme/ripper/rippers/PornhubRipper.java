@@ -7,6 +7,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -29,8 +30,8 @@ public class PornhubRipper extends AlbumRipper {
     // Current HTML document
     private Document albumDoc = null;
 
-    public PornhubRipper(URL url) throws IOException {
-        super(url);
+    public PornhubRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
@@ -32,9 +33,7 @@ public class TapasticRipper extends AbstractHTMLRipper {
 
     private List<TapasticEpisode> episodes=new ArrayList<TapasticEpisode>();
 
-    public TapasticRipper(URL url) throws IOException {
-        super(url);
-    }
+    public TapasticRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getDomain() {

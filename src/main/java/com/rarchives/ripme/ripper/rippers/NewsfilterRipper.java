@@ -2,6 +2,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 
 import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -17,8 +18,8 @@ import java.util.regex.Pattern;
 public class NewsfilterRipper extends AlbumRipper {
     private static final String HOST = "newsfilter";
 
-    public NewsfilterRipper(URL url) throws IOException {
-        super(url);
+    public NewsfilterRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

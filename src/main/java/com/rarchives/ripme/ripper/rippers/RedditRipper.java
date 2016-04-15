@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -19,8 +20,8 @@ import com.rarchives.ripme.utils.Utils;
 
 public class RedditRipper extends AlbumRipper {
 
-    public RedditRipper(URL url) throws IOException {
-        super(url);
+    public RedditRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     private static final String HOST   = "reddit";

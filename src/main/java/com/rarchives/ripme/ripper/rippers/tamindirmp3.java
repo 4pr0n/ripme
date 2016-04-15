@@ -1,5 +1,11 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.storage.AbstractStorage;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,17 +14,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
-
 public class tamindirmp3 extends AbstractHTMLRipper {
 
-    public tamindirmp3(URL url) throws IOException {
-        super(url);
-    }
+    public tamindirmp3(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {

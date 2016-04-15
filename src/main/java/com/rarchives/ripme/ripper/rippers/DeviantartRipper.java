@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -34,9 +35,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     private Map<String,String> cookies = new HashMap<String,String>();
     private Set<String> triedURLs = new HashSet<String>();
 
-    public DeviantartRipper(URL url) throws IOException {
-        super(url);
-    }
+    public DeviantartRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {

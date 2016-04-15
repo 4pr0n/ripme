@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -17,9 +18,7 @@ import com.rarchives.ripme.utils.Http;
 
 public class DrawcrowdRipper extends AbstractHTMLRipper {
 
-    public DrawcrowdRipper(URL url) throws IOException {
-        super(url);
-    }
+    public DrawcrowdRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {

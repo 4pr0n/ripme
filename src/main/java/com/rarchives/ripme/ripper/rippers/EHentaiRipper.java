@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -45,9 +46,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         cookies.put("tip", "1");
     }
 
-    public EHentaiRipper(URL url) throws IOException {
-        super(url);
-    }
+    public EHentaiRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {
@@ -226,12 +225,12 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                 Matcher m = p.matcher(imgsrc);
                 if (m.matches()) {
                     // Manually discover filename from URL
-                    String savePath = this.workingDir + File.separator;
+                    String savePath = "";
                     if (Utils.getConfigBoolean("download.save_order", true)) {
                         savePath += String.format("%03d_", index);
                     }
                     savePath += m.group(1);
-                    addURLToDownload(new URL(imgsrc), new File(savePath));
+                    addURLToDownloadFullPath(new URL(imgsrc), savePath);
                 }
                 else {
                     // Provide prefix and let the AbstractRipper "guess" the filename

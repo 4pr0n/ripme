@@ -56,6 +56,7 @@ public class Utils {
                   || !config.containsKey("gw.api")
                   || !config.containsKey("page.timeout")
                   || !config.containsKey("download.max_size")
+                  || !config.containsKey("storage.module")
                   ) {
                     // Config is missing key fields
                     // Need to reload the default config
@@ -327,7 +328,6 @@ public class Utils {
         try {
             final Clip clip = (Clip) AudioSystem.getLine(new Line.Info(Clip.class));
             clip.addLineListener(new LineListener() {
-                @Override
                 public void update(LineEvent event) {
                     if (event.getType() == LineEvent.Type.STOP) {
                         clip.close();

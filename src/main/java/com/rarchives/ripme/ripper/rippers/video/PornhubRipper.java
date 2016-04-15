@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
@@ -17,8 +18,8 @@ public class PornhubRipper extends VideoRipper {
 
     private static final String HOST = "pornhub";
 
-    public PornhubRipper(URL url) throws IOException {
-        super(url);
+    public PornhubRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

@@ -5,6 +5,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -32,8 +34,8 @@ public class TumblrRipper extends AlbumRipper {
         API_KEY = Utils.getConfigString("tumblr.auth", "v5kUqGQXUtmF7K0itri1DGtgTs0VQpbSEbh1jxYgj9d2Sq18F8");
     }
 
-    public TumblrRipper(URL url) throws IOException {
-        super(url);
+    public TumblrRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
         if (API_KEY == null) {
             throw new IOException("Could not find tumblr authentication key in configuration");
         }

@@ -14,7 +14,7 @@ public class NatalieMuRipperTest extends RippersTest {
         // URLs that should not work
         for (URL url : failURLs) {
             try {
-                new NatalieMuRipper(url);
+                new NatalieMuRipper(url, null);
                 fail("Instantiated ripper for URL that should not work: " + url);
             } catch (Exception e) {
                 // Expected
@@ -31,7 +31,7 @@ public class NatalieMuRipperTest extends RippersTest {
         passURLs.add(new URL("http://cdn2.natalie.mu/music/gallery/show/news_id/140411/image_id/369655"));
         passURLs.add(new URL("http://natalie.mu/music/gallery/show/news_id/139146/image_id/365218"));
         for (URL url : passURLs) {
-            NatalieMuRipper ripper = new NatalieMuRipper(url);
+            NatalieMuRipper ripper = new NatalieMuRipper(url, null);
             ripper.setup();
             assert(ripper.canRip(url));
             assertNotNull("Ripper for " + url + " did not have a valid working directory.",
@@ -57,7 +57,7 @@ public class NatalieMuRipperTest extends RippersTest {
         // xchan has an HTTPS certificaiton error...
         //contentURLs.add(new URL("http://xchan.pw/porn/res/437.html"));
         for (URL url : contentURLs) {
-            NatalieMuRipper ripper = new NatalieMuRipper(url);
+            NatalieMuRipper ripper = new NatalieMuRipper(url, null);
             testRipper(ripper);
         }
     }

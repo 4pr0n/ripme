@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 
 import com.rarchives.ripme.ripper.VideoRipper;
@@ -15,8 +16,8 @@ public class VkRipper extends VideoRipper {
 
     private static final String HOST = "vk";
 
-    public VkRipper(URL url) throws IOException {
-        super(url);
+    public VkRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

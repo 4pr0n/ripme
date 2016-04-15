@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Method;
@@ -24,8 +25,8 @@ public class ModelmayhemRipper extends AlbumRipper {
     private static final String DOMAIN = "modelmayhem.com",
                                 HOST   = "modelmayhem";
 
-    public ModelmayhemRipper(URL url) throws IOException {
-        super(url);
+    public ModelmayhemRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

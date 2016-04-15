@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -36,8 +37,8 @@ public class ChanRipper extends AbstractHTMLRipper {
     public ChanSite chanSite;
     public Boolean generalChanSite = true;
     
-    public ChanRipper(URL url) throws IOException {
-        super(url);
+    public ChanRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
         for (ChanSite _chanSite : explicit_domains) {
             if (_chanSite.domains.contains(url.getHost())) {
                 chanSite = _chanSite;

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -17,9 +18,7 @@ import com.rarchives.ripme.utils.Http;
 
 public class BcfakesRipper extends AbstractHTMLRipper {
 
-    public BcfakesRipper(URL url) throws IOException {
-        super(url);
-    }
+    public BcfakesRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {

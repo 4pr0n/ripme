@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.storage.AbstractStorage;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 
@@ -15,8 +16,8 @@ public class MotherlessVideoRipper extends VideoRipper {
 
     private static final String HOST = "motherless";
 
-    public MotherlessVideoRipper(URL url) throws IOException {
-        super(url);
+    public MotherlessVideoRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

@@ -7,6 +7,7 @@ import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -18,8 +19,8 @@ public class XvideosRipper extends VideoRipper {
 
     private static final String HOST = "xvideos";
 
-    public XvideosRipper(URL url) throws IOException {
-        super(url);
+    public XvideosRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

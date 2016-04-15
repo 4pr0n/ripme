@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -24,8 +25,8 @@ public class SupertangasRipper extends AlbumRipper {
     private static final String DOMAIN = "supertangas.com",
                                 HOST   = "supertangas";
 
-    public SupertangasRipper(URL url) throws IOException {
-        super(url);
+    public SupertangasRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

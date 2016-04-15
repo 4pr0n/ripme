@@ -11,6 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 
+import com.rarchives.ripme.storage.AbstractStorage;
+import com.rarchives.ripme.storage.FilesystemStorage;
+import com.rarchives.ripme.storage.Jets3tStorage;
 import org.apache.log4j.FileAppender;
 import org.apache.log4j.Logger;
 import org.jsoup.HttpStatusException;
@@ -21,7 +24,7 @@ import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
 
-public abstract class AbstractRipper 
+public abstract class AbstractRipper
                 extends Observable
                 implements RipperInterface, Runnable {
 
@@ -32,8 +35,10 @@ public abstract class AbstractRipper
 
     protected URL url;
     protected File workingDir;
+    protected String globalPrefix;
     protected DownloadThreadPool threadPool;
     protected RipStatusHandler observer = null;
+    protected AbstractStorage storage;
 
     protected boolean completed = true;
 
@@ -65,11 +70,12 @@ public abstract class AbstractRipper
      * @throws IOException
      *      If anything goes wrong.
      */
-    public AbstractRipper(URL url) throws IOException {
+    public AbstractRipper(URL url, AbstractStorage storage) throws IOException {
         if (!canRip(url)) {
             throw new MalformedURLException("Unable to rip url: " + url);
         }
         this.url = sanitizeURL(url);
+        this.storage = storage;
     }
 
     public void setup() throws IOException {
@@ -95,8 +101,8 @@ public abstract class AbstractRipper
      * @param saveAs
      *      Path of the local file to save the content to.
      */
-    public abstract boolean addURLToDownload(URL url, File saveAs);
-    public abstract boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies);
+    public abstract boolean addURLToDownloadFullPath(URL url, String saveAs);
+    public abstract boolean addURLToDownload(URL url, String saveAs, String referrer, Map<String,String> cookies);
 
     public boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies) {
         try {
@@ -112,26 +118,15 @@ public abstract class AbstractRipper
         if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
         if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
         if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
-        File saveFileAs;
-        try {
-            if (!subdirectory.equals("")) {
-                subdirectory = File.separator + subdirectory;
-            }
-            saveFileAs = new File(
-                    workingDir.getCanonicalPath()
-                    + subdirectory
-                    + File.separator
-                    + prefix
-                    + saveAs);
-        } catch (IOException e) {
-            logger.error("[!] Error creating save file path for URL '" + url + "':", e);
-            return false;
+        String saveFileAs;
+        if (!subdirectory.equals("")) {
+            prefix = subdirectory + File.separator + prefix;
         }
+        if (globalPrefix != null && !globalPrefix.equals("")) {
+            prefix = globalPrefix + File.separator + prefix;
+        }
+        saveFileAs = prefix + saveAs;
         logger.debug("Downloading " + url + " to " + saveFileAs);
-        if (!saveFileAs.getParentFile().exists()) {
-            logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
-            saveFileAs.getParentFile().mkdirs();
-        }
         return addURLToDownload(url, saveFileAs, referrer, cookies);
     }
     
@@ -188,7 +183,7 @@ public abstract class AbstractRipper
      * @param saveAs
      *      Where the downloaded file is stored.
      */
-    public abstract void downloadCompleted(URL url, File saveAs);
+    public abstract void downloadCompleted(URL url, String saveAs);
     /**
      * Notifies observers that a file could not be downloaded (includes a reason).
      * @param url
@@ -201,7 +196,7 @@ public abstract class AbstractRipper
      * @param url
      * @param message
      */
-    public abstract void downloadExists(URL url, File file);
+    public abstract void downloadExists(URL url, String file);
 
     /**
      * @return Number of files downloaded.
@@ -274,9 +269,21 @@ public abstract class AbstractRipper
      *      If no compatible rippers can be found.
      */
     public static AbstractRipper getRipper(URL url) throws Exception {
+        AbstractStorage storage;
+        String storageModule = Utils.getConfigString("storage.module", "file");
+
+        if (storageModule.equals("file")) {
+            storage = new FilesystemStorage();
+        } else if (storageModule.equals("jets3t")) {
+            storage = new Jets3tStorage();
+        } else {
+            throw new Exception("Storage module " + storageModule + " is invalid.");
+        }
+        storage.configure();
+
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             try {
-                AlbumRipper ripper = (AlbumRipper) constructor.newInstance(url);
+                AlbumRipper ripper = (AlbumRipper) constructor.newInstance(url, storage);
                 logger.debug("Found album ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (Exception e) {
@@ -285,7 +292,7 @@ public abstract class AbstractRipper
         }
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
             try {
-                VideoRipper ripper = (VideoRipper) constructor.newInstance(url);
+                VideoRipper ripper = (VideoRipper) constructor.newInstance(url, storage);
                 logger.debug("Found video ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (Exception e) {
@@ -304,7 +311,7 @@ public abstract class AbstractRipper
         List<Constructor<?>> constructors = new ArrayList<Constructor<?>>();
         for (Class<?> clazz : Utils.getClassesForPackage(pkg)) {
             if (AbstractRipper.class.isAssignableFrom(clazz)) {
-                constructors.add( (Constructor<?>) clazz.getConstructor(URL.class) );
+                constructors.add( (Constructor<?>) clazz.getConstructor(URL.class, AbstractStorage.class) );
             }
         }
         return constructors;
