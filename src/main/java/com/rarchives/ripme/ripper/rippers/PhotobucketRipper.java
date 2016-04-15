@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Response;
@@ -25,8 +26,8 @@ public class PhotobucketRipper extends AlbumRipper {
 
     private Response pageResponse = null;
 
-    public PhotobucketRipper(URL url) throws IOException {
-        super(url);
+    public PhotobucketRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

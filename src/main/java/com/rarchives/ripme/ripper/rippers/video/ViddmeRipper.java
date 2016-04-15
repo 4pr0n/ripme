@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 
@@ -16,8 +17,8 @@ public class ViddmeRipper extends VideoRipper {
 
     private static final String HOST = "vid";
 
-    public ViddmeRipper(URL url) throws IOException {
-        super(url);
+    public ViddmeRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

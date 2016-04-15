@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
@@ -42,8 +43,8 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
     private String baseURL = "https://api.500px.com/v1";
     private static final String CONSUMER_KEY = "XPm2br2zGBq6TOfd2xbDIHYoLnt3cLxr1HYryGCv";
 
-    public FivehundredpxRipper(URL url) throws IOException {
-        super(url);
+    public FivehundredpxRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override
@@ -257,8 +258,8 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
         String u = url.toExternalForm();
         String[] fields = u.split("/");
         String prefix = getPrefix(index) + fields[fields.length - 3];
-        File saveAs = new File(getWorkingDir() + File.separator + prefix + ".jpg");
-        addURLToDownload(url,  saveAs,  "", null);
+
+        addURLToDownload(url,  prefix + ".jpg",  "", null);
     }
 
 }

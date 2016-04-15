@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.HttpStatusException;
@@ -19,8 +20,8 @@ public class VineRipper extends AlbumRipper {
     private static final String DOMAIN = "vine.co",
                                 HOST   = "vine";
 
-    public VineRipper(URL url) throws IOException {
-        super(url);
+    public VineRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

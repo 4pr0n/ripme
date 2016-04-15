@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -36,8 +37,8 @@ public class FlickrRipper extends AbstractHTMLRipper {
         return flickrThreadPool;
     }
 
-    public FlickrRipper(URL url) throws IOException {
-        super(url);
+    public FlickrRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
         flickrThreadPool = new DownloadThreadPool();
     }
 

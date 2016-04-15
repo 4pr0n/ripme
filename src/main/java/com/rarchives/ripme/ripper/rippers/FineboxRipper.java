@@ -6,6 +6,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -21,8 +22,8 @@ public class FineboxRipper extends AlbumRipper {
                                 DOMAIN_OLD = "vinebox.co",
                                 HOST = "finebox";
 
-    public FineboxRipper(URL url) throws IOException {
-        super(url);
+    public FineboxRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
     }
 
     @Override

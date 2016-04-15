@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,8 +38,8 @@ public class TwitterRipper extends AlbumRipper {
     private ALBUM_TYPE albumType;
     private String searchText, accountName;
     
-    public TwitterRipper(URL url) throws IOException {
-        super(url);
+    public TwitterRipper(URL url, AbstractStorage storage) throws IOException {
+        super(url, storage);
         authKey = Utils.getConfigString("twitter.auth", null);
         if (authKey == null) {
             throw new IOException("Could not find twitter authentication key in configuration");

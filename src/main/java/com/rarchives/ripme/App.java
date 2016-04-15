@@ -211,7 +211,6 @@ public class App {
                 // Loaded from config, still no entries.
                 // Guess rip history based on rip folder
                 String[] dirs = Utils.getWorkingDirectory().list(new FilenameFilter() {
-                    @Override
                     public boolean accept(File dir, String file) {
                         return new File(dir.getAbsolutePath() + File.separator + file).isDirectory();
                     }

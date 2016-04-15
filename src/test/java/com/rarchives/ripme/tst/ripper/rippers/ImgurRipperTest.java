@@ -21,7 +21,7 @@ public class ImgurRipperTest extends RippersTest {
         failURLs.add(new URL("http://i.imgur.com/image.jpg"));
         for (URL url : failURLs) {
             try {
-                new ImgurRipper(url);
+                new ImgurRipper(url, null);
                 fail("Instantiated ripper for URL that should not work: " + url);
             } catch (Exception e) {
                 // Expected
@@ -44,7 +44,7 @@ public class ImgurRipperTest extends RippersTest {
         //contentURLs.add(new URL("http://imgur.com/r/nsfw_oc/top/all"));
         //contentURLs.add(new URL("http://imgur.com/a/bXQpH")); // Album with titles/descriptions
         for (URL url : contentURLs) {
-            ImgurRipper ripper = new ImgurRipper(url);
+            ImgurRipper ripper = new ImgurRipper(url, null);
             testRipper(ripper);
         }
     }

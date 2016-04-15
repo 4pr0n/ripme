@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -19,9 +20,7 @@ public class RajceRipper extends AbstractHTMLRipper {
     private static final String DOMAIN = "rajce.idnes.cz";
     private static final String HOST = "rajce.idnes";
 
-    public RajceRipper(URL url) throws IOException {
-        super(url);
-    }
+    public RajceRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {

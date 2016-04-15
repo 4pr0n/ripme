@@ -3,6 +3,7 @@ package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.storage.AbstractStorage;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
 import java.io.IOException;
@@ -31,8 +32,8 @@ public class E621Ripper extends AbstractHTMLRipper{
 	
 	private DownloadThreadPool e621ThreadPool=new DownloadThreadPool("e621");
 	
-	public E621Ripper(URL url) throws IOException {
-		super(url);
+	public E621Ripper(URL url, AbstractStorage storage) throws IOException {
+		super(url, storage);
 	}
 
 	@Override

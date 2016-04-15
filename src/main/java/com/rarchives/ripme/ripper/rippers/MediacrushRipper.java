@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import javax.net.ssl.SSLException;
 import javax.swing.JOptionPane;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -38,9 +39,7 @@ public class MediacrushRipper extends AbstractJSONRipper {
         PREFERRED_FORMATS.put("jpeg",8);
     };
 
-    public MediacrushRipper(URL url) throws IOException {
-        super(url);
-    }
+    public MediacrushRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {

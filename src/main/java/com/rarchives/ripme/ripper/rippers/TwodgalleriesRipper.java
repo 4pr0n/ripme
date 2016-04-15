@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.Connection.Method;
 import org.jsoup.Connection.Response;
 import org.jsoup.nodes.Document;
@@ -24,9 +25,7 @@ public class TwodgalleriesRipper extends AbstractHTMLRipper {
     private int offset = 0;
     private Map<String,String> cookies = new HashMap<String,String>();
 
-    public TwodgalleriesRipper(URL url) throws IOException {
-        super(url);
-    }
+    public TwodgalleriesRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {

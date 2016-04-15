@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.storage.AbstractStorage;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
@@ -23,9 +24,7 @@ public class CheebyRipper extends AbstractHTMLRipper {
     private int offset = 0;
     private Map<String, Integer> albumSets = new HashMap<String, Integer>();
 
-    public CheebyRipper(URL url) throws IOException {
-        super(url);
-    }
+    public CheebyRipper(URL url, AbstractStorage storage) throws IOException {super(url, storage);}
 
     @Override
     public String getHost() {
