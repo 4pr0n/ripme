@@ -101,21 +101,8 @@ public class DownloadVideoThread extends Thread {
                 huc.connect();
                 // Check status code
                 bis = new BufferedInputStream(huc.getInputStream());
-                fos = new FileOutputStream(saveAs);
-                while ( (bytesRead = bis.read(data)) != -1) {
-                    try {
-                        observer.stopCheck();
-                    } catch (IOException e) {
-                        observer.downloadErrored(url, "Download interrupted");
-                        return;
-                    }
-                    fos.write(data, 0, bytesRead);
-                    bytesDownloaded += bytesRead;
-                    observer.setBytesCompleted(bytesDownloaded);
-                    observer.sendUpdate(STATUS.COMPLETED_BYTES, bytesDownloaded);
-                }
+                storage.addFile(saveAs, bis, huc.getContentLengthLong(), huc.getContentType());
                 bis.close();
-                fos.close();
                 break; // Download successful: break out of infinite loop
             } catch (IOException e) {
                 logger.error("[!] Exception while downloading file: " + url + " - " + e.getMessage(), e);

@@ -16,7 +16,7 @@ public class FilesystemStorage extends AbstractStorage {
 
     public FilesystemStorage() throws AuthenticationException, IOException {
         super();
-        downloadPath = Utils.getWorkingDirectory().getCanonicalPath();
+        downloadPath = Utils.getConfigString("rips.directory", Utils.RIP_DIRECTORY);
     }
 
     @Override

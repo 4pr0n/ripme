@@ -82,6 +82,7 @@ public abstract class VideoRipper extends AbstractRipper {
             path += File.separator;
         }
         path += "videos" + File.separator;
+        globalPrefix = "videos";
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
             logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
