@@ -1,20 +1,18 @@
 package com.rarchives.ripme.ui;
 
-import java.awt.Toolkit;
+import javax.swing.*;
+import javax.swing.text.JTextComponent;
+import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.JPopupMenu;
-import javax.swing.text.JTextComponent;
-
 /**
  * Listens for mouse events & displays a contextual pop-up menu.
  * Copied verbatim from http://stackoverflow.com/a/2793959
+ *
  * @author Bozhidar Batsov
  */
 public class ContextMenuMouseListener extends MouseAdapter {
@@ -30,7 +28,7 @@ public class ContextMenuMouseListener extends MouseAdapter {
     private String savedString = "";
     private Actions lastActionSelected;
 
-    private enum Actions { UNDO, CUT, COPY, PASTE, SELECT_ALL };
+    private enum Actions {UNDO, CUT, COPY, PASTE, SELECT_ALL}
 
     @SuppressWarnings("serial")
     public ContextMenuMouseListener() {
@@ -99,19 +97,19 @@ public class ContextMenuMouseListener extends MouseAdapter {
     @Override
     public void mouseClicked(MouseEvent e) {
         if (e.getModifiers() == InputEvent.BUTTON3_MASK) {
-            if (!(e.getSource() instanceof JTextComponent)) {
+            if (!(e.getSource() instanceof JTextComponent))
                 return;
-            }
 
             textComponent = (JTextComponent) e.getSource();
             textComponent.requestFocus();
 
             boolean enabled = textComponent.isEnabled();
             boolean editable = textComponent.isEditable();
-            boolean nonempty = !(textComponent.getText() == null || textComponent.getText().equals(""));
+            boolean nonempty = !(textComponent.getText() == null || textComponent.getText().isEmpty());
             boolean marked = textComponent.getSelectedText() != null;
 
-            boolean pasteAvailable = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null).isDataFlavorSupported(DataFlavor.stringFlavor);
+            boolean pasteAvailable = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null)
+                    .isDataFlavorSupported(DataFlavor.stringFlavor);
 
             undoAction.setEnabled(enabled && editable && (lastActionSelected == Actions.CUT || lastActionSelected == Actions.PASTE));
             cutAction.setEnabled(enabled && editable && marked);
@@ -121,9 +119,8 @@ public class ContextMenuMouseListener extends MouseAdapter {
 
             int nx = e.getX();
 
-            if (nx > 500) {
+            if (nx > 500)
                 nx = nx - popup.getSize().width;
-            }
 
             popup.show(e.getComponent(), nx, e.getY() - popup.getSize().height);
         }

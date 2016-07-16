@@ -10,13 +10,14 @@ public class RipStatusMessage {
         DOWNLOAD_STARTED("Download Started"),
         DOWNLOAD_COMPLETE("Download Complete"),
         DOWNLOAD_ERRORED("Download Errored"),
-        RIP_COMPLETE("Rip Complete"), 
+        RIP_COMPLETE("Rip Complete"),
         DOWNLOAD_WARN("Download problem"),
         TOTAL_BYTES("Total bytes"),
         COMPLETED_BYTES("Completed bytes"),
         RIP_ERRORED("Rip Errored");
 
         String value;
+
         STATUS(String value) {
             this.value = value;
         }
@@ -29,15 +30,16 @@ public class RipStatusMessage {
         this.status = status;
         this.object = object;
     }
-    
+
     public STATUS getStatus() {
         return status;
     }
-    
+
     public Object getObject() {
         return object;
     }
 
+    @Override
     public String toString() {
         return status.value + ": " + object.toString();
     }

@@ -1,4 +1,4 @@
-/target
+target/
 .DS_Store
 ripme.log
 rips/
@@ -8,3 +8,5 @@ ripme.jar.update
 ripme.jar
 rip.properties
 history.json
+.idea/
+ripme.iml
