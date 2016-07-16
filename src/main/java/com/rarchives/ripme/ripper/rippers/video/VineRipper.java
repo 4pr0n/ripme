@@ -32,7 +32,7 @@ public class VineRipper extends VideoRipper {
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
-    
+
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         return url;
@@ -42,24 +42,22 @@ public class VineRipper extends VideoRipper {
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://[wm.]*vine\\.co/v/([a-zA-Z0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
 
-        throw new MalformedURLException(
-                "Expected vine format:"
-                        + "vine.co/v/####"
-                        + " Got: " + url);
+        if (m.matches())
+            return m.group(1);
+
+        throw new MalformedURLException("Expected vine format: vine.co/v/####  Got: " + url);
     }
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url.toExternalForm());
+        LOGGER.info("    Retrieving " + this.url.toExternalForm());
         Document doc = Http.url(this.url).get();
         Elements props = doc.select("meta[property=twitter:player:stream]");
-        if (props.size() == 0) {
+
+        if (props.isEmpty())
             throw new IOException("Could not find meta property 'twitter:player:stream' at " + url);
-        }
+
         String vidUrl = props.get(0).attr("content");
         addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
         waitForThreads();
