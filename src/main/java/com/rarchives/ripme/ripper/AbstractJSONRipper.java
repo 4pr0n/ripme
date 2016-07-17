@@ -59,7 +59,7 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
             List<String> imageURLs = getURLsFromJSON(json);
             // Remove all but 1 image
             if (isThisATest()) {
-                while (!imageURLs.isEmpty())
+                while (imageURLs.size() > 1)
                     imageURLs.remove(1);
             }
 

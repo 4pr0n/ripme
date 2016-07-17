@@ -1,34 +1,33 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-
+import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.utils.Utils;
 import junit.framework.TestCase;
-
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
-import com.rarchives.ripme.utils.Utils;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Contains helper methods for testing rippers.
  */
 public class RippersTest extends TestCase {
 
-    public final Logger logger = Logger.getLogger(RippersTest.class);
+    private final Logger logger = Logger.getLogger(RippersTest.class);
 
-    /** Dummy test to make JUnit not complain */
+    /**
+     * Dummy test to make JUnit not complain
+     */
     public void test() {
-        assert(true);
+        assert (true);
     }
 
     protected void testRipper(AbstractRipper ripper) {
         try {
             // Turn on Debug logging
-            ((ConsoleAppender)Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
+            ((ConsoleAppender) Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
 
             // Decrease timeout
             Utils.setConfigInteger("page.timeout", 20 * 1000);
@@ -40,27 +39,29 @@ public class RippersTest extends TestCase {
         } catch (IOException e) {
             if (e.getMessage().contains("Ripping interrupted")) {
                 // We expect some rips to get interrupted
-            }
-            else {
+            } else {
                 e.printStackTrace();
                 fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
             }
         } catch (Exception e) {
             e.printStackTrace();
             fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
-        }
-        finally {
+        } finally {
             deleteDir(ripper.getWorkingDir());
         }
     }
 
-    /** File extensions that are safe to delete. */
+    /**
+     * File extensions that are safe to delete.
+     */
     private static final String[] SAFE_EXTENSIONS =
-        {"png", "jpg",  "jpeg", "gif",
-         "mp4", "webm", "mov",  "mpg", "mpeg",
-         "txt", "log", "php"};
+            {"png", "jpg", "jpeg", "gif",
+                    "mp4", "webm", "mov", "mpg", "mpeg",
+                    "txt", "log", "php"};
 
-    /** Recursively deletes a directory */
+    /**
+     * Recursively deletes a directory
+     */
     protected void deleteDir(File dir) {
         if (!dir.getName().contains("_")) {
             // All ripped albums contain an underscore
@@ -83,6 +84,7 @@ public class RippersTest extends TestCase {
         }
         dir.delete();
     }
+
     protected void deleteSubdirs(File workingDir) {
         for (File f : workingDir.listFiles()) {
             if (f.isDirectory()) {
