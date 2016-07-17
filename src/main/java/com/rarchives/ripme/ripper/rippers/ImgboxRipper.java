@@ -1,5 +1,10 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,12 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class ImgboxRipper extends AbstractHTMLRipper {
 
@@ -24,6 +23,7 @@ public class ImgboxRipper extends AbstractHTMLRipper {
     public String getHost() {
         return "imgbox";
     }
+
     @Override
     public String getDomain() {
         return "imgbox.com";
@@ -33,28 +33,30 @@ public class ImgboxRipper extends AbstractHTMLRipper {
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://[wm.]*imgbox\\.com/g/([a-zA-Z0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
+
+        if (m.matches())
             return m.group(1);
-        }
-        throw new MalformedURLException("Expected imgbox.com URL format: " +
-                        "imgbox.com/g/albumid - got " + url + "instead");
+
+        throw new MalformedURLException("Expected imgbox.com URL format: imgbox.com/g/albumid - got " + url + "instead");
     }
-    
+
     @Override
     public Document getFirstPage() throws IOException {
         return Http.url(url).get();
     }
+
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
+
         for (Element thumb : doc.select("div.boxed-content > a > img")) {
-            String image = thumb.attr("src")
-                                .replaceAll("[a-zA-Z0-9.]+s.imgbox.com",
-                                            "i.imgbox.com");
+            String image = thumb.attr("src").replaceAll("[a-zA-Z0-9.]+s.imgbox.com", "i.imgbox.com");
             imageURLs.add(image);
         }
+
         return imageURLs;
     }
+
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
