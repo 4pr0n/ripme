@@ -10,3 +10,6 @@ rip.properties
 history.json
 .idea/
 ripme.iml
+.classpath
+.project
+.settings/

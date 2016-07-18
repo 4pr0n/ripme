@@ -54,11 +54,11 @@ This will include all dependencies in the JAR.
 
 Dependencies
 ------------
-* junit-3.8.1
-* jsoup-1.7.3
-* json-20140107
-* apache-commons-configuration-1.7
+* junit-4.12
+* jsoup-1.9.2
+* json-20160212
+* apache-commons-configuration-1.10
 * log4j-1.2.17
-* commons-cli-1.2
-* commons-io-1.3.2
-* httpcomponents-4.3.3
+* commons-cli-1.3.1
+* commons-io-2.5
+* httpcomponents-4.5.2
