@@ -198,7 +198,7 @@ public class App {
     }
 
     public static CommandLine getArgs(String[] args) {
-        BasicParser parser = new BasicParser();
+        DefaultParser  parser = new DefaultParser();
         try {
             return parser.parse(getOptions(), args, false);
         } catch (ParseException e) {

@@ -96,7 +96,7 @@ public class History {
 
     public void fromFile(String filename) throws IOException {
         try (InputStream is = new FileInputStream(filename)) {
-            String jsonString = IOUtils.toString(is);
+            String jsonString = IOUtils.toString(is, "UTF-8");
             JSONArray jsonArray = new JSONArray(jsonString);
             fromJSON(jsonArray);
         } catch (JSONException e) {
@@ -126,7 +126,7 @@ public class History {
 
     public void toFile(String filename) throws IOException {
         try (OutputStream os = new FileOutputStream(filename)) {
-            IOUtils.write(toJSON().toString(2), os);
+            IOUtils.write(toJSON().toString(2), os, "UTF-8");
         }
     }
 
