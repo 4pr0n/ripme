@@ -21,6 +21,8 @@ public class XhamsterRipper extends AlbumRipper {
 
     private static final String HOST = "xhamster";
 
+    private static Pattern xhPattern = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/(?:gallery/([0-9]+).*|view/([0-9]+)-([0-9]+)\\.html(?:.*)?)$");
+
     private HashMap<String, Document> docs = new HashMap<String, Document>();
 
     public XhamsterRipper(URL url) throws IOException {
@@ -29,8 +31,7 @@ public class XhamsterRipper extends AlbumRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/gallery/[0-9]+.*$");
-        Matcher m = p.matcher(url.toExternalForm());
+        Matcher m = xhPattern.matcher(url.toExternalForm());
         return m.matches();
     }
 
@@ -41,22 +42,41 @@ public class XhamsterRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
+        if (isGallery(url)) {
+            ripGallery();
+        } else {
+            ripPhoto();
+        }
+    }
+
+    private static boolean isGallery(URL url) {
+        Matcher m = xhPattern.matcher(url.toExternalForm());
+        if (!m.matches()) {
+            return false;
+        }
+        return m.group(3) == null || m.group(3).length() == 0; // Is a gallery.
+    }
+
+    private void ripPhoto() throws IOException {
+        Document doc = downloadAndSaveHTML(this.url);
+        for (Element element : doc.select("img#imgSized")) {
+            String image = cleanImageSrc(element.attr("src"));
+            addURLToDownload(new URL(image), "");
+        }
+        waitForThreads();
+    }
+
+    private void ripGallery() throws IOException {
         int index = 0;
         String nextURL = this.url.toExternalForm();
         while (nextURL != null) {
             logger.info("    Retrieving " + nextURL);
-            Document doc = downloadAndSaveHTML(nextURL);
+            Document doc = downloadAndSaveHTML(new URL(nextURL));
             for (Element thumb : doc.select("table.iListing div.img img")) {
                 if (!thumb.hasAttr("src")) {
                     continue;
                 }
-                String image = thumb.attr("src");
-                image = image.replaceAll(
-                        "http://p[0-9]*\\.",
-                        "http://up.");
-                image = image.replaceAll(
-                        "_160\\.",
-                        "_1000.");
+                String image = cleanImageSrc(thumb.attr("src"));
                 index += 1;
                 String prefix = "";
                 if (Utils.getConfigBoolean("download.save_order", true)) {
@@ -79,21 +99,32 @@ public class XhamsterRipper extends AlbumRipper {
         waitForThreads();
     }
 
-    private Document downloadAndSaveHTML(String url) throws IOException {
+    private String cleanImageSrc(String imageSrc) {
+        imageSrc = imageSrc.replaceAll("https?://p[0-9]*\\.", "https?://up.");
+        imageSrc = imageSrc.replaceAll("_160\\.", "_1000.");
+        return imageSrc;
+    }
+
+    private Document downloadAndSaveHTML(URL url) throws IOException {
         Document doc = docs.get(url);
         if (doc == null) {
-            doc = Http.url(url).get();
-            docs.put(url, doc);
+            doc = Http.url(url.toExternalForm()).get();
+            docs.put(url.toExternalForm(), doc);
         }
-        String filename = url.replaceFirst("^http://.*/", "");
+        String filename = urlToFilename(url);
+        Files.write(Paths.get(getWorkingDir().getCanonicalPath() + File.separator + filename), doc.toString().getBytes());
+        return doc;
+    }
+
+    private static String urlToFilename(URL url) {
+        String filename = url.toExternalForm().replaceFirst("^https?://.*/", "").replaceFirst("#.*$", "");
         if (filename.contains("?") && filename.contains(".")) {
             int periodIdx = filename.lastIndexOf('.');
             int questionMarkIdx = filename.indexOf('?');
             String params = filename.substring(questionMarkIdx + 1).replaceAll("=", "-").replaceAll("&", "_");
             filename = filename.substring(0, periodIdx) + "_" + params + filename.substring(periodIdx, questionMarkIdx);
         }
-        Files.write(Paths.get(getWorkingDir().getCanonicalPath() + File.separator + filename), doc.toString().getBytes());
-        return doc;
+        return filename;
     }
 
     /**
@@ -105,19 +136,34 @@ public class XhamsterRipper extends AlbumRipper {
         Document doc = docs.get(url);
         if (doc == null) {
             try {
-                doc = Http.url(url).get(); // downloadAndSaveHTML(url.toString());
+                doc = Http.url(url).get();
                 docs.put(url.toString(), doc);
             } catch (IOException e) {
                 logger.error("Failed to download url=" + url + ": " + e.getMessage());
             }
         }
         if (doc != null) {
-            for (Element node : doc.select("#galleryUser .item a")) {
-                title += node.text() + "_";
+            for (Element link : doc.select("#galleryUser .item a")) {
+                title += link.text() + "_";
                 break;
             }
+            String galleryLink = "";
+            if (isGallery(url)) {
+                galleryLink = url.toExternalForm();
+            } else {
+                for (Element link : doc.select("#viewBox a")) {
+                    String href = link.attr("href");
+                    if (href.length() > 0 && !href.startsWith("#")) {
+                        galleryLink = href;
+                        break;
+                    }
+                }
+            }
+            title += galleryLink.toString()
+                .replaceFirst("^http.*/photos/gallery/([^?#]+).*$", "$1")
+                .replace('/', '-')
+                .replace(".html", "");
         }
-        title += url.toString().replaceFirst("^http.*/photos/gallery/([^?#]+).*$", "$1").replace('/', '-');
         return title;
     }
 
