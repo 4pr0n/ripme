@@ -1,8 +1,12 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +20,8 @@ import com.rarchives.ripme.utils.Utils;
 public class XhamsterRipper extends AlbumRipper {
 
     private static final String HOST = "xhamster";
+
+    private HashMap<String, Document> docs = new HashMap<String, Document>();
 
     public XhamsterRipper(URL url) throws IOException {
         super(url);
@@ -39,7 +45,7 @@ public class XhamsterRipper extends AlbumRipper {
         String nextURL = this.url.toExternalForm();
         while (nextURL != null) {
             logger.info("    Retrieving " + nextURL);
-            Document doc = Http.url(nextURL).get();
+            Document doc = downloadAndSaveHTML(nextURL);
             for (Element thumb : doc.select("table.iListing div.img img")) {
                 if (!thumb.hasAttr("src")) {
                     continue;
@@ -71,6 +77,48 @@ public class XhamsterRipper extends AlbumRipper {
             }
         }
         waitForThreads();
+    }
+
+    private Document downloadAndSaveHTML(String url) throws IOException {
+        Document doc = docs.get(url);
+        if (doc == null) {
+            doc = Http.url(url).get();
+            docs.put(url, doc);
+        }
+        String filename = url.replaceFirst("^http://.*/", "");
+        if (filename.contains("?") && filename.contains(".")) {
+            int periodIdx = filename.lastIndexOf('.');
+            int questionMarkIdx = filename.indexOf('?');
+            String params = filename.substring(questionMarkIdx + 1).replaceAll("=", "-").replaceAll("&", "_");
+            filename = filename.substring(0, periodIdx) + "_" + params + filename.substring(periodIdx, questionMarkIdx);
+        }
+        Files.write(Paths.get(getWorkingDir().getCanonicalPath() + File.separator + filename), doc.toString().getBytes());
+        return doc;
+    }
+
+    /**
+     * @todo prefix with uploader username
+     */
+    @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        String title = HOST + "_";
+        Document doc = docs.get(url);
+        if (doc == null) {
+            try {
+                doc = Http.url(url).get(); // downloadAndSaveHTML(url.toString());
+                docs.put(url.toString(), doc);
+            } catch (IOException e) {
+                logger.error("Failed to download url=" + url + ": " + e.getMessage());
+            }
+        }
+        if (doc != null) {
+            for (Element node : doc.select("#galleryUser .item a")) {
+                title += node.text() + "_";
+                break;
+            }
+        }
+        title += url.toString().replaceFirst("^http.*/photos/gallery/([^?#]+).*$", "$1").replace('/', '-');
+        return title;
     }
 
     @Override
