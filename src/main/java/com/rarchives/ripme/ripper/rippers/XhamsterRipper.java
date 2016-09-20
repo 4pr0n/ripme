@@ -21,9 +21,11 @@ public class XhamsterRipper extends AlbumRipper {
 
     private static final String HOST = "xhamster";
 
-    private static Pattern xhPattern = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/(?:gallery/([0-9]+).*|view/([0-9]+)-([0-9]+)\\.html(?:.*)?)$");
+    private static Pattern xhPattern = Pattern.compile("^https?://[wmde.]*" + HOST + "\\.com/photos/(?:gallery/([0-9]+).*|view/([0-9]+)-([0-9]+)\\.html(?:.*)?)$");
 
     private HashMap<String, Document> docs = new HashMap<String, Document>();
+
+    private HashMap<String, String> cookies = null;
 
     public XhamsterRipper(URL url) throws IOException {
         super(url);
@@ -61,7 +63,7 @@ public class XhamsterRipper extends AlbumRipper {
         Document doc = downloadAndSaveHTML(this.url);
         for (Element element : doc.select("img#imgSized")) {
             String image = cleanImageSrc(element.attr("src"));
-            addURLToDownload(new URL(image), "");
+            addURLToDownload(new URL(image), "", "", url.toExternalForm(), Utils.getCookies(HOST));
         }
         waitForThreads();
     }
@@ -108,7 +110,7 @@ public class XhamsterRipper extends AlbumRipper {
     private Document downloadAndSaveHTML(URL url) throws IOException {
         Document doc = docs.get(url);
         if (doc == null) {
-            doc = Http.url(url.toExternalForm()).get();
+            doc = Http.url(url).referrer(url).cookies(Utils.getCookies(HOST)).get();
             docs.put(url.toExternalForm(), doc);
         }
         String filename = urlToFilename(url);
@@ -117,7 +119,7 @@ public class XhamsterRipper extends AlbumRipper {
     }
 
     private static String urlToFilename(URL url) {
-        String filename = url.toExternalForm().replaceFirst("^https?://.*/", "").replaceFirst("#.*$", "");
+        String filename = url.toExternalForm().replaceFirst("^https?://.*/", "").replaceFirst("[#&:].*$", "");
         if (filename.contains("?") && filename.contains(".")) {
             int periodIdx = filename.lastIndexOf('.');
             int questionMarkIdx = filename.indexOf('?');
@@ -136,34 +138,33 @@ public class XhamsterRipper extends AlbumRipper {
         Document doc = docs.get(url);
         if (doc == null) {
             try {
-                doc = Http.url(url).get();
+                doc = Http.url(url).referrer(url).cookies(Utils.getCookies(HOST)).get();
                 docs.put(url.toString(), doc);
             } catch (IOException e) {
                 logger.error("Failed to download url=" + url + ": " + e.getMessage());
             }
         }
+        // Find username.
         if (doc != null) {
             for (Element link : doc.select("#galleryUser .item a")) {
                 title += link.text() + "_";
                 break;
             }
-            String galleryLink = "";
-            if (isGallery(url)) {
-                galleryLink = url.toExternalForm();
-            } else {
-                for (Element link : doc.select("#viewBox a")) {
-                    String href = link.attr("href");
-                    if (href.length() > 0 && !href.startsWith("#")) {
-                        galleryLink = href;
-                        break;
-                    }
+        }
+        String galleryLink = url.toExternalForm();
+        if (!isGallery(url) && doc != null) {
+            for (Element link : doc.select("#viewBox a")) {
+                String href = link.attr("href");
+                if (href.length() > 0 && !href.startsWith("#")) {
+                    galleryLink = href;
+                    break;
                 }
             }
-            title += galleryLink.toString()
-                .replaceFirst("^http.*/photos/gallery/([^?#]+).*$", "$1")
-                .replace('/', '-')
-                .replace(".html", "");
         }
+        title += galleryLink
+            .replaceFirst("^http.*/photos/(?:gallery/([^?#:&]+)|view/([^-]+)-).*$", "$1$2")
+            .replace('/', '-')
+            .replace(".html", "");
         return title;
     }
 
@@ -174,15 +175,14 @@ public class XhamsterRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://([a-z0-9.]*?)xhamster\\.com/photos/gallery/([0-9]{1,})/.*\\.html");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(2);
-        }
-        throw new MalformedURLException(
+        String gid = url.toExternalForm().replaceFirst("^https?://(?:[a-z0-9.]*?)" + HOST + "\\.com/photos/(?:gallery/([0-9]{1,})/.*\\.html|view/([^-]+)-).*$", "$1$2");
+        if (gid.length() == 0) {
+            throw new MalformedURLException(
                 "Expected xhamster.com gallery formats: "
-                        + "xhamster.com/photos/gallery/#####/xxxxx..html"
-                        + " Got: " + url);
+                + "http://xhamster.com/photos/gallery/#####/xxxxx..html or http://xhamster.com/photos/view/####-####.html"
+                + " Got: " + url);
+        }
+        return gid;
     }
 
 }

@@ -9,7 +9,9 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -386,5 +388,18 @@ public class Utils {
             i = fullText.indexOf(start, j + finish.length());
         }
         return result;
+    }
+
+    public static Map<String, String> getCookies(String host) {
+        HashMap<String, String> domainCookies = new HashMap<String, String>();
+        String cookiesConfig = getConfigString("cookies." + host, "");
+        for (String pair : cookiesConfig.split(" ")) {
+            pair = pair.trim();
+            if (pair.contains("=")) {
+                String[] pieces = pair.split("=", 2);
+                domainCookies.put(pieces[0], pieces[1]);
+            }
+        }
+        return domainCookies;
     }
 }
