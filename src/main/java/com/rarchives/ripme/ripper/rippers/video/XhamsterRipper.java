@@ -6,7 +6,9 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.rarchives.ripme.utils.Utils;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.VideoRipper;
@@ -39,28 +41,48 @@ public class XhamsterRipper extends VideoRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://.*xhamster\\.com/movies/([0-9]+).*$");
-        Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
-
-        throw new MalformedURLException(
+        String gid = url.toExternalForm().replaceFirst("^https?://.*" + HOST + "\\.com/movies/([0-9]+)/.*$", "$1");
+        if (gid.length() == 0) {
+            throw new MalformedURLException(
                 "Expected xhamster format:"
-                        + "xhamster.com/movies/####"
-                        + " Got: " + url);
+                + "xhamster.com/movies/####"
+                + " Got: " + url);
+
+        }
+        return gid;
     }
 
     @Override
     public void rip() throws IOException {
-        logger.info("Retrieving " + this.url);
+        logger.info("Retrieving " + url);
         Document doc = Http.url(url).get();
         Elements videos = doc.select("a.mp4Thumb");
         if (videos.size() == 0) {
             throw new IOException("Could not find Embed code at " + url);
         }
         String vidUrl = videos.attr("href");
-        addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
+        addURLToDownload(new URL(vidUrl), getVideoName(), "", url.toExternalForm(), Utils.getCookies(HOST));
         waitForThreads();
+    }
+
+    private String getVideoName() throws IOException {
+        String title = HOST + "_";
+        try {
+            Document doc = Http.url(url).referrer(url).cookies(Utils.getCookies(HOST)).get();
+            for (Element link : doc.select("#videoUser a")) {
+                title += link.text() + "_";
+                break;
+            }
+            title += url.toExternalForm().replaceFirst("^https?://.*" + HOST + "\\.com/movies/([0-9]+)/([^\\.]+).*$", "$1_$2");
+        } catch (IOException e) {
+            logger.error("Exception retrieving url=" + url + ": " + e.getMessage());
+            try {
+                title += getGID(url);
+            } catch (MalformedURLException malformedEx) {
+                throw new IOException(malformedEx.getMessage());
+            }
+        }
+        title += "_";
+        return title;
     }
 }
