@@ -8,6 +8,7 @@ import java.util.regex.Pattern;
 
 import com.rarchives.ripme.utils.Utils;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.VideoRipper;
@@ -60,7 +61,30 @@ public class XhamsterRipper extends VideoRipper {
             throw new IOException("Could not find Embed code at " + url);
         }
         String vidUrl = videos.attr("href");
-        addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url), "", url.toExternalForm(), Utils.getCookies(HOST));
+        addURLToDownload(new URL(vidUrl), getVideoName(), "", url.toExternalForm(), Utils.getCookies(HOST));
         waitForThreads();
     }
+
+    private String getVideoName() throws IOException {
+        String title = HOST + "_";
+        try {
+            Document doc = Http.url(url).header("User-Agent", USER_AGENT).referrer(url).cookies(Utils.getCookies(HOST)).get();
+            Element link = doc.select("#videoUser a").first();
+            if (link != null) {
+                title += link.text() + "_";
+            }
+        } catch (IOException e) {
+            logger.error("Exception retrieving url=" + url + ": " + e.getMessage());
+            try {
+                title += getGID(url);
+            } catch (MalformedURLException malformedEx) {
+                throw new IOException(malformedEx.getMessage());
+            }
+        }
+        title += url.toExternalForm()
+            .replaceFirst("^https?://.*" + HOST + "\\.com/movies/([0-9]+)/([^\\.]+).*$", "$1_$2_")
+            .replaceAll("_+", "_");
+        return title;
+    }
+
 }
