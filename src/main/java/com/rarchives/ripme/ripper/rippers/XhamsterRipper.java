@@ -21,6 +21,8 @@ public class XhamsterRipper extends AlbumRipper {
 
     private static final String HOST = "xhamster";
 
+    private static Pattern xhPattern = Pattern.compile("^https?://[a-z.]*" + HOST + "\\.com/photos/(?:gallery/([0-9]+).*|view/([0-9]+)-([0-9]+)\\.html(?:.*)?)$");
+
     private HashMap<String, Document> docs = new HashMap<String, Document>();
 
     public XhamsterRipper(URL url) throws IOException {
@@ -29,8 +31,7 @@ public class XhamsterRipper extends AlbumRipper {
 
     @Override
     public boolean canRip(URL url) {
-        Pattern p = Pattern.compile("^https?://[wmde.]*xhamster\\.com/photos/gallery/[0-9]+.*$");
-        Matcher m = p.matcher(url.toExternalForm());
+        Matcher m = xhPattern.matcher(url.toExternalForm());
         return m.matches();
     }
 
@@ -41,22 +42,41 @@ public class XhamsterRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
+        if (isGallery(url)) {
+            ripGallery();
+        } else {
+            ripPhoto();
+        }
+    }
+
+    private static boolean isGallery(URL url) {
+        Matcher m = xhPattern.matcher(url.toExternalForm());
+        if (!m.matches()) {
+            return false;
+        }
+        return m.group(3) == null || m.group(3).length() == 0; // Is a gallery.
+    }
+
+    private void ripPhoto() throws IOException {
+        Document doc = downloadAndSaveHTML(url);
+        for (Element element : doc.select("img#imgSized")) {
+            String image = cleanImageSrc(element.attr("src"));
+            addURLToDownload(new URL(image), "", "", url.toExternalForm(), Utils.getCookies(HOST));
+        }
+        waitForThreads();
+    }
+
+    private void ripGallery() throws IOException {
         int index = 0;
-        String nextURL = this.url.toExternalForm();
+        String nextURL = url.toExternalForm();
         while (nextURL != null) {
             logger.info("    Retrieving " + nextURL);
-            Document doc = downloadAndSaveHTML(nextURL);
+            Document doc = downloadAndSaveHTML(new URL(nextURL));
             for (Element thumb : doc.select("table.iListing div.img img")) {
                 if (!thumb.hasAttr("src")) {
                     continue;
                 }
-                String image = thumb.attr("src");
-                image = image.replaceAll(
-                        "http://p[0-9]*\\.",
-                        "http://up.");
-                image = image.replaceAll(
-                        "_160\\.",
-                        "_1000.");
+                String image = cleanImageSrc(thumb.attr("src"));
                 index += 1;
                 String prefix = "";
                 if (Utils.getConfigBoolean("download.save_order", true)) {
@@ -79,32 +99,41 @@ public class XhamsterRipper extends AlbumRipper {
         waitForThreads();
     }
 
-    private Document downloadAndSaveHTML(String url) throws IOException {
-        Document doc = docs.get(url);
+    private String cleanImageSrc(String imageSrc) {
+        imageSrc = imageSrc.replaceAll("https?://p[0-9]*\\.", "https?://up.");
+        imageSrc = imageSrc.replaceAll("_160\\.", "_1000.");
+        return imageSrc;
+    }
+
+    private Document downloadAndSaveHTML(URL url) throws IOException {
+        String urlString = url.toExternalForm();
+        Document doc = docs.get(urlString);
         if (doc == null) {
             doc = Http.url(url).header("User-Agent", USER_AGENT).referrer(url).cookies(Utils.getCookies(HOST)).get();
-            docs.put(url, doc);
+            docs.put(urlString, doc);
         }
-        String filename = url.replaceFirst("^http://.*/", "");
+        String filename = urlToFilename(url);
+        Files.write(Paths.get(getWorkingDir().getCanonicalPath() + File.separator + filename), doc.toString().getBytes());
+        return doc;
+    }
+
+    private static String urlToFilename(URL url) {
+        String filename = url.toExternalForm().replaceFirst("^https?://.*/", "").replaceFirst("[#&:].*$", "");
         if (filename.contains("?") && filename.contains(".")) {
             int periodIdx = filename.lastIndexOf('.');
             int questionMarkIdx = filename.indexOf('?');
             String params = filename.substring(questionMarkIdx + 1).replaceAll("=", "-").replaceAll("&", "_");
             filename = filename.substring(0, periodIdx) + "_" + params + filename.substring(periodIdx, questionMarkIdx);
         }
-        Files.write(Paths.get(getWorkingDir().getCanonicalPath() + File.separator + filename), doc.toString().getBytes());
-        return doc;
+        return filename;
     }
 
-    /**
-     * @todo prefix with uploader username
-     */
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         String title = HOST + "_";
         Document doc = null;
         try {
-            doc = downloadAndSaveHTML(url.toString());
+            doc = downloadAndSaveHTML(url);
         } catch (IOException e) {
             logger.error("Exception retrieving url=" + url + ": " + e.getMessage());
             title += getGID(url);
@@ -114,9 +143,27 @@ public class XhamsterRipper extends AlbumRipper {
             Element link = doc.select("#galleryUser .item a").first();
             if (link != null) {
                 title += link.text() + "_";
+            } else {
+                logger.warn("No username was found in the contents of url=" + url);
             }
+        } else {
+            logger.warn("No username could be retrieved for url=" + url);
         }
         String galleryLink = url.toExternalForm();
+        if (!isGallery(url) && doc != null) {
+            for (Element link : doc.select("#viewBox a")) {
+                if (link != null) {
+                    String href = link.attr("href");
+                    if (href.length() > 0 && !href.startsWith("#")) {
+                        galleryLink = href;
+                        break;
+                    }
+                }
+            }
+            if (galleryLink == url.toExternalForm()) {
+                logger.warn("No gallery title link was found for url=" + url);
+            }
+        }
         title += galleryLink
             .replaceFirst("^http.*/photos/(?:gallery/([^?#:&]+)|view/([^-]+)-).*$", "$1$2")
             .replace('/', '-')
