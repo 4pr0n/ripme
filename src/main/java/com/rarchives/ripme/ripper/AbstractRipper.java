@@ -106,23 +106,9 @@ public abstract class AbstractRipper
             return false;
         }
         logger.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies);
-        String saveAs = url.toExternalForm();
-        saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
-        if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
-        if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
-        if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
-        if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
         File saveFileAs;
         try {
-            if (!subdirectory.equals("")) {
-                subdirectory = File.separator + subdirectory;
-            }
-            saveFileAs = new File(
-                    workingDir.getCanonicalPath()
-                    + subdirectory
-                    + File.separator
-                    + prefix
-                    + saveAs);
+            saveFileAs = getSaveAsFile(url, prefix, subdirectory);
         } catch (IOException e) {
             logger.error("[!] Error creating save file path for URL '" + url + "':", e);
             return false;
@@ -134,7 +120,26 @@ public abstract class AbstractRipper
         }
         return addURLToDownload(url, saveFileAs, referrer, cookies);
     }
-    
+
+    protected File getSaveAsFile(URL url, String prefix, String subdirectory) throws IOException {
+        String saveAs = url.toExternalForm();
+        saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
+        if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
+        if (saveAs.indexOf('#') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('#')); }
+        if (saveAs.indexOf('&') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('&')); }
+        if (saveAs.indexOf(':') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf(':')); }
+        File saveFileAs;
+        if (!subdirectory.equals("")) {
+            subdirectory = File.separator + subdirectory;
+        }
+        saveFileAs = new File(
+            workingDir.getCanonicalPath()
+            + subdirectory
+            + File.separator
+            + prefix
+            + saveAs);
+        return saveFileAs;
+    }
     
     /**
      * Queues file to be downloaded and saved. With options.
