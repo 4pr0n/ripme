@@ -1,10 +1,12 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,7 +45,7 @@ public class XhamsterRipper extends AlbumRipper {
         String nextURL = this.url.toExternalForm();
         while (nextURL != null) {
             logger.info("    Retrieving " + nextURL);
-            Document doc = Http.url(nextURL).header("User-Agent", USER_AGENT).referrer("http://" + HOST + ".com/").cookies(Utils.getCookies(HOST)).get();
+            Document doc = downloadAndSaveHTML(nextURL);
             for (Element thumb : doc.select("table.iListing div.img img")) {
                 if (!thumb.hasAttr("src")) {
                     continue;
@@ -77,26 +79,41 @@ public class XhamsterRipper extends AlbumRipper {
         waitForThreads();
     }
 
+    private Document downloadAndSaveHTML(String url) throws IOException {
+        Document doc = docs.get(url);
+        if (doc == null) {
+            doc = Http.url(url).header("User-Agent", USER_AGENT).referrer(url).cookies(Utils.getCookies(HOST)).get();
+            docs.put(url, doc);
+        }
+        String filename = url.replaceFirst("^http://.*/", "");
+        if (filename.contains("?") && filename.contains(".")) {
+            int periodIdx = filename.lastIndexOf('.');
+            int questionMarkIdx = filename.indexOf('?');
+            String params = filename.substring(questionMarkIdx + 1).replaceAll("=", "-").replaceAll("&", "_");
+            filename = filename.substring(0, periodIdx) + "_" + params + filename.substring(periodIdx, questionMarkIdx);
+        }
+        Files.write(Paths.get(getWorkingDir().getCanonicalPath() + File.separator + filename), doc.toString().getBytes());
+        return doc;
+    }
+
     /**
      * @todo prefix with uploader username
      */
     @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         String title = HOST + "_";
-        Document doc = docs.get(url);;
-        if (doc == null) {
-            try {
-                doc = Http.url(url).header("User-Agent", USER_AGENT).referrer(url).cookies(Utils.getCookies(HOST)).get();
-                docs.put(url.toString(), doc);
-            } catch (IOException e) {
-                logger.error("Failed to download url=" + url + ": " + e.getMessage());
-            }
+        Document doc = null;
+        try {
+            doc = downloadAndSaveHTML(url.toString());
+        } catch (IOException e) {
+            logger.error("Exception retrieving url=" + url + ": " + e.getMessage());
+            title += getGID(url);
         }
-        // Find username.
         if (doc != null) {
-            for (Element link : doc.select("#galleryUser .item a")) {
+            // Find username.
+            Element link = doc.select("#galleryUser .item a").first();
+            if (link != null) {
                 title += link.text() + "_";
-                break;
             }
         }
         String galleryLink = url.toExternalForm();
