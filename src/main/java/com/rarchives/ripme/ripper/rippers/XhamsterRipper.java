@@ -113,7 +113,9 @@ public class XhamsterRipper extends AlbumRipper {
             docs.put(urlString, doc);
         }
         String filename = urlToFilename(url);
-        Files.write(Paths.get(getWorkingDir().getCanonicalPath() + File.separator + filename), doc.toString().getBytes());
+        if (getWorkingDir() != null) {
+            Files.write(Paths.get(getWorkingDir().getCanonicalPath() + File.separator + filename), doc.toString().getBytes());
+        }
         return doc;
     }
 
