@@ -92,7 +92,9 @@ public class XhamsterRipper extends AlbumRipper {
             String params = filename.substring(questionMarkIdx + 1).replaceAll("=", "-").replaceAll("&", "_");
             filename = filename.substring(0, periodIdx) + "_" + params + filename.substring(periodIdx, questionMarkIdx);
         }
-        Files.write(Paths.get(getWorkingDir().getCanonicalPath() + File.separator + filename), doc.toString().getBytes());
+        if (getWorkingDir() != null) {
+            Files.write(Paths.get(getWorkingDir().getCanonicalPath() + File.separator + filename), doc.toString().getBytes());
+        }
         return doc;
     }
 
