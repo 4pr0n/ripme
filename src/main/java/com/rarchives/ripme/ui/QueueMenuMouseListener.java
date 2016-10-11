@@ -1,9 +1,12 @@
 package com.rarchives.ripme.ui;
 
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Clipboard;
 import java.awt.event.ActionEvent;
 import java.awt.event.InputEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.Toolkit;
 import java.util.Enumeration;
 
 import javax.swing.AbstractAction;
@@ -16,13 +19,32 @@ import com.rarchives.ripme.utils.Utils;
 
 public class QueueMenuMouseListener extends MouseAdapter {
     private JPopupMenu popup = new JPopupMenu();
-    private Action removeSelected,
+    private Action copySelected,
+                   removeSelected,
                    clearQueue;
     private JList queueList;
     private DefaultListModel queueListModel;
 
     @SuppressWarnings("serial")
     public QueueMenuMouseListener() {
+
+        copySelected = new AbstractAction("Copy Selected") {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                StringBuffer selection = new StringBuffer();
+                for (Object value : queueList.getSelectedValuesList()) {
+                    if (selection.length() > 0) {
+                        selection.append('\n');
+                    }
+                    selection.append(value);
+                }
+                StringSelection stringSelection = new StringSelection(selection.toString());
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                clipboard.setContents(stringSelection, stringSelection);
+                updateUI();
+            }
+        };
+        popup.add(copySelected);
 
         removeSelected = new AbstractAction("Remove Selected") {
             @Override
