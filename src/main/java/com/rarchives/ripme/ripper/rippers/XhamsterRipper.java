@@ -23,8 +23,6 @@ public class XhamsterRipper extends AlbumRipper {
 
     private static Pattern xhPattern = Pattern.compile("^https?://[a-z.]*" + HOST + "\\.com/photos/(?:gallery/([0-9]+).*|view/([0-9]+)-([0-9]+)\\.html(?:.*)?)$");
 
-    private HashMap<String, Document> docs = new HashMap<String, Document>();
-
     public XhamsterRipper(URL url) throws IOException {
         super(url);
     }
@@ -103,31 +101,6 @@ public class XhamsterRipper extends AlbumRipper {
         imageSrc = imageSrc.replaceAll("https?://p[0-9]*\\.", "https?://up.");
         imageSrc = imageSrc.replaceAll("_160\\.", "_1000.");
         return imageSrc;
-    }
-
-    private Document downloadAndSaveHTML(URL url) throws IOException {
-        String urlString = url.toExternalForm();
-        Document doc = docs.get(urlString);
-        if (doc == null) {
-            doc = Http.url(url).header("User-Agent", USER_AGENT).referrer(url).cookies(Utils.getCookies(HOST)).get();
-            docs.put(urlString, doc);
-        }
-        String filename = urlToFilename(url);
-        if (getWorkingDir() != null) {
-            Files.write(Paths.get(getWorkingDir().getCanonicalPath() + File.separator + filename), doc.toString().getBytes());
-        }
-        return doc;
-    }
-
-    private static String urlToFilename(URL url) {
-        String filename = url.toExternalForm().replaceFirst("^https?://.*/", "").replaceFirst("[#&:].*$", "");
-        if (filename.contains("?") && filename.contains(".")) {
-            int periodIdx = filename.lastIndexOf('.');
-            int questionMarkIdx = filename.indexOf('?');
-            String params = filename.substring(questionMarkIdx + 1).replaceAll("=", "-").replaceAll("&", "_");
-            filename = filename.substring(0, periodIdx) + "_" + params + filename.substring(periodIdx, questionMarkIdx);
-        }
-        return filename;
     }
 
     @Override
