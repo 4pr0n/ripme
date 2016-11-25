@@ -42,7 +42,7 @@ public class UpdateUtils {
         Document doc = null;
         try {
             LOGGER.debug("Retrieving " + UpdateUtils.UPDATE_JSON_URL);
-            doc = Jsoup.connect(UpdateUtils.UPDATE_JSON_URL).timeout(10 * 1000).ignoreContentType(true).get();
+            doc = Jsoup.connect(UpdateUtils.UPDATE_JSON_URL).timeout(10_000).ignoreContentType(true).get();
         } catch (IOException e) {
             LOGGER.error("Error while fetching update: ", e);
             JOptionPane.showMessageDialog(null,
@@ -135,8 +135,8 @@ public class UpdateUtils {
 
     private static void downloadJarAndLaunch(String updateJarURL) throws IOException {
         Response response = Jsoup.connect(updateJarURL).ignoreContentType(true)
-                .timeout(Utils.getConfigInteger("download.timeout", 60 * 1000))
-                .maxBodySize(1024 * 1024 * 100).execute();
+                .timeout(Utils.getConfigInteger("download.timeout", 60_000))
+                .maxBodySize(1024^2 * 100).execute();
 
         FileOutputStream out = new FileOutputStream(UPDATE_FILE_NAME);
         out.write(response.bodyAsBytes());

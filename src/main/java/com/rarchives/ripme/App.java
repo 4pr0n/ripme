@@ -120,10 +120,10 @@ public class App {
         try {
             URL url = new URL(targetURL);
             rip(url);
-            List<String> history = Utils.getConfigList("download.history");
+            List<String> history = Utils.getConfigList(DOWNLOAD_HISTORY);
             if (!history.contains(url.toExternalForm())) {
                 history.add(url.toExternalForm());
-                Utils.setConfigList("download.history", Arrays.asList(history.toArray()));
+                Utils.setConfigList(DOWNLOAD_HISTORY, Arrays.asList(history.toArray()));
                 if (saveConfig) {
                     Utils.saveConfig();
                 }

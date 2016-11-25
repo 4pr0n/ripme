@@ -176,34 +176,22 @@ public class RipUtils {
             url = urlFromSiteDirectoryName(dir, "imgbox", HTTP + "imgbox.com/g/", "");
         if (url == null)
             url = urlFromSiteDirectoryName(dir, "modelmayhem", HTTP + "www.modelmayhem.com/", "");
-        /*
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        if (url == null) url = urlFromSiteDirectoryName(dir, "", "", "");
-        */
         //if (url == null) url = urlFromSiteDirectoryName(dir, "8muses",      "http://www.8muses.com/index/category/", "");
         return url;
     }
 
     private static String urlFromSiteDirectoryName(String dir, String site, String before, String after) {
-        if (!dir.startsWith(site + "_")) {
+        if (!dir.startsWith(site + "_"))
             return null;
-        }
+
         dir = dir.substring((site + "_").length());
         return before + dir + after;
     }
 
     private static String urlFromRedditDirectoryName(String dir) {
-        if (!dir.startsWith("reddit_")) {
+        if (!dir.startsWith("reddit_"))
             return null;
-        }
+
         String url = null;
         String[] fields = dir.split("_");
         switch (fields[0]) {
@@ -221,28 +209,30 @@ public class RipUtils {
     }
 
     private static String urlFromImagefapDirectoryName(String dir) {
-        if (!dir.startsWith("imagefap")) {
+        if (!dir.startsWith("imagefap"))
             return null;
-        }
+
         String url;
         dir = dir.substring("imagefap_".length());
-        if (NumberUtils.isDigits(dir)) {
+
+        if (NumberUtils.isDigits(dir))
             url = HTTP + "www.imagefap.com/gallery.php?gid=" + dir;
-        } else {
+        else
             url = HTTP + "www.imagefap.com/gallery.php?pgid=" + dir;
-        }
+
         return url;
     }
 
     private static String urlFromDeviantartDirectoryName(String dir) {
-        if (!dir.startsWith("deviantart")) {
+        if (!dir.startsWith("deviantart"))
             return null;
-        }
+
         dir = dir.substring("deviantart_".length());
         String url;
-        if (!dir.contains("_")) {
+
+        if (!dir.contains("_"))
             url = HTTP + dir + ".deviantart.com/";
-        } else {
+        else {
             String[] fields = dir.split("_");
             url = HTTP + fields[0] + ".deviantart.com/gallery/" + fields[1];
         }
@@ -290,4 +280,5 @@ public class RipUtils {
         }
         return url;
     }
+
 }

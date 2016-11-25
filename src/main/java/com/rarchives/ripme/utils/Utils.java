@@ -42,23 +42,20 @@ public class Utils {
         try {
             String configPath = getConfigPath();
             File f = new File(configPath);
-            if (!f.exists()) {
-                // Use default bundled with .jar
+
+            // Use default bundled with .jar
+            if (!f.exists())
                 configPath = CONFIG_FILE;
-            }
+
             config = new PropertiesConfiguration(configPath);
             LOGGER.info(LOADED + config.getPath());
 
             if (f.exists()) {
                 // Config was loaded from file
-                if (!config.containsKey("twitter.auth")
-                        || !config.containsKey("twitter.max_requests")
-                        || !config.containsKey("tumblr.auth")
-                        || !config.containsKey("error.skip404")
-                        || !config.containsKey("gw.api")
-                        || !config.containsKey("page.timeout")
-                        || !config.containsKey("download.max_size")
-                        ) {
+                if (!config.containsKey("twitter.auth") || !config.containsKey("twitter.max_requests")
+                        || !config.containsKey("tumblr.auth") || !config.containsKey("error.skip404")
+                        || !config.containsKey("gw.api") || !config.containsKey("page.timeout")
+                        || !config.containsKey("download.max_size")) {
                     // Config is missing key fields
                     // Need to reload the default config
                     // See https://github.com/4pr0n/ripme/issues/158
@@ -203,9 +200,8 @@ public class Utils {
                     c = "?";
 
                 url = url.substring(0, paramIndex) + c + url.substring(nextParam + 1, url.length());
-            } else {
+            } else
                 url = url.substring(0, paramIndex);
-            }
         }
 
         return url;
@@ -252,13 +248,16 @@ public class Utils {
         if (directory != null && directory.exists()) {
             // Get the list of the files contained in the package
             String[] files = directory.list();
-            for (String file : files) {
-                if (file.endsWith(".class") && !file.contains("$")) {
-                    String className = pkgname + '.' + file.substring(0, file.length() - 6);
-                    try {
-                        classes.add(Class.forName(className));
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException("ClassNotFoundException loading " + className, e);
+
+            if (files != null) {
+                for (String file : files) {
+                    if (file.endsWith(".class") && !file.contains("$")) {
+                        String className = pkgname + '.' + file.substring(0, file.length() - 6);
+                        try {
+                            classes.add(Class.forName(className));
+                        } catch (ClassNotFoundException e) {
+                            throw new RuntimeException("ClassNotFoundException loading " + className, e);
+                        }
                     }
                 }
             }

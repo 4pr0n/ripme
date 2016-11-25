@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class Http {
 
-    public static final int TIMEOUT = Utils.getConfigInteger("page.timeout", 5 * 1000);
+    public static final int TIMEOUT = Utils.getConfigInteger("page.timeout", 5_000);
     private static final Logger LOGGER = Logger.getLogger(AbstractRipper.class);
 
     private int retries;
