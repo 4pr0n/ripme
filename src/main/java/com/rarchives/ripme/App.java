@@ -11,8 +11,7 @@ import org.apache.commons.cli.*;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -89,40 +88,56 @@ public class App {
             if (cl.hasOption('l'))
                 Utils.setConfigString("rips.directory", cl.getOptionValue('l'));
 
-            if (cl.hasOption('u'))
-                hasUOption(cl);
+            if (cl.hasOption('f')) {
+                try {
+                    String filename = cl.getOptionValue('f');
+
+                    String url;
+                    BufferedReader br = new BufferedReader(new FileReader(filename));
+                    while ((url = br.readLine()) != null) {
+                        // loop through each url in the file and proces each url individually.
+                        ripURL(url.trim(), cl.hasOption("n"));
+                    }
+
+                } catch (FileNotFoundException fne) {
+                    LOGGER.error("[!] File containing list of URLs not found. Cannot continue.", fne);
+                } catch (IOException ioe) {
+                    LOGGER.error("[!] Failed reading file containing list of URLs. Cannot continue.", ioe);
+                }
+
+            }
+
+            if (cl.hasOption('u')) {
+                String url = cl.getOptionValue('u').trim();
+                ripURL(url, cl.hasOption("n"));
+            }
+
         }
     }
 
-    /**
-     * Method for execute action to letter "u" in command line
-     *
-     * @param commandLine CommandLine object
-     */
-    private static void hasUOption(CommandLine commandLine) {
-        // User provided URL, rip it.
+    // this function will attempt to rip the provided url
+    public static void ripURL(String targetURL, boolean saveConfig) {
         try {
-            URL url = new URL(commandLine.getOptionValue('u').trim());
+            URL url = new URL(targetURL);
             rip(url);
-            List<String> history = Utils.getConfigList(DOWNLOAD_HISTORY);
-
+            List<String> history = Utils.getConfigList("download.history");
             if (!history.contains(url.toExternalForm())) {
                 history.add(url.toExternalForm());
-                Utils.setConfigList(DOWNLOAD_HISTORY, Arrays.asList(history.toArray()));
-
-                if (!commandLine.hasOption("n"))
+                Utils.setConfigList("download.history", Arrays.asList(history.toArray()));
+                if (saveConfig) {
                     Utils.saveConfig();
+                }
             }
         } catch (MalformedURLException e) {
-            LOGGER.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
-            System.exit(-1);
+            LOGGER.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...", e);
+            // System.exit(-1);
         } catch (Exception e) {
-            LOGGER.error("[!] Error while ripping URL " + commandLine.getOptionValue('u'), e);
-            System.exit(-1);
+            LOGGER.error("[!] Error while ripping URL " + targetURL, e);
+            // System.exit(-1);
         }
     }
 
-    private static void hasRUpperOption(){
+    private static void hasRUpperOption() {
         loadHistory();
 
         if (HISTORY.toList().isEmpty()) {
@@ -158,7 +173,7 @@ public class App {
         }
     }
 
-    private static void hasRLowerOption(){
+    private static void hasRLowerOption() {
         // Re-rip all via command-line
         List<String> history = Utils.getConfigList(DOWNLOAD_HISTORY);
         for (String urlString : history) {
@@ -194,11 +209,12 @@ public class App {
         opts.addOption("4", "skip404", false, "Don't retry after a 404 (not found) error");
         opts.addOption("l", "ripsdirectory", true, "Rips Directory (Default: ./rips)");
         opts.addOption("n", "no-prop-file", false, "Do not create properties file.");
+        opts.addOption("f", "urls-file", true, "Rip URLs from a file.");
         return opts;
     }
 
     public static CommandLine getArgs(String[] args) {
-        DefaultParser  parser = new DefaultParser();
+        DefaultParser parser = new DefaultParser();
         try {
             return parser.parse(getOptions(), args, false);
         } catch (ParseException e) {
