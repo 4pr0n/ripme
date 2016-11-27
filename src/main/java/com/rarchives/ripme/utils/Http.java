@@ -21,7 +21,7 @@ import java.util.Map;
  */
 public class Http {
 
-    public static final int TIMEOUT = Utils.getConfigInteger("page.timeout", 5 * 1000);
+    public static final int TIMEOUT = Utils.getConfigInteger("page.timeout", 5_000);
     private static final Logger LOGGER = Logger.getLogger(AbstractRipper.class);
 
     private int retries;
@@ -139,8 +139,8 @@ public class Http {
         int retries = this.retries;
         while (--retries >= 0) {
             try {
-                response = connection.execute();
-                return response;
+                //response
+                return connection.execute();
             } catch (IOException e) {
                 LOGGER.warn("Error while loading " + url, e);
                 lastException = e;

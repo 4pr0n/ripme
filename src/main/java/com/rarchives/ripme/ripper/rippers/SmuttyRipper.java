@@ -82,7 +82,7 @@ public class SmuttyRipper extends AlbumRipper {
 
                     sb.append(fields[i]);
                     if (i < fields.length - 1)
-                        sb.append("/");
+                        sb.append('/');
                 }
 
                 imageUrl = sb.toString();

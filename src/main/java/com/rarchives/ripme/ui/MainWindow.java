@@ -42,6 +42,19 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
     private static final Color GREEN = Color.decode("#00897B");
     private static final Color RED = Color.decode("#F44336");
+    private static final String CLIPBOARD_AUTORIP = "clipboard.autorip";
+    private static final String ALBUM_TITLES_SAVE = "album_titles.save";
+    private static final String URLS_ONLY_SAVE = "urls_only.save";
+    private static final String LOG_SAVE = "log.save";
+    private static final String DOWNLOAD_SAVE_ORDER = "download.save_order";
+    private static final String AUTO_UPDATE = "auto.update";
+    private static final String FILE_OVERWRITE = "file.overwrite";
+    private static final String DESCRIPTIONS_SAVE = "descriptions.save";
+    private static final String PREFER_MP4 = "prefer.mp4";
+    private static final String RIPPER = "Ripper";
+    private static final String HIDE = "Hide";
+    private static final String SHOW = "Show";
+    private static final String HISTORY_JSON = "history.json";
 
     private boolean isRipping = false; // Flag to indicate if we're ripping something
 
@@ -123,11 +136,11 @@ public class MainWindow implements Runnable, RipStatusHandler {
         };
         Runtime.getRuntime().addShutdownHook(shutdownThread);
 
-        if (Utils.getConfigBoolean("auto.update", true)) {
+        if (Utils.getConfigBoolean(AUTO_UPDATE, true)) {
             upgradeProgram();
         }
 
-        boolean autoripEnabled = Utils.getConfigBoolean("clipboard.autorip", false);
+        boolean autoripEnabled = Utils.getConfigBoolean(CLIPBOARD_AUTORIP, false);
         ClipboardUtils.setClipboardAutoRip(autoripEnabled);
         trayMenuAutorip.setState(autoripEnabled);
     }
@@ -149,22 +162,22 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void shutdownCleanup() {
-        Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected());
+        Utils.setConfigBoolean(FILE_OVERWRITE, configOverwriteCheckbox.isSelected());
         Utils.setConfigInteger("threads.size", Integer.parseInt(configThreadsText.getText()));
         Utils.setConfigInteger("download.retries", Integer.parseInt(configRetriesText.getText()));
         Utils.setConfigInteger("download.timeout", Integer.parseInt(configTimeoutText.getText()));
-        Utils.setConfigBoolean("clipboard.autorip", ClipboardUtils.getClipboardAutoRip());
-        Utils.setConfigBoolean("auto.update", configAutoupdateCheckbox.isSelected());
+        Utils.setConfigBoolean(CLIPBOARD_AUTORIP, ClipboardUtils.getClipboardAutoRip());
+        Utils.setConfigBoolean(AUTO_UPDATE, configAutoupdateCheckbox.isSelected());
         Utils.setConfigString("log.level", configLogLevelCombobox.getSelectedItem().toString());
         Utils.setConfigBoolean("play.sound", configPlaySound.isSelected());
-        Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected());
+        Utils.setConfigBoolean(DOWNLOAD_SAVE_ORDER, configSaveOrderCheckbox.isSelected());
         Utils.setConfigBoolean("download.show_popup", configShowPopup.isSelected());
-        Utils.setConfigBoolean("log.save", configSaveLogs.isSelected());
-        Utils.setConfigBoolean("urls_only.save", configSaveURLsOnly.isSelected());
-        Utils.setConfigBoolean("album_titles.save", configSaveAlbumTitles.isSelected());
-        Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
-        Utils.setConfigBoolean("descriptions.save", configSaveDescriptions.isSelected());
-        Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
+        Utils.setConfigBoolean(LOG_SAVE, configSaveLogs.isSelected());
+        Utils.setConfigBoolean(URLS_ONLY_SAVE, configSaveURLsOnly.isSelected());
+        Utils.setConfigBoolean(ALBUM_TITLES_SAVE, configSaveAlbumTitles.isSelected());
+        Utils.setConfigBoolean(CLIPBOARD_AUTORIP, configClipboardAutorip.isSelected());
+        Utils.setConfigBoolean(DESCRIPTIONS_SAVE, configSaveDescriptions.isSelected());
+        Utils.setConfigBoolean(PREFER_MP4, configPreferMp4.isSelected());
         saveHistory();
         Utils.saveConfig();
     }
@@ -403,18 +416,23 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configUpdateLabel = new JLabel("Current version: " + UpdateUtils.getThisJarVersion(), JLabel.RIGHT);
 
         JLabel configThreadsLabel = new JLabel("Maximum download threads:", JLabel.RIGHT);
+        configThreadsLabel.setLabelFor(configThreadsText);
+
         JLabel configTimeoutLabel = new JLabel("Timeout (in milliseconds):", JLabel.RIGHT);
+        configTimeoutLabel.setLabelFor(configTimeoutText);
+
         JLabel configRetriesLabel = new JLabel("Retry download count:", JLabel.RIGHT);
+        configRetriesLabel.setLabelFor(configRetriesText);
 
         configThreadsText = new JTextField(Integer.toString(Utils.getConfigInteger("threads.size", 3)));
         configTimeoutText = new JTextField(Integer.toString(Utils.getConfigInteger("download.timeout", 60000)));
         configRetriesText = new JTextField(Integer.toString(Utils.getConfigInteger("download.retries", 3)));
 
-        configOverwriteCheckbox = new JCheckBox("Overwrite existing files?", Utils.getConfigBoolean("file.overwrite", false));
+        configOverwriteCheckbox = new JCheckBox("Overwrite existing files?", Utils.getConfigBoolean(FILE_OVERWRITE, false));
         configOverwriteCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
         configOverwriteCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
 
-        configAutoupdateCheckbox = new JCheckBox("Auto-update?", Utils.getConfigBoolean("auto.update", true));
+        configAutoupdateCheckbox = new JCheckBox("Auto-update?", Utils.getConfigBoolean(AUTO_UPDATE, true));
         configAutoupdateCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
         configAutoupdateCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
 
@@ -426,7 +444,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configPlaySound.setHorizontalAlignment(JCheckBox.RIGHT);
         configPlaySound.setHorizontalTextPosition(JCheckBox.LEFT);
 
-        configSaveOrderCheckbox = new JCheckBox("Preserve order", Utils.getConfigBoolean("download.save_order", true));
+        configSaveOrderCheckbox = new JCheckBox("Preserve order", Utils.getConfigBoolean(DOWNLOAD_SAVE_ORDER, true));
         configSaveOrderCheckbox.setHorizontalAlignment(JCheckBox.RIGHT);
         configSaveOrderCheckbox.setHorizontalTextPosition(JCheckBox.LEFT);
 
@@ -434,27 +452,27 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configShowPopup.setHorizontalAlignment(JCheckBox.RIGHT);
         configShowPopup.setHorizontalTextPosition(JCheckBox.LEFT);
 
-        configSaveLogs = new JCheckBox("Save logs", Utils.getConfigBoolean("log.save", false));
+        configSaveLogs = new JCheckBox("Save logs", Utils.getConfigBoolean(LOG_SAVE, false));
         configSaveLogs.setHorizontalAlignment(JCheckBox.RIGHT);
         configSaveLogs.setHorizontalTextPosition(JCheckBox.LEFT);
 
-        configSaveURLsOnly = new JCheckBox("Save URLs only", Utils.getConfigBoolean("urls_only.save", false));
+        configSaveURLsOnly = new JCheckBox("Save URLs only", Utils.getConfigBoolean(URLS_ONLY_SAVE, false));
         configSaveURLsOnly.setHorizontalAlignment(JCheckBox.RIGHT);
         configSaveURLsOnly.setHorizontalTextPosition(JCheckBox.LEFT);
 
-        configSaveAlbumTitles = new JCheckBox("Save album titles", Utils.getConfigBoolean("album_titles.save", true));
+        configSaveAlbumTitles = new JCheckBox("Save album titles", Utils.getConfigBoolean(ALBUM_TITLES_SAVE, true));
         configSaveAlbumTitles.setHorizontalAlignment(JCheckBox.RIGHT);
         configSaveAlbumTitles.setHorizontalTextPosition(JCheckBox.LEFT);
 
-        configClipboardAutorip = new JCheckBox("Autorip from Clipboard", Utils.getConfigBoolean("clipboard.autorip", false));
+        configClipboardAutorip = new JCheckBox("Autorip from Clipboard", Utils.getConfigBoolean(CLIPBOARD_AUTORIP, false));
         configClipboardAutorip.setHorizontalAlignment(JCheckBox.RIGHT);
         configClipboardAutorip.setHorizontalTextPosition(JCheckBox.LEFT);
 
-        configSaveDescriptions = new JCheckBox("Save descriptions", Utils.getConfigBoolean("descriptions.save", true));
+        configSaveDescriptions = new JCheckBox("Save descriptions", Utils.getConfigBoolean(DESCRIPTIONS_SAVE, true));
         configSaveDescriptions.setHorizontalAlignment(JCheckBox.RIGHT);
         configSaveDescriptions.setHorizontalTextPosition(JCheckBox.LEFT);
 
-        configPreferMp4 = new JCheckBox("Prefer MP4 over GIF", Utils.getConfigBoolean("prefer.mp4", false));
+        configPreferMp4 = new JCheckBox("Prefer MP4 over GIF", Utils.getConfigBoolean(PREFER_MP4, false));
         configPreferMp4.setHorizontalAlignment(JCheckBox.RIGHT);
         configPreferMp4.setHorizontalTextPosition(JCheckBox.LEFT);
 
@@ -645,6 +663,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
         historyButtonRemove.addActionListener(event -> {
             int[] indices = historyTable.getSelectedRows();
+
             for (int i = indices.length - 1; i >= 0; i--) {
                 int modelIndex = historyTable.convertRowIndexToModel(indices[i]);
                 HISTORY.remove(modelIndex);
@@ -730,38 +749,38 @@ public class MainWindow implements Runnable, RipStatusHandler {
             Utils.setConfigString("rips.directory", chosenPath);
         });
 
-        configOverwriteCheckbox.addActionListener(arg0 -> Utils.setConfigBoolean("file.overwrite", configOverwriteCheckbox.isSelected()));
-        configSaveOrderCheckbox.addActionListener(arg0 -> Utils.setConfigBoolean("download.save_order", configSaveOrderCheckbox.isSelected()));
+        configOverwriteCheckbox.addActionListener(arg0 -> Utils.setConfigBoolean(FILE_OVERWRITE, configOverwriteCheckbox.isSelected()));
+        configSaveOrderCheckbox.addActionListener(arg0 -> Utils.setConfigBoolean(DOWNLOAD_SAVE_ORDER, configSaveOrderCheckbox.isSelected()));
 
         configSaveLogs.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("log.save", configSaveLogs.isSelected());
+            Utils.setConfigBoolean(LOG_SAVE, configSaveLogs.isSelected());
             Utils.configureLogger();
         });
 
         configSaveURLsOnly.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("urls_only.save", configSaveURLsOnly.isSelected());
+            Utils.setConfigBoolean(URLS_ONLY_SAVE, configSaveURLsOnly.isSelected());
             Utils.configureLogger();
         });
 
         configSaveAlbumTitles.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("album_titles.save", configSaveAlbumTitles.isSelected());
+            Utils.setConfigBoolean(ALBUM_TITLES_SAVE, configSaveAlbumTitles.isSelected());
             Utils.configureLogger();
         });
 
         configClipboardAutorip.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("clipboard.autorip", configClipboardAutorip.isSelected());
+            Utils.setConfigBoolean(CLIPBOARD_AUTORIP, configClipboardAutorip.isSelected());
             ClipboardUtils.setClipboardAutoRip(configClipboardAutorip.isSelected());
             trayMenuAutorip.setState(configClipboardAutorip.isSelected());
             Utils.configureLogger();
         });
 
         configSaveDescriptions.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("descriptions.save", configSaveDescriptions.isSelected());
+            Utils.setConfigBoolean(DESCRIPTIONS_SAVE, configSaveDescriptions.isSelected());
             Utils.configureLogger();
         });
 
         configPreferMp4.addActionListener(arg0 -> {
-            Utils.setConfigBoolean("prefer.mp4", configPreferMp4.isSelected());
+            Utils.setConfigBoolean(PREFER_MP4, configPreferMp4.isSelected());
             Utils.configureLogger();
         });
 
@@ -823,27 +842,27 @@ public class MainWindow implements Runnable, RipStatusHandler {
         mainFrame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowActivated(WindowEvent e) {
-                trayMenuMain.setLabel("Hide");
+                trayMenuMain.setLabel(HIDE);
             }
 
             @Override
             public void windowDeactivated(WindowEvent e) {
-                trayMenuMain.setLabel("Show");
+                trayMenuMain.setLabel(SHOW);
             }
 
             @Override
             public void windowDeiconified(WindowEvent e) {
-                trayMenuMain.setLabel("Hide");
+                trayMenuMain.setLabel(HIDE);
             }
 
             @Override
             public void windowIconified(WindowEvent e) {
-                trayMenuMain.setLabel("Show");
+                trayMenuMain.setLabel(SHOW);
             }
         });
 
         PopupMenu trayMenu = new PopupMenu();
-        trayMenuMain = new MenuItem("Hide");
+        trayMenuMain = new MenuItem(HIDE);
         trayMenuMain.addActionListener(arg0 -> toggleTrayClick());
 
         MenuItem trayMenuAbout = new MenuItem("About " + mainFrame.getTitle());
@@ -860,8 +879,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
                     about.append("<li>");
                     ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
 
-                    if (ripper.contains("Ripper"))
-                        ripper = ripper.substring(0, ripper.indexOf("Ripper"));
+                    if (ripper.contains(RIPPER))
+                        ripper = ripper.substring(0, ripper.indexOf(RIPPER));
 
                     about.append(ripper);
                     about.append("</li>");
@@ -881,8 +900,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
                     about.append("<li>");
                     ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
 
-                    if (ripper.contains("Ripper"))
-                        ripper = ripper.substring(0, ripper.indexOf("Ripper"));
+                    if (ripper.contains(RIPPER))
+                        ripper = ripper.substring(0, ripper.indexOf(RIPPER));
 
                     about.append(ripper);
                     about.append("</li>");
@@ -950,10 +969,10 @@ public class MainWindow implements Runnable, RipStatusHandler {
             mainFrame.setVisible(true);
             mainFrame.setAlwaysOnTop(true);
             mainFrame.setAlwaysOnTop(false);
-            trayMenuMain.setLabel("Hide");
+            trayMenuMain.setLabel(HIDE);
         } else {
             mainFrame.setVisible(false);
-            trayMenuMain.setLabel("Show");
+            trayMenuMain.setLabel(SHOW);
         }
     }
 
@@ -974,13 +993,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
     }
 
     private void loadHistory() {
-        File historyFile = new File("history.json");
+        File historyFile = new File(HISTORY_JSON);
         HISTORY.clear();
 
         if (historyFile.exists()) {
             try {
                 LOGGER.info("Loading history from history.json");
-                HISTORY.fromFile("history.json");
+                HISTORY.fromFile(HISTORY_JSON);
             } catch (IOException e) {
                 LOGGER.error("Failed to load history from file " + historyFile, e);
                 JOptionPane.showMessageDialog(null,
@@ -1015,7 +1034,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
     private void saveHistory() {
         try {
-            HISTORY.toFile("history.json");
+            HISTORY.toFile(HISTORY_JSON);
             Utils.setConfigList("download.history", Collections.emptyList());
         } catch (IOException e) {
             LOGGER.error("Failed to save history to file history.json", e);
@@ -1290,4 +1309,5 @@ public class MainWindow implements Runnable, RipStatusHandler {
         ripTextfield.setText(url.trim());
         ripButton.doClick();
     }
+
 }

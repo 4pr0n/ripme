@@ -18,6 +18,7 @@ import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -35,6 +36,7 @@ public class Utils {
     private static final int SHORTENED_PATH_LENGTH = 12;
 
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
+    private static final String[] MAGS = {"", "k", "m", "g", "t"};
 
     private static PropertiesConfiguration config;
 
@@ -42,23 +44,20 @@ public class Utils {
         try {
             String configPath = getConfigPath();
             File f = new File(configPath);
-            if (!f.exists()) {
-                // Use default bundled with .jar
+
+            // Use default bundled with .jar
+            if (!f.exists())
                 configPath = CONFIG_FILE;
-            }
+
             config = new PropertiesConfiguration(configPath);
             LOGGER.info(LOADED + config.getPath());
 
             if (f.exists()) {
                 // Config was loaded from file
-                if (!config.containsKey("twitter.auth")
-                        || !config.containsKey("twitter.max_requests")
-                        || !config.containsKey("tumblr.auth")
-                        || !config.containsKey("error.skip404")
-                        || !config.containsKey("gw.api")
-                        || !config.containsKey("page.timeout")
-                        || !config.containsKey("download.max_size")
-                        ) {
+                if (!config.containsKey("twitter.auth") || !config.containsKey("twitter.max_requests")
+                        || !config.containsKey("tumblr.auth") || !config.containsKey("error.skip404")
+                        || !config.containsKey("gw.api") || !config.containsKey("page.timeout")
+                        || !config.containsKey("download.max_size")) {
                     // Config is missing key fields
                     // Need to reload the default config
                     // See https://github.com/4pr0n/ripme/issues/158
@@ -203,9 +202,8 @@ public class Utils {
                     c = "?";
 
                 url = url.substring(0, paramIndex) + c + url.substring(nextParam + 1, url.length());
-            } else {
+            } else
                 url = url.substring(0, paramIndex);
-            }
         }
 
         return url;
@@ -252,13 +250,16 @@ public class Utils {
         if (directory != null && directory.exists()) {
             // Get the list of the files contained in the package
             String[] files = directory.list();
-            for (String file : files) {
-                if (file.endsWith(".class") && !file.contains("$")) {
-                    String className = pkgname + '.' + file.substring(0, file.length() - 6);
-                    try {
-                        classes.add(Class.forName(className));
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException("ClassNotFoundException loading " + className, e);
+
+            if (files != null) {
+                for (String file : files) {
+                    if (file.endsWith(".class") && !file.contains("$")) {
+                        String className = pkgname + '.' + file.substring(0, file.length() - 6);
+                        try {
+                            classes.add(Class.forName(className));
+                        } catch (ClassNotFoundException e) {
+                            throw new RuntimeException("ClassNotFoundException loading " + className, e);
+                        }
                     }
                 }
             }
@@ -266,7 +267,7 @@ public class Utils {
             // Load from JAR
             try {
                 String jarPath = fullPath.replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
-                jarPath = URLDecoder.decode(jarPath, "UTF-8");
+                jarPath = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
                 JarFile jarFile = new JarFile(jarPath);
                 Enumeration<JarEntry> entries = jarFile.entries();
 
@@ -318,14 +319,13 @@ public class Utils {
 
     public static String bytesToHumanReadable(int bytes) {
         float fbytes = (float) bytes;
-        String[] mags = new String[]{"", "k", "m", "g", "t"};
         int magIndex = 0;
 
         while (fbytes >= 1024) {
             fbytes /= 1024;
             magIndex++;
         }
-        return String.format("%.2f%sb", fbytes, mags[magIndex]);
+        return String.format("%.2f%sb", fbytes, MAGS[magIndex]);
     }
 
     public static List<String> getListOfAlbumRippers() throws Exception {

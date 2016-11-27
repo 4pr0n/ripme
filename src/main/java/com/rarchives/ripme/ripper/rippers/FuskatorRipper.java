@@ -10,6 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -65,7 +66,7 @@ public class FuskatorRipper extends AbstractHTMLRipper {
         String baseUrl = Utils.between(html, "unescape('", "'").get(0);
 
         try {
-            baseUrl = URLDecoder.decode(baseUrl, "UTF-8");
+            baseUrl = URLDecoder.decode(baseUrl, StandardCharsets.UTF_8.name());
         } catch (UnsupportedEncodingException e) {
             LOGGER.warn("Error while decoding " + baseUrl, e);
         }

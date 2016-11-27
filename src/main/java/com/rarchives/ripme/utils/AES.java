@@ -7,6 +7,8 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
 import java.util.Arrays;
 
 public class AES {
@@ -39,20 +41,21 @@ public class AES {
         byte[] data = Base64.decode(cipherText);
         byte[] k = Arrays.copyOf(key.getBytes(), nBits);
 
-        Cipher cipher = Cipher.getInstance("AES/CTR/NoPadding");
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         SecretKey secretKey = generateSecretKey(k, nBits);
 
         byte[] nonceBytes = Arrays.copyOf(Arrays.copyOf(data, 8), nBits / 2);
+        new SecureRandom().nextBytes(nonceBytes);
         IvParameterSpec nonce = new IvParameterSpec(nonceBytes);
+
         cipher.init(Cipher.ENCRYPT_MODE, secretKey, nonce);
-        res = new String(cipher.doFinal(data, 8, data.length - 8));
-        return res;
+        return new String(cipher.doFinal(data, 8, data.length - 8), StandardCharsets.UTF_8.name());
     }
 
     private static SecretKey generateSecretKey(byte[] keyBytes, int nBits) throws Exception {
         try {
             SecretKey secretKey = new SecretKeySpec(keyBytes, "AES");
-            Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding");
+            Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             keyBytes = cipher.doFinal(keyBytes);
         } catch (Exception e) {

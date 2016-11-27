@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 public class VkRipper extends VideoRipper {
 
     private static final String HOST = "vk";
+    private static final String[] QUALITIES = {"1080", "720", "480", "240"};
 
     public VkRipper(URL url) throws IOException {
         super(url);
@@ -28,11 +29,6 @@ public class VkRipper extends VideoRipper {
         Pattern p = Pattern.compile("^https?://[wm.]*vk\\.com/video[0-9]+.*$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
-    }
-
-    @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
     }
 
     @Override
@@ -59,7 +55,7 @@ public class VkRipper extends VideoRipper {
         String html = doc.outerHtml();
         String videoURL = null;
 
-        for (String quality : new String[]{"1080", "720", "480", "240"}) {
+        for (String quality : QUALITIES) {
             quality = "url" + quality + "\\\":\\\"";
             if (html.contains(quality)) {
                 videoURL = html.substring(html.indexOf(quality) + quality.length());

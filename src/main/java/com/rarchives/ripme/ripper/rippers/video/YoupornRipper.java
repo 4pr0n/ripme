@@ -33,11 +33,6 @@ public class YoupornRipper extends VideoRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
-    }
-
-    @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://[wm.]*youporn\\.com/watch/([0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());

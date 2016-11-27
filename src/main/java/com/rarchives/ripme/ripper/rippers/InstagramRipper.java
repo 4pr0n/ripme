@@ -1,13 +1,10 @@
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -21,7 +18,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     private String userID;
 
-    private static final String ICONSQUARE_LINK = "http://iconosquare.com/";
+    private static final String INSTAGRAM_LINK = "http://instagram.com/";
 
     public InstagramRipper(URL url) throws IOException {
         super(url);
@@ -39,13 +36,12 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     @Override
     public boolean canRip(URL url) {
-        return url.getHost().endsWith("instagram.com") || url.getHost().endsWith("statigr.am")
-                || url.getHost().endsWith("iconosquare.com/");
+        return url.getHost().endsWith("instagram.com");
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://iconosquare.com/([a-zA-Z0-9\\-_.]{3,}).*$");
+        Pattern p = Pattern.compile("^https?://instagram.com/([^/]+)");
         Matcher m = p.matcher(url.toExternalForm());
 
         if (m.matches())
@@ -56,56 +52,21 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://instagram\\.com/p/([a-zA-Z0-9\\-_.]{1,}).*$");
+        Pattern p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]{3,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
 
-        if (m.matches()) {
-            // Link to photo, not the user account
-            try {
-                url = getUserPageFromImage(url);
-            } catch (Exception e) {
-                LOGGER.error("[!] Failed to get user page from " + url, e);
-                throw new MalformedURLException("Failed to retrieve user page from " + url);
-            }
-        }
-        p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]{3,}).*$");
-        m = p.matcher(url.toExternalForm());
-
         if (m.matches())
-            return new URL(ICONSQUARE_LINK + m.group(1));
+            return new URL(INSTAGRAM_LINK + m.group(1));
 
-        p = Pattern.compile("^.*iconosquare\\.com/([a-zA-Z0-9\\-_.]{3,}).*$");
-        m = p.matcher(url.toExternalForm());
-
-        if (m.matches())
-            return new URL(ICONSQUARE_LINK + m.group(1));
-
-        p = Pattern.compile("^.*statigr\\.am/([a-zA-Z0-9\\-_.]{3,}).*$");
-        m = p.matcher(url.toExternalForm());
-
-        if (m.matches())
-            return new URL(ICONSQUARE_LINK + m.group(1));
-
-        throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
-    }
-
-    private URL getUserPageFromImage(URL url) throws IOException {
-        Document doc = Http.url(url).get();
-        for (Element element : doc.select("meta[property='og:description']")) {
-            String content = element.attr("content");
-
-            if (content.endsWith("'s photo on Instagram"))
-                return new URL("http://iconosquare/" + content.substring(0, content.indexOf('\'')));
-        }
         throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
     }
 
     private String getUserID(URL url) throws IOException {
-        this.sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
-        Document doc = Http.url(url).get();
+        Pattern p = Pattern.compile("^https?://instagram\\.com/([^/]+)");
+        Matcher m = p.matcher(url.toExternalForm());
 
-        for (Element element : doc.select("input[id=user_public]"))
-            return element.attr("value");
+        if (m.matches())
+            return m.group(1);
 
         throw new IOException("Unable to find userID at " + this.url);
     }
@@ -113,57 +74,45 @@ public class InstagramRipper extends AbstractJSONRipper {
     @Override
     public JSONObject getFirstPage() throws IOException {
         userID = getUserID(url);
-        String baseURL = "http://iconosquare.com/controller_nl.php?action=getPhotoUserPublic&user_id=" + userID;
+        String baseURL = INSTAGRAM_LINK + userID + "/media";
         LOGGER.info("Loading " + baseURL);
 
         try {
             return Http.url(baseURL).getJSON();
         } catch (JSONException e) {
-            throw new IOException("Could not get instagram user via iconosquare", e);
+            throw new IOException("Could not get instagram user via: " + baseURL, e);
         }
     }
 
     @Override
     public JSONObject getNextPage(JSONObject json) throws IOException {
-        if (isThisATest())
-            return null;
+        boolean nextPageAvailable;
 
-        JSONObject pagination = json.getJSONObject("pagination");
-        String nextMaxID = "";
-        JSONArray datas = json.getJSONArray("data");
-
-        for (int i = 0; i < datas.length(); i++) {
-            JSONObject data = datas.getJSONObject(i);
-
-            if (data.has("id"))
-                nextMaxID = data.getString("id");
+        try {
+            nextPageAvailable = json.getBoolean("more_available");
+        } catch (Exception e) {
+            throw new IOException("No additional pages found");
         }
 
-        if (nextMaxID.isEmpty()) {
-            if (!pagination.has("next_max_id"))
-                throw new IOException("No next_max_id found, stopping");
+        if (nextPageAvailable) {
+            JSONArray items = json.getJSONArray("items");
+            JSONObject last_item = items.getJSONObject(items.length() - 1);
+            String nextMaxID = last_item.getString("id");
 
-            nextMaxID = pagination.getString("next_max_id");
-        }
+            String baseURL = INSTAGRAM_LINK + userID + "/media/?max_id=" + nextMaxID;
+            LOGGER.info("Loading " + baseURL);
+            sleep(1000);
 
-        String baseURL = "http://iconosquare.com/controller_nl.php?action=getPhotoUserPublic&user_id="
-                + userID + "&max_id=" + nextMaxID;
-        LOGGER.info("Loading " + baseURL);
-        sleep(1000);
-
-        JSONObject nextJSON = Http.url(baseURL).getJSON();
-        datas = nextJSON.getJSONArray("data");
-
-        if (datas.length() == 0)
+            return Http.url(baseURL).getJSON();
+        } else
             throw new IOException("No more images found");
 
-        return nextJSON;
     }
 
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
         List<String> imageURLs = new ArrayList<>();
-        JSONArray datas = json.getJSONArray("data");
+        JSONArray datas = json.getJSONArray("items");
 
         for (int i = 0; i < datas.length(); i++) {
             JSONObject data = (JSONObject) datas.get(i);
@@ -178,6 +127,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
             imageURL = imageURL.replaceAll("scontent.cdninstagram.com/hphotos-", "igcdn-photos-d-a.akamaihd.net/hphotos-ak-");
             imageURL = imageURL.replaceAll("s640x640/", "");
+            imageURL = imageURL.replaceAll("\\?ig_cache_key.+$", "");
             imageURLs.add(imageURL);
 
             if (isThisATest())
