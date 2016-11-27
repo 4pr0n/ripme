@@ -92,8 +92,8 @@ public class TapasticRipper extends AbstractHTMLRipper {
                 StringBuilder prefix = new StringBuilder();
                 prefix.append(String.format("ep%0" + epiLog + "d", index));
                 prefix.append(String.format("-%0" + imgLog + "dof%0" + imgLog + "d-", i + 1, images.size()));
-                prefix.append(episode.filename.replace(" ", "-"));
-                prefix.append("-");
+                prefix.append(episode.filename.replace(' ', '-'));
+                prefix.append('-');
                 addURLToDownload(new URL(link), prefix.toString());
 
                 if (isThisATest())

@@ -119,16 +119,15 @@ public class RipUtils {
             }
         }
 
-        if (url.getHost().equals(IMGUR_DOT_COM) ||
-                url.getHost().equals("m.imgur.com")) {
+        if (IMGUR_DOT_COM.equals(url.getHost()) || "m.imgur.com".equals(url.getHost())) {
             try {
                 // Fetch the page
                 Document doc = Jsoup.connect(url.toExternalForm()).userAgent(AbstractRipper.USER_AGENT).get();
                 for (Element el : doc.select("meta")) {
-                    if (el.attr("name").equals("twitter:image:src")) {
+                    if ("twitter:image:src".equals(el.attr("name"))) {
                         result.add(new URL(el.attr("content")));
                         return result;
-                    } else if (el.attr("name").equals("twitter:image")) {
+                    } else if ("twitter:image".equals(el.attr("name"))) {
                         result.add(new URL(el.attr("content")));
                         return result;
                     }
@@ -167,7 +166,7 @@ public class RipUtils {
         if (url == null)
             url = urlFromSiteDirectoryName(dir, "drawcrowd", HTTP + "drawcrowd.com/", "");
         if (url == null)
-            url = urlFromSiteDirectoryName(dir.replace("-", "/"), "ehentai", HTTP + "g.e-hentai.org/g/", "");
+            url = urlFromSiteDirectoryName(dir.replace('-', '/'), "ehentai", HTTP + "g.e-hentai.org/g/", "");
         if (url == null)
             url = urlFromSiteDirectoryName(dir, "fapproved", HTTP + "fapproved.com/users/", "");
         if (url == null)

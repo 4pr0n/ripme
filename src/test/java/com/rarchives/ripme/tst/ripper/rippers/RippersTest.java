@@ -6,6 +6,8 @@ import junit.framework.TestCase;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.hamcrest.CoreMatchers;
+import org.junit.Assert;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,15 +32,17 @@ public class RippersTest extends TestCase {
             ((ConsoleAppender) Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
 
             // Decrease timeout
-            Utils.setConfigInteger("page.timeout", 20 * 1000);
+            Utils.setConfigInteger("page.timeout", 20_000);
 
             ripper.setup();
             ripper.markAsTest();
             ripper.rip();
             assertTrue("Failed to download a single file from " + ripper.getURL(), ripper.getWorkingDir().listFiles().length >= 1);
         } catch (IOException e) {
+
             if (e.getMessage().contains("Ripping interrupted")) {
                 // We expect some rips to get interrupted
+                Assert.assertThat(e.getMessage(), CoreMatchers.containsString("Ripping interrupted"));
             } else {
                 e.printStackTrace();
                 fail("Failed to rip " + ripper.getURL() + " : " + e.getMessage());
@@ -54,10 +58,11 @@ public class RippersTest extends TestCase {
     /**
      * File extensions that are safe to delete.
      */
-    private static final String[] SAFE_EXTENSIONS =
-            {"png", "jpg", "jpeg", "gif",
-                    "mp4", "webm", "mov", "mpg", "mpeg",
-                    "txt", "log", "php"};
+    private static final String[] SAFE_EXTENSIONS = {
+            "png", "jpg", "jpeg", "gif",
+            "mp4", "webm", "mov", "mpg",
+            "mpeg", "txt", "log", "php"
+    };
 
     /**
      * Recursively deletes a directory

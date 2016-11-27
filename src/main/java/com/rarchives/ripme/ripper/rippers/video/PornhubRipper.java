@@ -33,11 +33,6 @@ public class PornhubRipper extends VideoRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
-    }
-
-    @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://[wm.]*pornhub\\.com/view_video.php\\?viewkey=([0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
@@ -82,7 +77,7 @@ public class PornhubRipper extends VideoRipper {
                 addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
             } catch (JSONException e) {
                 LOGGER.error("Error while parsing JSON at " + url, e);
-                throw e;
+                throw new IOException(e);
             } catch (Exception e) {
                 LOGGER.error("Error while retrieving video URL at " + url, e);
                 throw new IOException(e);

@@ -56,7 +56,7 @@ public class PahealRipper extends AbstractHTMLRipper {
 	@Override
 	public Document getNextPage(Document page) throws IOException {
 		for (Element e : page.select("#paginator a")) {
-			if (e.text().toLowerCase().equals("next"))
+			if ("next".equals(e.text().toLowerCase()))
 				return Http.url(e.absUrl("href")).cookies(getCookies()).get();
 		}
 

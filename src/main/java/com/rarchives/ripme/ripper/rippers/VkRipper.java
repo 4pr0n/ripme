@@ -20,6 +20,7 @@ public class VkRipper extends AlbumRipper {
 
     private static final String DOMAIN = "vk.com";
     private static final String HOST = "vk";
+    private static final String[] KEYS = {"z_src", "y_src", "x_src"};
 
     public VkRipper(URL url) throws IOException {
         super(url);
@@ -179,7 +180,7 @@ public class VkRipper extends AlbumRipper {
 
         for (int i = 0; i < json.length(); i++) {
             JSONObject jsonImage = json.getJSONObject(i);
-            for (String key : new String[]{"z_src", "y_src", "x_src"}) {
+            for (String key : KEYS) {
                 if (!jsonImage.has(key))
                     continue;
 

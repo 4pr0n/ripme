@@ -147,10 +147,10 @@ public class RedditRipper extends AlbumRipper {
         String kind = child.getString("kind");
         JSONObject data = child.getJSONObject("data");
 
-        if (kind.equals("t1")) {
+        if ("t1".equals(kind)) {
             // Comment
             handleBody(data.getString("body"), data.getString("id"));
-        } else if (kind.equals("t3")) {
+        } else if ("t3".equals(kind)) {
             // post
             if (data.getBoolean("is_self")) {
                 // TODO Parse self text

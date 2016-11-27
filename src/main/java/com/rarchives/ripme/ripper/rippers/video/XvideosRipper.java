@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,11 +32,6 @@ public class XvideosRipper extends VideoRipper {
         Pattern p = Pattern.compile("^https?://[wm.]*xvideos\\.com/video[0-9]+.*$");
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
-    }
-
-    @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
     }
 
     @Override
@@ -64,7 +60,7 @@ public class XvideosRipper extends VideoRipper {
         for (String var : vars.split("&")) {
             if (var.startsWith("flv_url=")) {
                 String vidUrl = var.substring("flv_url=".length());
-                vidUrl = URLDecoder.decode(vidUrl, "UTF-8");
+                vidUrl = URLDecoder.decode(vidUrl, StandardCharsets.UTF_8.name());
                 addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
             }
         }

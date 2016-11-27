@@ -30,11 +30,6 @@ public class GfycatRipper extends VideoRipper {
     }
 
     @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
-    }
-
-    @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://[wm.]*gfycat\\.com/([a-zA-Z0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());

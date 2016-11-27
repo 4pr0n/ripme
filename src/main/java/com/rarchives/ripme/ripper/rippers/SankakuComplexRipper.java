@@ -11,6 +11,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,7 +45,7 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
 
         if (m.matches()) {
             try {
-                return URLDecoder.decode(m.group(1), "UTF-8");
+                return URLDecoder.decode(m.group(1), StandardCharsets.UTF_8.name());
             } catch (UnsupportedEncodingException e) {
                 LOGGER.error(e.getMessage(), e);
                 throw new MalformedURLException("Cannot decode tag name '" + m.group(1) + "'" );

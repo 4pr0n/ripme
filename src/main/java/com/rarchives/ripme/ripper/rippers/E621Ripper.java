@@ -68,7 +68,7 @@ public class E621Ripper extends AbstractHTMLRipper {
 	@Override
 	public Document getNextPage(Document page) throws IOException {
 		for (Element e : page.select("#paginator a")) {
-			if (e.attr("rel").equals("next"))
+			if ("next".equals(e.attr("rel")))
 				return Http.url(e.absUrl("href")).get();
 		}
 

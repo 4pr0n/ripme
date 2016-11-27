@@ -139,8 +139,8 @@ public class Http {
         int retries = this.retries;
         while (--retries >= 0) {
             try {
-                response = connection.execute();
-                return response;
+                //response
+                return connection.execute();
             } catch (IOException e) {
                 LOGGER.warn("Error while loading " + url, e);
                 lastException = e;

@@ -230,14 +230,14 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         fields.remove(4);
 
         // Not a full-size image
-        if (!fields.get(4).equals("f") && throwException)
+        if (!"f".equals(fields.get(4)) && throwException)
             throw new Exception("Can't get full size image from " + thumb);
 
         StringBuilder result = new StringBuilder();
 
         for (int i = 0; i < fields.size(); i++) {
             if (i > 0)
-                result.append("/");
+                result.append('/');
 
             result.append(fields.get(i));
         }

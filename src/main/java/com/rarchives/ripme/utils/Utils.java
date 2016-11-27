@@ -18,6 +18,7 @@ import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -35,6 +36,7 @@ public class Utils {
     private static final int SHORTENED_PATH_LENGTH = 12;
 
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
+    private static final String[] MAGS = {"", "k", "m", "g", "t"};
 
     private static PropertiesConfiguration config;
 
@@ -265,7 +267,7 @@ public class Utils {
             // Load from JAR
             try {
                 String jarPath = fullPath.replaceFirst("[.]jar[!].*", ".jar").replaceFirst("file:", "");
-                jarPath = URLDecoder.decode(jarPath, "UTF-8");
+                jarPath = URLDecoder.decode(jarPath, StandardCharsets.UTF_8.name());
                 JarFile jarFile = new JarFile(jarPath);
                 Enumeration<JarEntry> entries = jarFile.entries();
 
@@ -317,14 +319,13 @@ public class Utils {
 
     public static String bytesToHumanReadable(int bytes) {
         float fbytes = (float) bytes;
-        String[] mags = new String[]{"", "k", "m", "g", "t"};
         int magIndex = 0;
 
         while (fbytes >= 1024) {
             fbytes /= 1024;
             magIndex++;
         }
-        return String.format("%.2f%sb", fbytes, mags[magIndex]);
+        return String.format("%.2f%sb", fbytes, MAGS[magIndex]);
     }
 
     public static List<String> getListOfAlbumRippers() throws Exception {
