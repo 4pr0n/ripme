@@ -92,7 +92,7 @@ public class DownloadVideoThread extends Thread {
                 huc.setRequestProperty("User-agent", AbstractRipper.USER_AGENT);
                 tries += 1;
 
-                LOGGER.debug("Request properties: " + huc.getRequestProperties().toString());
+                LOGGER.debug("Request properties: " + huc.getRequestProperties());
                 huc.connect();
                 // Check status code
                 bis = new BufferedInputStream(huc.getInputStream());

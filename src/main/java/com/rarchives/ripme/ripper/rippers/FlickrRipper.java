@@ -15,6 +15,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -227,8 +228,8 @@ public class FlickrRipper extends AbstractHTMLRipper {
 
         postData.put("passwd_raw", "");
         postData.put(".save", "");
-        postData.put("login", new String(Base64.decode("bGVmYWtlZGVmYWtl")));
-        postData.put("passwd", new String(Base64.decode("MUZha2V5ZmFrZQ==")));
+        postData.put("login", new String(Base64.decode("bGVmYWtlZGVmYWtl"), StandardCharsets.UTF_8.name()));
+        postData.put("passwd", new String(Base64.decode("MUZha2V5ZmFrZQ=="), StandardCharsets.UTF_8.name()));
 
         String action = doc.select("form[method=post]").get(0).attr("action");
         resp = Jsoup.connect(action)

@@ -15,6 +15,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -342,8 +343,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     private Map<String, String> loginToDeviantart() throws IOException {
         // Populate postData fields
         Map<String, String> postData = new HashMap<>();
-        String username = Utils.getConfigString("deviantart.username", new String(Base64.decode("Z3JhYnB5")));
-        String password = Utils.getConfigString("deviantart.password", new String(Base64.decode("ZmFrZXJz")));
+        String username = Utils.getConfigString("deviantart.username", new String(Base64.decode("Z3JhYnB5"), StandardCharsets.UTF_8.name()));
+        String password = Utils.getConfigString("deviantart.password", new String(Base64.decode("ZmFrZXJz"), StandardCharsets.UTF_8.name()));
 
         if (username == null || password == null)
             throw new IOException("could not find username or password in config");

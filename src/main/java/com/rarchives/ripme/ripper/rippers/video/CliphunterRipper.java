@@ -8,6 +8,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,8 +52,8 @@ public class CliphunterRipper extends VideoRipper {
         String jsonString = html.substring(html.indexOf("var flashVars = {d: '") + 21);
         jsonString = jsonString.substring(0, jsonString.indexOf('\''));
 
-        JSONObject json = new JSONObject(new String(Base64.decode(jsonString)));
-        JSONObject jsonURL = new JSONObject(new String(Base64.decode(json.getString("url"))));
+        JSONObject json = new JSONObject(new String(Base64.decode(jsonString), StandardCharsets.UTF_8.name()));
+        JSONObject jsonURL = new JSONObject(new String(Base64.decode(json.getString("url")), StandardCharsets.UTF_8.name()));
         String encryptedURL = jsonURL.getJSONObject("u").getString("l");
         String vidURL = "";
 
@@ -66,4 +67,5 @@ public class CliphunterRipper extends VideoRipper {
         addURLToDownload(new URL(vidURL), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
+
 }

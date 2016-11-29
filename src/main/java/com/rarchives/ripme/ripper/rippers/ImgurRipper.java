@@ -329,7 +329,7 @@ public class ImgurRipper extends AlbumRipper {
                 image = HTTP + thumb.select("img").attr("src");
             else {
                 // Unable to find image in this div
-                LOGGER.error("[!] Unable to find image in div: " + thumb.toString());
+                LOGGER.error("[!] Unable to find image in div: " + thumb);
                 continue;
             }
 

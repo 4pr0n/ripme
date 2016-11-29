@@ -11,6 +11,7 @@ import org.jsoup.nodes.Element;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -107,8 +108,8 @@ public class TwodgalleriesRipper extends AbstractHTMLRipper {
         String ctoken = resp.parse().select("form > input[name=ctoken]").first().attr("value");
 
         Map<String, String> postdata = new HashMap<>();
-        postdata.put("user[login]", new String(Base64.decode("cmlwbWU=")));
-        postdata.put("user[password]", new String(Base64.decode("cmlwcGVy")));
+        postdata.put("user[login]", new String(Base64.decode("cmlwbWU="), StandardCharsets.UTF_8.name()));
+        postdata.put("user[password]", new String(Base64.decode("cmlwcGVy"), StandardCharsets.UTF_8.name()));
         postdata.put("rememberme", "1");
         postdata.put("ctoken", ctoken);
 
