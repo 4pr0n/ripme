@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -66,8 +67,8 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     }
 
     private void login() throws IOException {
-        String user = new String(Base64.decode("cmlwbWU="));
-        String pass = new String(Base64.decode("cmlwbWVwYXNzd29yZA=="));
+        String user = new String(Base64.decode("cmlwbWU="), StandardCharsets.UTF_8.name());
+        String pass = new String(Base64.decode("cmlwbWVwYXNzd29yZA=="), StandardCharsets.UTF_8.name());
 
         Response loginPage = Http.url(URL_BASE + "/login/").referrer(URL_BASE).response();
         cookies = loginPage.cookies();
@@ -120,8 +121,9 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         Elements urlElements = page.select("b[id^=sid_]");
 
         for (Element e : urlElements) {
-            urls.add(URL_BASE + e.select("a").first().attr("href"));
-            LOGGER.debug("Desc2 " + URL_BASE + e.select("a").first().attr("href"));
+            String urlString = URL_BASE + e.select("a").first().attr("href");
+            urls.add(urlString);
+            LOGGER.debug("getDescriptionsFromPage URL: " + urlString);
         }
 
         return urls;

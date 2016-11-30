@@ -35,7 +35,6 @@ public class AES {
     }
 
     public static String decrypt(String cipherText, String key, int nBits) throws Exception {
-        String res;
         nBits = nBits / 8;
 
         byte[] data = Base64.decode(cipherText);
@@ -59,7 +58,7 @@ public class AES {
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             keyBytes = cipher.doFinal(keyBytes);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Error while generate secret key: " + e.getMessage(), e);
             return null;
         }
 

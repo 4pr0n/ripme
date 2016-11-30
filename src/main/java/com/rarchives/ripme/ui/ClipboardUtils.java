@@ -36,6 +36,8 @@ public class ClipboardUtils {
     public static String getClipboardString() {
         try {
             return (String) Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+        } catch (IllegalStateException e) {
+            LOGGER.error("Caught and recovered from IllegalStateException: " + e.getMessage(), e);
         } catch (HeadlessException | UnsupportedFlavorException | IOException e) {
             LOGGER.error(e.getMessage(), e);
         }

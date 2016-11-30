@@ -10,6 +10,7 @@ import org.jsoup.nodes.Document;
 
 import javax.swing.*;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class UpdateUtils {
@@ -59,7 +60,7 @@ public class UpdateUtils {
         for (int i = 0; i < jsonChangeList.length(); i++) {
             String change = jsonChangeList.getString(i);
 
-            if (change.startsWith(UpdateUtils.getThisJarVersion() + ":"))
+            if (change.startsWith(getThisJarVersion() + ":"))
                 break;
 
             changeList.append("<br>  + ").append(change);
@@ -91,11 +92,11 @@ public class UpdateUtils {
                 LOGGER.error("Error while updating: ", e);
             }
         } else {
-            LOGGER.debug("This version (" + UpdateUtils.getThisJarVersion() +
+            LOGGER.debug("This version (" + getThisJarVersion() +
                     ") is the same or newer than the website's version (" + latestVersion + ")");
-            configUpdateLabel.setText("<html><font color=\"green\">v" + UpdateUtils.getThisJarVersion() +
+            configUpdateLabel.setText("<html><font color=\"green\">v" + getThisJarVersion() +
                     " is the latest version</font></html>");
-            LOGGER.debug("Running latest version: " + UpdateUtils.getThisJarVersion());
+            LOGGER.debug("Running latest version: " + getThisJarVersion());
         }
     }
 

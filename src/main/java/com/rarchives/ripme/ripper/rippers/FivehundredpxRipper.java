@@ -47,10 +47,6 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
     //normal text
     private static final String PHOTOS = "photos";
     private static final String LOADING = "Loading ";
-//    private static final String = "";
-//    private static final String = "";
-//    private static final String = "";
-//    private static final String = "";
 
     private int page = 1;
     private String baseURL = "https://api.500px.com/v1";
@@ -297,7 +293,7 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
             }
 
             if (imageURL == null) {
-                LOGGER.error("Failed to find image for photo " + photo.toString());
+                LOGGER.error("Failed to find image for photo " + photo);
             } else {
                 imageURLs.add(imageURL);
                 if (isThisATest())
