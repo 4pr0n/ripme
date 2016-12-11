@@ -80,6 +80,7 @@ public class DownloadFileThread extends Thread {
 
         URL urlToDownload = this.url;
         boolean redirected = false;
+        boolean redirectedAgain = false;
         int tries = 0; // Number of attempts to download
         do {
             tries += 1;
@@ -90,7 +91,7 @@ public class DownloadFileThread extends Thread {
 
                 // Setup HTTP request
                 HttpURLConnection huc;
-                if (this.url.toString().startsWith("https")) {
+                if (urlToDownload.toString().startsWith("https")) {
                     huc = (HttpsURLConnection) urlToDownload.openConnection();
                 }
                 else {
@@ -117,9 +118,12 @@ public class DownloadFileThread extends Thread {
                 int statusCode = huc.getResponseCode();
                 logger.debug("Status code: " + statusCode);
                 if (statusCode  / 100 == 3) { // 3xx Redirect
-                    if (!redirected) {
+                    if (!redirected || !redirectedAgain) {
                         // Don't increment retries on the first redirect
-                        tries--;
+                        if (!redirectedAgain) {
+                            --tries;
+                            redirectedAgain = true;
+                        }
                         redirected = true;
                     }
                     String location = huc.getHeaderField("Location");
