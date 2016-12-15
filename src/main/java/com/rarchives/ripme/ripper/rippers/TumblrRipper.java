@@ -29,7 +29,7 @@ public class TumblrRipper extends AlbumRipper {
 
     private static final String API_KEY;
     static {
-        API_KEY = Utils.getConfigString("tumblr.auth", "HFLbdpEE0exDQVcxcLJiC2D6iwYjZdJHT2rLgObI7lvmmbBpha");
+        API_KEY = Utils.getConfigString("tumblr.auth", "JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX");
     }
 
     public TumblrRipper(URL url) throws IOException {
