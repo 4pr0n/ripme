@@ -29,26 +29,42 @@ import com.rarchives.ripme.utils.Http;
  * @author losipher
  */
 public class EroShareRipper extends AbstractHTMLRipper {
-    
+    public static String HOST = "eroshare";
+
     public EroShareRipper (URL url) throws IOException {
         super(url);
     }
     
     @Override
     public String getDomain() {
-            return "eroshare.com";
+            return HOST + ".com";
     }
 
     @Override
     public String getHost() {
-            return "eroshare";
+            return HOST;
     }
     
     @Override
     public void downloadURL(URL url, int index){
         addURLToDownload(url);
     }
-    
+
+    private static String cleanURL(String url) {
+        if (url.length() == 0) {
+            return "";
+        }
+        if (url.startsWith("//")) {
+            url = "https:" + url;
+        } else {
+            String urlLower = url.toLowerCase();
+            if (!urlLower.startsWith("http://") && !urlLower.startsWith("https://")) {
+                url = "https://" + url;
+            }
+        }
+        return url;
+    }
+
     @Override
     public List<String> getURLsFromPage(Document doc){
         List<String> URLs = new ArrayList<String>();
@@ -57,8 +73,10 @@ public class EroShareRipper extends AbstractHTMLRipper {
         for (Element img : imgs){
             if (img.hasClass("album-image")){
                 String imageURL = img.attr("src");
-                imageURL = "https:" + imageURL;
-                URLs.add(imageURL);
+                imageURL = cleanURL(imageURL);
+                if (imageURL.length() > 0) {
+                    URLs.add(imageURL);
+                }
             }
         }
         //Videos
@@ -67,7 +85,10 @@ public class EroShareRipper extends AbstractHTMLRipper {
             if (vid.hasClass("album-video")){
                 Elements source = vid.getElementsByTag("source");
                 String videoURL = source.first().attr("src");
-                URLs.add(videoURL);
+                videoURL = cleanURL(videoURL);
+                if (videoURL.length() > 0) {
+                    URLs.add(videoURL);
+                }
             }
         }
         
@@ -87,7 +108,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
     
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://[w.]*eroshare.com/([a-zA-Z0-9\\-_]+)/?$");
+        Pattern p = Pattern.compile("^https?://[w.]*eroshare.com/([a-zA-Z0-9\\-_]+)/?.*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return m.group(1);
@@ -109,8 +130,10 @@ public class EroShareRipper extends AbstractHTMLRipper {
         for (Element img : imgs){
             if (img.hasClass("album-image")){
                 String imageURL = img.attr("src");
-                imageURL = "https:" + imageURL;
-                URLs.add(new URL(imageURL));
+                imageURL = cleanURL(imageURL);
+                if (imageURL.length() > 0) {
+                    URLs.add(new URL(imageURL));
+                }
             }
         }
         //Videos
@@ -119,10 +142,44 @@ public class EroShareRipper extends AbstractHTMLRipper {
             if (vid.hasClass("album-video")){
                 Elements source = vid.getElementsByTag("source");
                 String videoURL = source.first().attr("src");
-                URLs.add(new URL(videoURL));
+                if (videoURL.length() > 0) {
+                    URLs.add(new URL(videoURL));
+                }
             }
         }
         
         return URLs;
+    }
+
+    @Override
+    public String getAlbumTitle(URL url) throws MalformedURLException {
+        String title = HOST;
+        Document doc = null;
+        try {
+            doc = downloadAndSaveHTML(url);
+        } catch (IOException e) {
+            title += "_" + getGID(url);
+            logger.error("Exception retrieving url=" + url + ": " + e.getMessage());
+        }
+        if (doc != null) {
+            // Find username.
+            Element element = doc.select(".album-info-container a.avatar").first();
+            if (element != null) {
+                title += "_" + (element.attr("href").length() > 0 ? element.attr("href").replaceAll("^/u/", "") : "");
+            } else {
+                logger.warn("No username was found in the contents of url=" + url);
+            }
+            title += "_" + getGID(url);
+            element = doc.select(".album-info-container .center-mobile").first();
+            if (element != null) {
+                title += "-" + element.text().replaceAll(" ", "_").replaceAll("[^a-zA-Z0-9_\\[\\]()\\.-]+", "");
+            } else {
+                logger.warn("No title was found in the contents of url=" + url);
+            }
+        } else {
+            logger.warn("No username or title could be retrieved for url=" + url);
+        }
+        title = title.replaceAll("_+$", "");
+        return title;
     }
 }

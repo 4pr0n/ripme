@@ -1,10 +1,13 @@
 package com.rarchives.ripme.ripper;
 
+import com.rarchives.ripme.utils.Http;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,12 +15,15 @@ import java.util.Map;
 import com.rarchives.ripme.ui.RipStatusMessage;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Document;
 
 public abstract class AlbumRipper extends AbstractRipper {
 
     protected Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
     protected Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, File>());
     protected Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<URL, String>());
+
+    protected HashMap<String, Document> docs = new HashMap<String, Document>();
 
     public AlbumRipper(URL url) throws IOException {
         super(url);
@@ -80,6 +86,18 @@ public abstract class AlbumRipper extends AbstractRipper {
             threadPool.addThread(dft);
         }
         return true;
+    }
+
+    @Override
+    public boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies) {
+        File saveFileAs;
+        try {
+            saveFileAs = getSaveAsFile(url, prefix, subdirectory);
+        } catch (IOException e) {
+            logger.error("[!] Error creating save file path for URL '" + url + "':", e);
+            return false;
+        }
+        return addURLToDownload(url, saveFileAs, referrer, cookies);
     }
 
     @Override
@@ -209,5 +227,30 @@ public abstract class AlbumRipper extends AbstractRipper {
           .append(", Completed: ").append(itemsCompleted.size())
           .append(", Errored: "  ).append(itemsErrored.size());
         return sb.toString();
+    }
+
+    protected Document downloadAndSaveHTML(URL url) throws IOException {
+        String urlString = url.toExternalForm();
+        Document doc = docs.get(urlString);
+        if (doc == null) {
+            doc = Http.url(url).header("User-Agent", USER_AGENT).referrer(url).cookies(Utils.getCookies(getHost())).get();
+            docs.put(urlString, doc);
+        }
+        String filename = urlToFilename(url);
+        if (getWorkingDir() != null) {
+            Files.write(Paths.get(getWorkingDir().getCanonicalPath() + File.separator + filename), doc.toString().getBytes());
+        }
+        return doc;
+    }
+
+    protected static String urlToFilename(URL url) {
+        String filename = url.toExternalForm().replaceFirst("^https?://.*/", "").replaceFirst("[#&:].*$", "");
+        if (filename.contains("?") && filename.contains(".")) {
+            int periodIdx = filename.lastIndexOf('.');
+            int questionMarkIdx = filename.indexOf('?');
+            String params = filename.substring(questionMarkIdx + 1).replaceAll("=", "-").replaceAll("&", "_");
+            filename = filename.substring(0, periodIdx) + "_" + params + filename.substring(periodIdx, questionMarkIdx);
+        }
+        return filename;
     }
 }
