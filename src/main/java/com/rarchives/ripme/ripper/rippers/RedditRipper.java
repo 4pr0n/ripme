@@ -18,6 +18,9 @@ import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
 
+import com.rarchives.ripme.ripper.AbstractRipper;
+
+
 public class RedditRipper extends AlbumRipper {
 
     public RedditRipper(URL url) throws IOException {
@@ -34,6 +37,7 @@ public class RedditRipper extends AlbumRipper {
     //private static final String USER_AGENT = "ripme by /u/4_pr0n github.com/4pr0n/ripme";
     
     private long lastRequestTime = 0;
+    private Boolean rip_authors = Utils.getConfigBoolean("download.rip_authors", false);
 
     @Override
     public boolean canRip(URL url) {
@@ -59,6 +63,14 @@ public class RedditRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
+
+        // once we begin the rip process, clear download.rip_authors
+        // the value is preserved for this session and will not
+        // persist when getAndParseAndReturnNext spawns additional
+        // AbstractRipper processes
+        Utils.setConfigBoolean("download.rip_authors", false);
+
+
         URL jsonURL = getJsonURL(this.url);
         while (true) {
             jsonURL = getAndParseAndReturnNext(jsonURL);
@@ -86,6 +98,29 @@ public class RedditRipper extends AlbumRipper {
             }
             children = data.getJSONArray("children");
             for (int j = 0; j < children.length(); j++) {
+
+
+                if(rip_authors) {
+                    JSONObject child_data = children.getJSONObject(j).getJSONObject("data");
+                    String author = child_data.getString("author");
+
+                    logger.info("[OVERRIDE]: Ripping Author: " + author);
+
+                    // spawn a new AbstractRipper for the authors page
+                    try {
+                        URL author_url = new URL("http://reddit.com/user/" + author);
+
+                        AbstractRipper ripper = AbstractRipper.getRipper(author_url);
+                        ripper.setup();
+                        ripper.rip();
+                    } catch(Exception e) {
+                        logger.error("[!] AbstractRipper failed. Cannot continue.");
+                        System.exit(-1);
+                    }
+
+                    continue;
+                }
+
                 parseJsonChild(children.getJSONObject(j));
             }
             if (data.has("after") && !data.isNull("after")) {

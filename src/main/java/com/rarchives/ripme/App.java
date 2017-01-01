@@ -13,6 +13,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -167,6 +169,20 @@ public class App {
 
         if (cl.hasOption('u')) {
             String url = cl.getOptionValue('u').trim();
+
+            // the -A option is limited to just reddit.com/r urls for the time being
+            // if the -A does not match a reddit.com/r regex, then ripme should fail out.
+            if(cl.hasOption('A')) {
+                Pattern p   = Pattern.compile("^https?://(www\\.)?reddit.com/r/.*$");
+                Matcher m   = p.matcher(url);
+
+                if (!m.matches()) {
+                    logger.error("[!] Supplied URL does not meet -A requirements");
+                    System.exit(-1);
+                }
+                Utils.setConfigBoolean("download.rip_authors", true);
+            }
+
             ripURL(url, cl.hasOption("n"));
         }
     }
@@ -207,6 +223,9 @@ public class App {
         opts.addOption("l", "ripsdirectory", true, "Rips Directory (Default: ./rips)");
         opts.addOption("n", "no-prop-file", false, "Do not create properties file.");
         opts.addOption("f", "urls-file", true, "Rip URLs from a file.");
+
+        opts.addOption("A", "rip-authors", false, "REDDIT ONLY. Will rip all authors from a given subreddit.");
+
         return opts;
     }
 
