@@ -58,7 +58,6 @@ public class MymangacomicsRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
         String nextUrl = "";
-        // for (Element elem : doc.select("a.ui-icon-right").first()) {
         Element elem = doc.select("a.ui-icon-right").first();
             String nextPage = elem.attr("href");
             Pattern p = Pattern.compile("/index.php/[a-zA-Z0-9_-]*\\?page=\\d");
@@ -66,7 +65,6 @@ public class MymangacomicsRipper extends AbstractHTMLRipper {
             if (m.matches()) {
                 nextUrl = "http://mymangacomics.com" + m.group(0);
                 }
-            // }
             if (nextUrl == "") {
                 throw new IOException("No more pages");
             }
