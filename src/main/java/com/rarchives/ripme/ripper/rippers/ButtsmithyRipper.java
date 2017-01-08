@@ -72,8 +72,6 @@ public class ButtsmithyRipper extends AbstractHTMLRipper {
         List<String> result = new ArrayList<String>();
         for (Element el : doc.select("meta[property=og:image]")) {
             String imageSource = el.attr("content");
-            // Pattern p = Pattern.compile("/index.php/[a-zA-Z0-9_-]*\\?page=\\d");
-            // Matcher m = p.matcher(imageSource);
             result.add(imageSource);
         }
         return result;
