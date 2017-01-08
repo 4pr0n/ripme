@@ -68,6 +68,7 @@ public class MymangacomicsRipper extends AbstractHTMLRipper {
             if (nextUrl == "") {
                 throw new IOException("No more pages");
             }
+            // Sleep for half a sec to avoid getting IP banned
             sleep(500);
             return Http.url(nextUrl).get();
         }

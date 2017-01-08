@@ -63,6 +63,7 @@ public class ButtsmithyRipper extends AbstractHTMLRipper {
                 throw new IOException("No more pages");
             }
             String nextPage = elem.attr("href");
+            // Sleep for half a sec to avoid getting IP banned
             sleep(500);
             return Http.url(nextPage).get();
         }
