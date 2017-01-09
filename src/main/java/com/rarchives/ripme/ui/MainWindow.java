@@ -1055,12 +1055,9 @@ public final class MainWindow implements Runnable, RipStatusHandler {
     @SuppressWarnings("unchecked")
     private void ripNextAlbum() {
         isRipping = true;
-<<<<<<< HEAD
         // Save current state of queue to configuration.
         Utils.setConfigList("queue", (Enumeration<Object>) queueListModel.elements());
 
-=======
->>>>>>> Added isEmpty to History, fixed some best practices in the code.
         if (queueListModel.isEmpty()) {
             // End of queue
             isRipping = false;
