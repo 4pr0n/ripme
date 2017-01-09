@@ -81,9 +81,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             String imageSource = el.attr("src");
             // We replace thumbs with resizes so we can the full sized images
             imageSource = imageSource.replace("thumbs", "resizes");
-            if (imageSource != "http://myhentaicomics.com/themes/clean_canvas/images/logo4.png") {
-                result.add("http://myhentaicomics.com/" + imageSource);
-            }
+            result.add("http://myhentaicomics.com/" + imageSource);
         }
         return result;
     }
