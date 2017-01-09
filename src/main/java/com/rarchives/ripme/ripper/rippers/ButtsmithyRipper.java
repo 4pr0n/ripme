@@ -58,6 +58,8 @@ public class ButtsmithyRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
         String nextUrl = "";
+        // We use omic-nav-next to find the next page
+        // TODO Should comic-nav-next be in the default getNextPage? It seems pretty common
         Element elem = doc.select("a.comic-nav-next").first();
             if (elem == null) {
                 throw new IOException("No more pages");
@@ -71,6 +73,7 @@ public class ButtsmithyRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<String>();
+        // We grab the image from meta because it's easier than trying to parse the rest of the page
         for (Element el : doc.select("meta[property=og:image]")) {
             String imageSource = el.attr("content");
             result.add(imageSource);
