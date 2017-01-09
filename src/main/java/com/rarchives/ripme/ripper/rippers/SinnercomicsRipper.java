@@ -58,11 +58,13 @@ public class SinnercomicsRipper extends AbstractHTMLRipper {
     public Document getNextPage(Document doc) throws IOException {
         // Find next page
         String nextUrl = "";
+        // We use comic-nav-next to the find the next page
         Element elem = doc.select("a.comic-nav-next").first();
             if (elem == null) {
                 throw new IOException("No more pages");
             }
             String nextPage = elem.attr("href");
+            // Wait half a sec to avoid IP bans
             sleep(500);
             return Http.url(nextPage).get();
         }
