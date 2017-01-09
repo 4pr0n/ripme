@@ -45,7 +45,7 @@ public class ButtsmithyRipper extends AbstractHTMLRipper {
             return m.group(1);
         }
         throw new MalformedURLException("Expected buttsmithy.com URL format: " +
-                        "https?://buttsmithy.com/archives/comic/ - got " + url + " instead");
+                        "buttsmithy.com/archives/comic/ - got " + url + " instead");
     }
 
     @Override

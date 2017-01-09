@@ -45,7 +45,7 @@ public class SinnercomicsRipper extends AbstractHTMLRipper {
             return m.group(1);
         }
         throw new MalformedURLException("Expected sinnercomics.com URL format: " +
-                        "https://sinnercomics.com/comic/albumName - got " + url + " instead");
+                        "sinnercomics.com/comic/albumName - got " + url + " instead");
     }
 
     @Override
