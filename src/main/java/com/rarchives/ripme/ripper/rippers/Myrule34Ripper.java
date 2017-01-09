@@ -79,9 +79,11 @@ public class Myrule34Ripper extends AbstractHTMLRipper {
         List<String> result = new ArrayList<String>();
         for (Element el : doc.select("img")) {
             String imageSource = el.attr("src");
+            // This bool is here so we don't try and download the site logo
+            boolean b = imageSource.startsWith("http");
+            if (b == false) {
             // We replace thumbs with resizes so we can the full sized images
             imageSource = imageSource.replace("thumbs", "resizes");
-            if (imageSource != "http://myrule34.com/themes/clean_canvas/images/logo4.png") {
                 result.add("http://myrule34.com/" + imageSource);
             }
         }
