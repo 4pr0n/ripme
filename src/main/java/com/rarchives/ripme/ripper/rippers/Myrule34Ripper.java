@@ -44,7 +44,7 @@ public class Myrule34Ripper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
-        throw new MalformedURLException("Expected imgur.com URL format: " +
+        throw new MalformedURLException("Expected myrule34.com URL format: " +
                         "myrule34.com/index.php/albumName - got " + url + " instead");
     }
 

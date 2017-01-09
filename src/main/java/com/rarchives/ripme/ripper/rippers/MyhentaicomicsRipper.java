@@ -44,7 +44,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
-        throw new MalformedURLException("Expected imgur.com URL format: " +
+        throw new MalformedURLException("Expected myhentaicomics.com URL format: " +
                         "myhentaicomics.com/index.php/albumName - got " + url + " instead");
     }
 

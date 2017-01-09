@@ -44,7 +44,7 @@ public class MymangacomicsRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
-        throw new MalformedURLException("Expected imgur.com URL format: " +
+        throw new MalformedURLException("Expected mymangacomics.com URL format: " +
                         "mymangacomics.com/index.php/albumName - got " + url + " instead");
     }
 
