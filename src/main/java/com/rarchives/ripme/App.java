@@ -7,14 +7,21 @@ import com.rarchives.ripme.ui.MainWindow;
 import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
 
 import javax.swing.*;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.List;
 
@@ -60,6 +67,7 @@ public class App {
                 hf.printHelp("java -jar ripme.jar [OPTIONS]", getOptions());
                 System.exit(0);
             }
+
             if (cl.hasOption('w'))
                 Utils.setConfigBoolean("file.overwrite", true);
 
@@ -122,6 +130,7 @@ public class App {
             URL url = new URL(targetURL);
             rip(url);
             List<String> history = Utils.getConfigList(DOWNLOAD_HISTORY);
+
             if (!history.contains(url.toExternalForm())) {
                 history.add(url.toExternalForm());
                 Utils.setConfigList(DOWNLOAD_HISTORY, Arrays.asList(history.toArray()));
@@ -177,6 +186,7 @@ public class App {
     private static void hasRLowerOption() {
         // Re-rip all via command-line
         List<String> history = Utils.getConfigList(DOWNLOAD_HISTORY);
+
         for (String urlString : history) {
             try {
                 URL url = new URL(urlString.trim());
@@ -229,6 +239,7 @@ public class App {
     private static void loadHistory() {
         File historyFile = new File("history.json");
         HISTORY.clear();
+
         if (historyFile.exists()) {
             try {
                 LOGGER.info("Loading history from history.json");
@@ -244,6 +255,7 @@ public class App {
         } else {
             LOGGER.info("Loading history from configuration");
             HISTORY.fromList(Utils.getConfigList(DOWNLOAD_HISTORY));
+
             if (HISTORY.toList().isEmpty()) {
                 // Loaded from config, still no entries.
                 // Guess rip history based on rip folder

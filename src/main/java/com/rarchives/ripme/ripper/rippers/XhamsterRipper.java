@@ -12,13 +12,6 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
-
 public class XhamsterRipper extends AlbumRipper {
 
     private static final String HOST = "xhamster";

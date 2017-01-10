@@ -7,6 +7,7 @@ import com.rarchives.ripme.utils.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.HttpStatusException;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -14,16 +15,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang.StringUtils;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.jsoup.HttpStatusException;
-
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class TumblrRipper extends AlbumRipper {
 
@@ -133,7 +124,7 @@ public class TumblrRipper extends AlbumRipper {
                 } catch (IOException e) {
                     Throwable cause = e.getCause();
                     if (cause instanceof HttpStatusException) {
-                        HttpStatusException status = (HttpStatusException)cause;
+                        HttpStatusException status = (HttpStatusException) cause;
                         if (status.getStatusCode() == HttpURLConnection.HTTP_UNAUTHORIZED && !useDefaultApiKey) {
                             retry = true;
                         }
@@ -240,25 +231,25 @@ public class TumblrRipper extends AlbumRipper {
 
         if (albumType == ALBUM_TYPE.POST) {
             sb.append("http://api.tumblr.com/v2/blog/")
-              .append(subdomain)
-              .append("/posts?id=")
-              .append(postNumber)
-              .append("&api_key=")
-              .append(getApiKey());
+                    .append(subdomain)
+                    .append("/posts?id=")
+                    .append(postNumber)
+                    .append("&api_key=")
+                    .append(getApiKey());
             return sb.toString();
         }
 
         sb.append("http://api.tumblr.com/v2/blog/")
-          .append(subdomain)
-          .append("/posts/")
-          .append(mediaType)
-          .append("?api_key=")
-          .append(getApiKey())
-          .append("&offset=")
-          .append(offset);
+                .append(subdomain)
+                .append("/posts/")
+                .append(mediaType)
+                .append("?api_key=")
+                .append(getApiKey())
+                .append("&offset=")
+                .append(offset);
 
         if (albumType == ALBUM_TYPE.TAG)
-           sb.append("&tag=").append(tagName);
+            sb.append("&tag=").append(tagName);
 
         return sb.toString();
     }

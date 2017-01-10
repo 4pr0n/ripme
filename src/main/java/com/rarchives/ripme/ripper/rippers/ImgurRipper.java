@@ -103,7 +103,7 @@ public class ImgurRipper extends AlbumRipper {
                 if (albumDoc == null)
                     albumDoc = Http.url(url).get();
 
-                Elements elems = null;
+                Elements elems;
 
                 /*
                 // TODO: Add config option for including username in album title.
@@ -399,7 +399,7 @@ public class ImgurRipper extends AlbumRipper {
             }
         }
     }
-    
+
     private void ripUserImages(URL url) throws IOException {
         int page = 0;
         int imagesFound = 0;
@@ -445,7 +445,7 @@ public class ImgurRipper extends AlbumRipper {
             }
         }
     }
-    
+
     private void ripSubreddit(URL url) throws IOException {
         int page = 0;
 
@@ -566,6 +566,7 @@ public class ImgurRipper extends AlbumRipper {
 
         p = Pattern.compile("^https?://(i\\.|www\\.|m\\.)?imgur\\.com/r/(\\w+)/([a-zA-Z0-9,]{5,}).*$");
         m = p.matcher(url.toExternalForm());
+
         if (m.matches()) {
             // Imgur subreddit album or image (treat as album)
             albumType = ALBUM_TYPE.ALBUM;

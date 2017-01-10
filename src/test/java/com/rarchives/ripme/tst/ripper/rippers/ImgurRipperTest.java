@@ -41,17 +41,18 @@ public class ImgurRipperTest extends RippersTest {
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/horizontal#0"));
         contentURLs.add(new URL("http://imgur.com/a/WxG6f/layout/grid#0"));
         contentURLs.add(new URL("http://imgur.com/gallery/FmP2o")); // Gallery URL
+
         // Imgur seems not to support URLs with lists of images anymore.
         //contentURLs.add(new URL("http://imgur.com/758qD43,C6iVJex,bP7flAu,J3l85Ri,1U7fhu5,MbuAUCM,JF4vOXQ"));
         // Sometimes hangs up
         //contentURLs.add(new URL("http://imgur.com/r/nsfw_oc/top/all"));
         //contentURLs.add(new URL("http://imgur.com/a/bXQpH")); // Album with titles/descriptions
+
         for (URL url : contentURLs) {
             ImgurRipper ripper = new ImgurRipper(url);
             testRipper(ripper);
         }
     }
-
 
     public void testImgurAlbumWithMoreThan20Pictures() throws IOException {
         ImgurAlbum album = ImgurRipper.getImgurAlbum(new URL("http://imgur.com/a/HUMsq"));
@@ -73,4 +74,5 @@ public class ImgurRipperTest extends RippersTest {
         assertTrue("Failed to find 1000 files from " + album.url.toExternalForm() + ", only got " + album.images.size(), album.images.size() >= 1000);
     }
     */
+
 }

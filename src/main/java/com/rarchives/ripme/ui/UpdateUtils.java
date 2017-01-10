@@ -9,8 +9,11 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import javax.swing.*;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
 
 public class UpdateUtils {
@@ -141,7 +144,7 @@ public class UpdateUtils {
     private static void downloadJarAndLaunch(String updateJarURL) throws IOException {
         Response response = Jsoup.connect(updateJarURL).ignoreContentType(true)
                 .timeout(Utils.getConfigInteger("download.timeout", 60_000))
-                .maxBodySize(1024^2 * 100).execute();
+                .maxBodySize(1024 ^ 2 * 100).execute();
 
         FileOutputStream out = new FileOutputStream(UPDATE_FILE_NAME);
         out.write(response.bodyAsBytes());

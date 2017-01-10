@@ -11,7 +11,11 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -152,10 +156,11 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     private String getFullSizeImage(String imageUrl) throws IOException {
         sendUpdate(STATUS.LOADING_RESOURCE, imageUrl);
-        Document doc = new Http(imageUrl).get(); // Retrieve the webpage  of the image URL
-        Element fullSizeImage = doc.select(".photo").first(); // Select the "photo" element from the page (there should only be 1)
-        String path = "https://www.8muses.com/data/fu/" + fullSizeImage.children().select("#imageName").attr("value"); // Append the path to the fullsize image file to the standard prefix
-        return path;
+        // Retrieve the webpage  of the image URL
+        Document doc = new Http(imageUrl).get();
+        // Select the "photo" element from the page (there should only be 1)
+        Element fullSizeImage = doc.select(".photo").first();
+        return "https://www.8muses.com/data/fu/" + fullSizeImage.children().select("#imageName").attr("value");
     }
 
     @Override

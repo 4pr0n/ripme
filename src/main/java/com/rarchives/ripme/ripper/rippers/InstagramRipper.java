@@ -70,7 +70,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
         throw new IOException("Unable to find userID at " + this.url);
     }
-    
+
     @Override
     public JSONObject getFirstPage() throws IOException {
         userID = getUserID(url);
@@ -135,7 +135,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url);

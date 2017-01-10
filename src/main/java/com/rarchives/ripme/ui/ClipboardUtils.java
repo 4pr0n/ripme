@@ -47,7 +47,7 @@ public class ClipboardUtils {
 
 class AutoripThread extends Thread {
 
-    private static final Logger logger = Logger.getLogger(AutoripThread.class);
+    private static final Logger LOGGER = Logger.getLogger(AutoripThread.class);
     protected volatile boolean isRunning = false;
     Set<String> rippedURLs = new HashSet<>();
 
@@ -83,11 +83,12 @@ class AutoripThread extends Thread {
                 Thread.sleep(1000);
             }
         } catch (InterruptedException e) {
-            logger.error(e.getMessage(), e);
+            LOGGER.error(e.getMessage(), e);
         }
     }
 
     public void kill() {
         isRunning = false;
     }
+
 }
