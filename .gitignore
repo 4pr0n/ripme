@@ -8,8 +8,7 @@ ripme.jar.update
 ripme.jar
 rip.properties
 history.json
-.idea/
-ripme.iml
-.classpath
-.project
+.idea
+*.iml
 .settings/
+.classpath

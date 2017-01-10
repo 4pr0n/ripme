@@ -7,8 +7,10 @@ import com.rarchives.ripme.utils.Utils;
 import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.HttpStatusException;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
@@ -31,10 +33,23 @@ public class TumblrRipper extends AlbumRipper {
     private String tagName;
     private String postNumber;
 
+    private static String TUMBLR_AUTH_CONFIG_KEY = "tumblr.auth";
+
+    private static boolean useDefaultApiKey = false; // fall-back for bad user-specified key
+    private static final String DEFAULT_API_KEY = "JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX";
+
     private static final String API_KEY;
 
     static {
-        API_KEY = Utils.getConfigString("tumblr.auth", "v5kUqGQXUtmF7K0itri1DGtgTs0VQpbSEbh1jxYgj9d2Sq18F8");
+        API_KEY = Utils.getConfigString(TUMBLR_AUTH_CONFIG_KEY, DEFAULT_API_KEY);
+    }
+
+    private static String getApiKey() {
+        if (useDefaultApiKey) {
+            return DEFAULT_API_KEY;
+        } else {
+            return API_KEY;
+        }
     }
 
     public TumblrRipper(URL url) throws IOException {
@@ -65,8 +80,7 @@ public class TumblrRipper extends AlbumRipper {
     public boolean isTumblrURL(URL url) {
         String checkURL = "http://api.tumblr.com/v2/blog/";
         checkURL += url.getHost();
-        checkURL += "/info?api_key=" + API_KEY;
-
+        checkURL += "/info?api_key=" + getApiKey();
         try {
             JSONObject json = Http.url(checkURL).getJSON();
             int status = json.getJSONObject("meta").getInt("status");
@@ -101,7 +115,40 @@ public class TumblrRipper extends AlbumRipper {
                 String apiURL = getTumblrApiURL(mediaType, offset);
                 LOGGER.info("Retrieving " + apiURL);
                 sendUpdate(STATUS.LOADING_RESOURCE, apiURL);
-                JSONObject json = Http.url(apiURL).getJSON();
+
+                JSONObject json = null;
+                boolean retry = false;
+
+                try {
+                    json = Http.url(apiURL).getJSON();
+                } catch (IOException e) {
+                    Throwable cause = e.getCause();
+                    if (cause instanceof HttpStatusException) {
+                        HttpStatusException status = (HttpStatusException) cause;
+                        if (status.getStatusCode() == HttpURLConnection.HTTP_UNAUTHORIZED && !useDefaultApiKey) {
+                            retry = true;
+                        }
+                    }
+                }
+
+                if (retry) {
+                    useDefaultApiKey = true;
+                    String apiKey = getApiKey();
+
+                    String message = "401 Unauthorized. Will retry with default Tumblr API key: " + apiKey;
+                    LOGGER.info(message);
+                    sendUpdate(STATUS.DOWNLOAD_WARN, message);
+
+                    Utils.setConfigString(TUMBLR_AUTH_CONFIG_KEY, apiKey); // save the default key to the config
+
+                    // retry loading the JSON
+
+                    apiURL = getTumblrApiURL(mediaType, offset);
+                    LOGGER.info("Retrieving " + apiURL);
+                    sendUpdate(STATUS.LOADING_RESOURCE, apiURL);
+
+                    json = Http.url(apiURL).getJSON();
+                }
 
                 try {
                     Thread.sleep(1000);
@@ -183,13 +230,23 @@ public class TumblrRipper extends AlbumRipper {
         StringBuilder sb = new StringBuilder();
 
         if (albumType == ALBUM_TYPE.POST) {
-            sb.append("http://api.tumblr.com/v2/blog/").append(subdomain).append("/posts?id=")
-                    .append(postNumber).append("&api_key=").append(API_KEY);
+            sb.append("http://api.tumblr.com/v2/blog/")
+                    .append(subdomain)
+                    .append("/posts?id=")
+                    .append(postNumber)
+                    .append("&api_key=")
+                    .append(getApiKey());
             return sb.toString();
         }
 
-        sb.append("http://api.tumblr.com/v2/blog/").append(subdomain).append("/posts/").append(mediaType)
-                .append("?api_key=").append(API_KEY).append("&offset=").append(offset);
+        sb.append("http://api.tumblr.com/v2/blog/")
+                .append(subdomain)
+                .append("/posts/")
+                .append(mediaType)
+                .append("?api_key=")
+                .append(getApiKey())
+                .append("&offset=")
+                .append(offset);
 
         if (albumType == ALBUM_TYPE.TAG)
             sb.append("&tag=").append(tagName);

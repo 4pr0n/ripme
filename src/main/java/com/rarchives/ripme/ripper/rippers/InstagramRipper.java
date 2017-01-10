@@ -75,7 +75,6 @@ public class InstagramRipper extends AbstractJSONRipper {
     public JSONObject getFirstPage() throws IOException {
         userID = getUserID(url);
         String baseURL = INSTAGRAM_LINK + userID + "/media";
-        LOGGER.info("Loading " + baseURL);
 
         try {
             return Http.url(baseURL).getJSON();
