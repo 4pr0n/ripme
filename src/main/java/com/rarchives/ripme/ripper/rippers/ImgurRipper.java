@@ -37,7 +37,7 @@ public class ImgurRipper extends AlbumRipper {
     private static final String I_IMGUR_LINK = HTTP + "//i.imgur.com/";
 
     private static final String RETRIEVING = "    Retrieving ";
-    private final int sleepBetweenAlbums;
+    private final int SLEEP_BETWEEN_ALBUMS;
     private Document albumDoc;
 
     private enum ALBUM_TYPE {
@@ -53,7 +53,7 @@ public class ImgurRipper extends AlbumRipper {
 
     public ImgurRipper(URL url) throws IOException {
         super(url);
-        sleepBetweenAlbums = 1;
+        SLEEP_BETWEEN_ALBUMS = 1;
     }
 
     /**
@@ -62,7 +62,7 @@ public class ImgurRipper extends AlbumRipper {
      */
     @Override
     public boolean allowDuplicates() {
-        return true;
+        return albumType == ALBUM_TYPE.USER;
     }
 
     @Override
@@ -103,17 +103,44 @@ public class ImgurRipper extends AlbumRipper {
                 if (albumDoc == null)
                     albumDoc = Http.url(url).get();
 
-                String title = albumDoc.title();
+                Elements elems = null;
 
-                if ((!title.contains(" - Imgur") && !title.contains(" - Album on Imgur")) || title.contains("'s albums"))
-                    throw new IOException("No title found");
+                /*
+                // TODO: Add config option for including username in album title.
+                // It's possible a lot of users would not be interested in that info.
+                String user = null;
+                elems = albumDoc.select(".post-account");
+                if (elems.size() > 0) {
+                    Element postAccount = elems.get(0);
+                    if (postAccount != null) {
+                        user = postAccount.text();
+                    }
+                }
+                */
 
-                if (title.contains(" - Imgur"))
-                    title = title.replaceAll(" - Imgur.*", "");
-                else if (title.contains(" - Album on Imgur"))
-                    title = title.replaceAll(" - Album on Imgur.*", "");
+                String title = null;
+                elems = albumDoc.select(".post-title");
 
-                return "imgur_" + gid + " (" + title + ")";
+                if (elems.size() > 0) {
+                    Element postTitle = elems.get(0);
+                    if (postTitle != null) {
+                        title = postTitle.text();
+                    }
+                }
+
+                String albumTitle = "imgur_";
+                /*
+                // TODO: Add config option (see above)
+                if (user != null) {
+                    albumTitle += "user_" + user;
+                }
+                */
+                albumTitle += gid;
+                if (title != null) {
+                    albumTitle += " (" + title + ")";
+                }
+
+                return albumTitle;
             } catch (IOException e) {
                 LOGGER.error("Method getAlbumTitle", e);
                 // Fall back to default album naming convention
@@ -365,14 +392,14 @@ public class ImgurRipper extends AlbumRipper {
 
             try {
                 ripAlbum(albumURL, albumID);
-                Thread.sleep(sleepBetweenAlbums * 1000L);
+                Thread.sleep(SLEEP_BETWEEN_ALBUMS * 1000L);
             } catch (Exception e) {
                 LOGGER.error("Error while ripping album: " + e.getMessage(), e);
                 continue;
             }
         }
     }
-
+    
     private void ripUserImages(URL url) throws IOException {
         int page = 0;
         int imagesFound = 0;
@@ -418,7 +445,7 @@ public class ImgurRipper extends AlbumRipper {
             }
         }
     }
-
+    
     private void ripSubreddit(URL url) throws IOException {
         int page = 0;
 
@@ -469,7 +496,7 @@ public class ImgurRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/a/([a-zA-Z0-9]{5,8}).*$");
+        Pattern p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/(a|gallery)/([a-zA-Z0-9]{5,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
 
         if (m.matches()) {
@@ -484,7 +511,7 @@ public class ImgurRipper extends AlbumRipper {
         m = p.matcher(url.toExternalForm());
 
         if (m.matches()) {
-            // Imgur gallery
+            // Imgur album or gallery
             albumType = ALBUM_TYPE.ALBUM;
             String gid = m.group(m.groupCount());
             this.url = new URL("http://imgur.com/a/" + gid);
@@ -502,7 +529,7 @@ public class ImgurRipper extends AlbumRipper {
                 throw new MalformedURLException("Cannot rip the www.imgur.com homepage");
 
             albumType = ALBUM_TYPE.USER;
-            return gid;
+            return "user_" + gid;
         }
 
         p = Pattern.compile("^https?://([a-zA-Z0-9\\-]{3,})\\.imgur\\.com/all.*$");
@@ -523,7 +550,7 @@ public class ImgurRipper extends AlbumRipper {
             return m.group(1) + "-" + m.group(2);
         }
 
-        p = Pattern.compile("^https?://(www\\.|m\\.)?imgur\\.com/r/([a-zA-Z0-9\\-_]{3,})(/top|/new)?(/all|/year|/month|/week)?/?$");
+        p = Pattern.compile("^https?://(www\\\\.|m\\\\.)?imgur\\\\.com/r/([a-zA-Z0-9\\\\-_]{3,})(/top|/new)?(/all|/year|/month|/week|/day)?/?$");
         m = p.matcher(url.toExternalForm());
 
         if (m.matches()) {
@@ -535,6 +562,17 @@ public class ImgurRipper extends AlbumRipper {
                     album += "_" + m.group(i).replace("/", "");
             }
             return album;
+        }
+
+        p = Pattern.compile("^https?://(i\\.|www\\.|m\\.)?imgur\\.com/r/(\\w+)/([a-zA-Z0-9,]{5,}).*$");
+        m = p.matcher(url.toExternalForm());
+        if (m.matches()) {
+            // Imgur subreddit album or image (treat as album)
+            albumType = ALBUM_TYPE.ALBUM;
+            String subreddit = m.group(m.groupCount() - 1);
+            String gid = m.group(m.groupCount());
+            this.url = new URL("http://imgur.com/r/" + subreddit + "/" + gid);
+            return "r_" + subreddit + "_" + gid;
         }
 
         p = Pattern.compile("^https?://(i\\.|www\\.|m\\.)?imgur\\.com/([a-zA-Z0-9,]{5,}).*$");

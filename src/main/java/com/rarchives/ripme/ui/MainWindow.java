@@ -58,7 +58,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
     private boolean isRipping = false; // Flag to indicate if we're ripping something
 
-    private JFrame mainFrame;
+    private static JFrame mainFrame;
     private static JTextField ripTextfield;
     private static JButton ripButton;
     private JButton stopButton;
@@ -157,7 +157,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
     public void run() {
         pack();
         mainFrame.setIconImage(getImageIcon("icon").getImage());
-        mainFrame.setLocationRelativeTo(null);
+        restoreWindowPosition(mainFrame);
         mainFrame.setVisible(true);
     }
 
@@ -178,6 +178,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigBoolean(CLIPBOARD_AUTORIP, configClipboardAutorip.isSelected());
         Utils.setConfigBoolean(DESCRIPTIONS_SAVE, configSaveDescriptions.isSelected());
         Utils.setConfigBoolean(PREFER_MP4, configPreferMp4.isSelected());
+        saveWindowPosition(mainFrame);
         saveHistory();
         Utils.saveConfig();
     }
@@ -206,9 +207,11 @@ public class MainWindow implements Runnable, RipStatusHandler {
         EmptyBorder emptyBorder = new EmptyBorder(5, 5, 5, 5);
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.BOTH;
+
         gbc.weightx = 2;
         gbc.ipadx = 2;
         gbc.gridx = 0;
+
         gbc.weighty = 2;
         gbc.ipady = 2;
         gbc.gridy = 0;
@@ -233,10 +236,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
         gbc.gridx = 0;
         ripPanel.add(new JLabel("URL:", JLabel.RIGHT), gbc);
+
         gbc.gridx = 1;
         ripPanel.add(ripTextfield, gbc);
+
         gbc.gridx = 2;
         ripPanel.add(ripButton, gbc);
+
         gbc.gridx = 3;
         ripPanel.add(stopButton, gbc);
 
@@ -249,6 +255,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
         gbc.gridx = 0;
         statusPanel.add(statusLabel, gbc);
+
         gbc.gridy = 1;
         statusPanel.add(openButton, gbc);
         gbc.gridy = 0;
@@ -284,6 +291,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
         logPanel = new JPanel(new GridBagLayout());
         logPanel.setBorder(emptyBorder);
+        logText = new JTextPaneNoWrap();
+        logTextScroll = new JScrollPane(logText);
         logPanel.setVisible(false);
         logPanel.setPreferredSize(new Dimension(300, 250));
         logPanel.add(logTextScroll, gbc);
@@ -369,12 +378,16 @@ public class MainWindow implements Runnable, RipStatusHandler {
         JPanel historyButtonPanel = new JPanel(new GridBagLayout());
         historyButtonPanel.setPreferredSize(new Dimension(300, 10));
         historyButtonPanel.setBorder(emptyBorder);
+
         gbc.gridx = 0;
         historyButtonPanel.add(historyButtonRemove, gbc);
+
         gbc.gridx = 1;
         historyButtonPanel.add(historyButtonClear, gbc);
+
         gbc.gridx = 2;
         historyButtonPanel.add(historyButtonRerip, gbc);
+
         gbc.gridy = 1;
         gbc.gridx = 0;
         historyPanel.add(historyButtonPanel, gbc);
@@ -388,6 +401,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         JList queueList = new JList(queueListModel);
         queueList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         queueList.addMouseListener(new QueueMenuMouseListener());
+
         JScrollPane queueListScroll = new JScrollPane(queueList,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -476,14 +490,20 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configPreferMp4.setHorizontalAlignment(JCheckBox.RIGHT);
         configPreferMp4.setHorizontalTextPosition(JCheckBox.LEFT);
 
+        configWindowPosition = new JCheckBox("Restore window position", Utils.getConfigBoolean("window.position", true));
+        configWindowPosition.setHorizontalAlignment(JCheckBox.RIGHT);
+        configWindowPosition.setHorizontalTextPosition(JCheckBox.LEFT);
         configSaveDirLabel = new JLabel();
         configSaveDirLabel.setHorizontalAlignment(JLabel.RIGHT);
         try {
             String workingDir = Utils.shortenPath(Utils.getWorkingDirectory());
             configSaveDirLabel.setText(workingDir);
+            configSaveDirLabel.setForeground(Color.BLUE);
+            configSaveDirLabel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }
+
         configSaveDirLabel.setToolTipText(configSaveDirLabel.getText());
 
         configSaveDirButton = new JButton("Select Save Directory...");
@@ -560,7 +580,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         gbc.gridy = 5;
         pane.add(configurationPanel, gbc);
     }
-
+    
     private void setupHandlers() {
         ripButton.addActionListener(new RipButtonHandler());
         ripTextfield.addActionListener(new RipButtonHandler());
@@ -686,7 +706,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             }
             saveHistory();
         });
-
+        
         // Re-rip all history
         historyButtonRerip.addActionListener(event -> {
             if (HISTORY.toList().isEmpty()) {
@@ -747,6 +767,37 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
             configSaveDirLabel.setText(Utils.shortenPath(chosenPath));
             Utils.setConfigString("rips.directory", chosenPath);
+
+            configSaveDirLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                File file = new File(Utils.getWorkingDirectory().toString());
+                Desktop desktop = Desktop.getDesktop();
+                try {
+                    desktop.open(file);
+                } catch (Exception e1) { }
+            }
+        });
+        configSaveDirButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                JFileChooser jfc = new JFileChooser(Utils.getWorkingDirectory());
+                jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                int returnVal = jfc.showDialog(null, "select directory");
+                if (returnVal != JFileChooser.APPROVE_OPTION) {
+                    return;
+                }
+                File chosenFile = jfc.getSelectedFile();
+                String chosenPath = null;
+                try {
+                    chosenPath = chosenFile.getCanonicalPath();
+                } catch (Exception e) {
+                    logger.error("Error while getting selected path: ", e);
+                    return;
+                }
+                configSaveDirLabel.setText(Utils.shortenPath(chosenPath));
+                Utils.setConfigString("rips.directory", chosenPath);
+            }
         });
 
         configOverwriteCheckbox.addActionListener(arg0 -> Utils.setConfigBoolean(FILE_OVERWRITE, configOverwriteCheckbox.isSelected()));
@@ -782,6 +833,14 @@ public class MainWindow implements Runnable, RipStatusHandler {
         configPreferMp4.addActionListener(arg0 -> {
             Utils.setConfigBoolean(PREFER_MP4, configPreferMp4.isSelected());
             Utils.configureLogger();
+        });
+
+            configWindowPosition.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                Utils.setConfigBoolean("window.position", configWindowPosition.isSelected());
+                Utils.configureLogger();
+            }
         });
 
         queueListModel.addListDataListener(new ListDataListener() {
@@ -975,7 +1034,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             trayMenuMain.setLabel(SHOW);
         }
     }
-
+    
     private void appendLog(final String text, final Color color) {
         SimpleAttributeSet sas = new SimpleAttributeSet();
         StyleConstants.setForeground(sas, color);
@@ -1146,7 +1205,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 ripNextAlbum();
         }
     }
-
+    
     private class StatusEvent implements Runnable {
         private final AbstractRipper ripper;
         private final RipStatusMessage msg;
@@ -1161,7 +1220,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
             handleEvent(this);
         }
     }
-
+    
     private synchronized void handleEvent(StatusEvent evt) {
         if (ripper.isStopped())
             return;
@@ -1273,6 +1332,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         SwingUtilities.invokeLater(event);
     }
 
+    /** Simple TextPane that allows horizontal scrolling. */
+    class JTextPaneNoWrap extends JTextPane {
+
     /**
      * Método para pegar uma imagem
      *
@@ -1309,5 +1371,68 @@ public class MainWindow implements Runnable, RipStatusHandler {
         ripTextfield.setText(url.trim());
         ripButton.doClick();
     }
+
+    public static void enableWindowPositioning() {
+        Utils.setConfigBoolean("window.position", true);
+    }
+
+    public static void disableWindowPositioning() {
+        Utils.setConfigBoolean("window.position", false);
+    }
+
+    public static boolean isWindowPositioningEnabled() {
+        boolean isEnabled = Utils.getConfigBoolean("window.position", true);
+        return isEnabled;
+    }
+
+    public static void saveWindowPosition(Frame frame) {
+        if (!isWindowPositioningEnabled()) {
+            return;
+        }
+        Point point;
+        try {
+            point = frame.getLocationOnScreen();
+        } catch (Exception e) {
+            e.printStackTrace();
+            try {
+                point = frame.getLocation();
+            } catch (Exception e2) {
+                e2.printStackTrace();
+                return;
+            }
+        }
+        int x = (int)point.getX();
+        int y = (int)point.getY();
+        int w = frame.getWidth();
+        int h = frame.getHeight();
+        Utils.setConfigInteger("window.x", x);
+        Utils.setConfigInteger("window.y", y);
+        Utils.setConfigInteger("window.w", w);
+        Utils.setConfigInteger("window.h", h);
+        logger.debug("Saved window position (x=" + x + ", y=" + y + ", w=" + w + ", h=" + h + ")");
+    }
+
+    public static void restoreWindowPosition(Frame frame) {
+        if (!isWindowPositioningEnabled()) {
+            mainFrame.setLocationRelativeTo(null); // default to middle of screen
+            return;
+        }
+        try {
+            int x = Utils.getConfigInteger("window.x", -1);
+            int y = Utils.getConfigInteger("window.y", -1);
+            int w = Utils.getConfigInteger("window.w", -1);
+            int h = Utils.getConfigInteger("window.h", -1);
+            if (x < 0 || y < 0 || w <= 0 || h <= 0) {
+                logger.debug("UNUSUAL: One or more of: x, y, w, or h was still less than 0 after reading config");
+                mainFrame.setLocationRelativeTo(null); // default to middle of screen
+                return;
+            }
+            frame.setBounds(x, y, w, h);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
 
 }

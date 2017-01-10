@@ -50,7 +50,7 @@ public class ImgboxRipper extends AbstractHTMLRipper {
         List<String> imageURLs = new ArrayList<>();
 
         for (Element thumb : doc.select("div.boxed-content > a > img")) {
-            String image = thumb.attr("src").replaceAll("[a-zA-Z0-9.]+s.imgbox.com", "i.imgbox.com");
+            String image = thumb.attr("src").replaceAll("[-a-zA-Z0-9.]+s.imgbox.com", "i.imgbox.com");
             imageURLs.add(image);
         }
 

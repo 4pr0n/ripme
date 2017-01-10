@@ -107,7 +107,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
             }
         } else {
             // Page contains images
-            for (Element thumb : page.select("div.item .holder img")) {
+            for (Element thumb : page.select(".image")) {
                 if (super.isStopped())
                     break;
 
@@ -141,16 +141,6 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                 if (!image.contains("8muses.com"))
                     continue;
 
-                // Remove relative directory path naming
-                image = image.replaceAll("\\.\\./", "");
-                if (image.startsWith("//"))
-                    image = "http:" + image;
-
-                // Convert from thumb URL to full-size
-                if (image.contains("-cu_"))
-                    image = image.replaceAll("-cu_[^.]+", "-me");
-
-                image = image.replaceAll(" ", "%20");
                 imageURLs.add(image);
 
                 if (isThisATest())
@@ -162,8 +152,10 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     private String getFullSizeImage(String imageUrl) throws IOException {
         sendUpdate(STATUS.LOADING_RESOURCE, imageUrl);
-        Document doc = new Http(imageUrl).get();
-        return doc.select("#image").first().attr("src");
+        Document doc = new Http(imageUrl).get(); // Retrieve the webpage  of the image URL
+        Element fullSizeImage = doc.select(".photo").first(); // Select the "photo" element from the page (there should only be 1)
+        String path = "https://www.8muses.com/data/fu/" + fullSizeImage.children().select("#imageName").attr("value"); // Append the path to the fullsize image file to the standard prefix
+        return path;
     }
 
     @Override

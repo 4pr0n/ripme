@@ -216,6 +216,7 @@ public class App {
 
     public static CommandLine getArgs(String[] args) {
         DefaultParser parser = new DefaultParser();
+
         try {
             return parser.parse(getOptions(), args, false);
         } catch (ParseException e) {
