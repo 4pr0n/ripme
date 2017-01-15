@@ -54,7 +54,8 @@ public class EightmusesRipper extends AbstractHTMLRipper {
             // Attempt to use album title as GID
             Element titleElement = getFirstPage().select("meta[name=description]").first();
             String title = titleElement.attr("content");
-            title = title.substring(title.lastIndexOf('/') + 1);
+            title = title.replace("A huge collection of free porn comics for adults. Read", "");
+            title = title.replace("online for free at 8muses.com", "");
             return getHost() + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
