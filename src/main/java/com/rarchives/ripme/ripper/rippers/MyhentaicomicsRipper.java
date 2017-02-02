@@ -81,6 +81,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         }
 
 
+
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<String>();
@@ -127,7 +128,9 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
-        addURLToDownload(url, getPrefix(index));
+        String url_string = url.toExternalForm();
+        url_string = url_string.replace("%20", "_");
+        addURLToDownload(url, getPrefix(index), url_string.split("/")[6]);
     }
 
 
