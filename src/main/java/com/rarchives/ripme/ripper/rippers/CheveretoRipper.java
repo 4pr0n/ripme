@@ -52,7 +52,7 @@ public class CheveretoRipper extends AbstractHTMLRipper {
                 return m.group(1);
             }
             else if (m.matches() == false) {
-                Pattern pa = Pattern.compile("(?:https?://)?(?:www\\.)?[a-z1-9]*\\.[a-z1-9]*/([a-zA-Z1-9]*)/albums/?$");
+                Pattern pa = Pattern.compile("(?:https?://)?(?:www\\.)?[a-z1-9]*\\.[a-z1-9]*/([a-zA-Z1-9_-]*)/albums/?$");
                 Matcher ma = pa.matcher(url.toExternalForm());
                 if (ma.matches()) {
                     return ma.group(1);
