@@ -44,13 +44,19 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
-        else if (m.matches() == false) {
-            Pattern pa = Pattern.compile("^https?://myhentaicomics.com/index.php/search\\?q=([a-zA-Z0-9-]*)$");
-            Matcher ma = pa.matcher(url.toExternalForm());
-            if (ma.matches()) {
-                return ma.group(1);
-            }
+
+        Pattern pa = Pattern.compile("^https?://myhentaicomics.com/index.php/search\\?q=([a-zA-Z0-9-]*)$");
+        Matcher ma = pa.matcher(url.toExternalForm());
+        if (ma.matches()) {
+            return ma.group(1);
         }
+
+        Pattern pat = Pattern.compile("^http://myhentaicomics.com/index.php/tag/([0-9]*)/?$");
+        Matcher mat = pat.matcher(url.toExternalForm());
+        if (mat.matches()) {
+            return mat.group(1);
+        }
+
         throw new MalformedURLException("Expected myhentaicomics.com URL format: " +
                         "myhentaicomics.com/index.php/albumName - got " + url + " instead");
     }
