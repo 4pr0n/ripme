@@ -44,6 +44,13 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         if (m.matches()) {
             return m.group(1);
         }
+        else if (m.matches() == false) {
+            Pattern pa = Pattern.compile("^https?://myhentaicomics.com/index.php/search\\?q=([a-zA-Z0-9-]*)$");
+            Matcher ma = pa.matcher(url.toExternalForm());
+            if (ma.matches()) {
+                return ma.group(1);
+            }
+        }
         throw new MalformedURLException("Expected myhentaicomics.com URL format: " +
                         "myhentaicomics.com/index.php/albumName - got " + url + " instead");
     }
@@ -77,6 +84,33 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<String>();
+        Document albumpage_doc;
+        // Checks if this is a comic page or a page of albums
+        if (doc.toString().contains("class=\"g-item g-album\"")) {
+            for (Element elem : doc.select("li.g-album > a")) {
+                String link = elem.attr("href");
+                link = "http://myhentaicomics.com/" + link;
+                logger.info("Grabbing album " + link);
+                try {
+                    albumpage_doc = Http.url(link).get();
+                } catch(IOException e){
+                    logger.warn("Failed to log link in Jsoup");
+                    albumpage_doc = null;
+                    e.printStackTrace();
+                }
+                for (Element element : albumpage_doc.select("img")) {
+                    String imageSource = element.attr("src");
+                    // This bool is here so we don't try and download the site logo
+                    boolean b = imageSource.startsWith("http");
+                    if (b == false) {
+                        // We replace thumbs with resizes so we can the full sized images
+                        imageSource = imageSource.replace("thumbs", "resizes");
+                        result.add("http://myhentaicomics.com/" + imageSource);
+                    }
+                }
+            }
+        }
+        else {
         for (Element el : doc.select("img")) {
             String imageSource = el.attr("src");
             // This bool is here so we don't try and download the site logo
@@ -85,6 +119,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             // We replace thumbs with resizes so we can the full sized images
             imageSource = imageSource.replace("thumbs", "resizes");
             result.add("http://myhentaicomics.com/" + imageSource);
+                }
             }
         }
         return result;
