@@ -136,6 +136,9 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         String url_string = url.toExternalForm();
         url_string = url_string.replace("%20", "_");
+        url_string = url_string.replace("%27", "");
+        url_string = url_string.replace("%28", "_");
+        url_string = url_string.replace("%29", "_");
         addURLToDownload(url, getPrefix(index), url_string.split("/")[6]);
     }
 
