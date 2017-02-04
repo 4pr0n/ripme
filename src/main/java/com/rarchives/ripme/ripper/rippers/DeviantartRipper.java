@@ -125,7 +125,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         List<String> imageURLs = new ArrayList<String>();
 
         // Iterate over all thumbnails
-        for (Element thumb : page.select("div.zones-container a.thumb")) {
+        for (Element thumb : page.select("div.torpedo-container span.thumb a.torpedo-thumb-link")) {
+
             if (isStopped()) {
                 break;
             }
@@ -164,7 +165,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         List<String> textURLs = new ArrayList<String>();
 
         // Iterate over all thumbnails
-        for (Element thumb : page.select("div.zones-container a.thumb")) {
+        for (Element thumb : page.select("div.torpedo-container span.thumb a.torpedo-thumb-link")) {
             if (isStopped()) {
                 break;
             }
@@ -212,7 +213,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), cookies);
-        sleep(IMAGE_SLEEP_TIME);
+        //Add slight randomness to sleep
+        sleep(IMAGE_SLEEP_TIME + (int) (Math.random()*100) + 1);
     }
 
     /**
@@ -318,6 +320,8 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             try {
                 logger.info("Failed to get full size download image at " + page + " : '" + ioe.getMessage() + "'");
                 String lessThanFull = thumbToFull(thumb, false);
+                //Try again, other shit is broken
+                lessThanFull = smallToFull(thumb, page);
                 logger.info("Falling back to less-than-full-size image " + lessThanFull);
                 return lessThanFull;
             } catch (Exception e) {
@@ -338,7 +342,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         if (username == null || password == null) {
             throw new IOException("could not find username or password in config");
         }
-        Response resp = Http.url("http://www.deviantart.com/")
+        Response resp = Http.url("http://www.deviantart.com/users/login")
                             .response();
         for (Element input : resp.parse().select("form#form-login input[type=hidden]")) {
             postData.put(input.attr("name"), input.attr("value"));
@@ -346,7 +350,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         postData.put("username", username);
         postData.put("password", password);
         postData.put("remember_me", "1");
-
+        Document doc = resp.parse();
+        postData.put("validate_token", doc.select("[name=validate_token]").attr("value"));
+        postData.put("validate_key", doc.select("[name=validate_key]").attr("value"));
         // Send login request
         resp = Http.url("https://www.deviantart.com/users/login")
                     .userAgent(USER_AGENT)
