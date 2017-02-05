@@ -51,7 +51,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             return ma.group(1);
         }
 
-        Pattern pat = Pattern.compile("^http://myhentaicomics.com/index.php/tag/([0-9]*)/?$");
+        Pattern pat = Pattern.compile("^http://myhentaicomics.com/index.php/tag/([0-9]*)/?([a-zA-Z%0-9+\\?=:]*)?$");
         Matcher mat = pat.matcher(url.toExternalForm());
         if (mat.matches()) {
             return mat.group(1);
