@@ -83,6 +83,18 @@ public abstract class AlbumRipper extends AbstractRipper {
     }
 
     @Override
+    public boolean addURLToDownload(URL url, String prefix, String subdirectory, String referrer, Map<String,String> cookies) {
+        File saveFileAs;
+        try {
+            saveFileAs = getSaveAsFile(url, prefix, subdirectory);
+        } catch (IOException e) {
+            logger.error("[!] Error creating save file path for URL '" + url + "':", e);
+            return false;
+        }
+        return addURLToDownload(url, saveFileAs, referrer, cookies);
+    }
+
+    @Override
     public boolean addURLToDownload(URL url, File saveAs) {
         return addURLToDownload(url, saveAs, null, null);
     }
