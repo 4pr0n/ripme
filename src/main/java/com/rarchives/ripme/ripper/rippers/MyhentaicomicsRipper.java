@@ -168,19 +168,18 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                             if (isTag == true) {
                                 logger.info("Downloading from a tag or search");
                                 try {
+                                    Thread.sleep(250)
                                     addURLToDownload(new URL("http://myhentaicomics.com/" + imageSource), getPrefix(x), url_string.split("/")[6]);
                                 }
                                 catch(MalformedURLException e) {
                                     logger.warn("Malformed URL");
                                     e.printStackTrace();
                                 x = x+1;
+                                }
                             }
-                            // result.add("http://myhentaicomics.com/" + imageSource);
+                        }
                     }
                 }
-                }
-
-            }
             }
         }
         else {
