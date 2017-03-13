@@ -137,7 +137,10 @@ public class ImgurRipper extends AlbumRipper {
             // Fall-through
         case USER_ALBUM:
             logger.info("Album type is USER_ALBUM");
-            ripAlbum(this.url, getAlbumTitle(this.url));
+            // Don't call getAlbumTitle(this.url) with this
+            // as it seems to cause the album to be downloaded to a subdir.
+            // ripAlbum already gets the title usinging the logic in getAlbumTitle
+            ripAlbum(this.url);
             break;
         case SERIES_OF_IMAGES:
             logger.info("Album type is SERIES_OF_IMAGES");
