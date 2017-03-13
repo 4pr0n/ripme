@@ -172,11 +172,13 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                                     logger.warn("Malformed URL");
                                     e.printStackTrace();
                                 }
+                                result.add("http://myhentaicomics.com/" + imageSource);
                             }
                         }
                     }
                 }
             }
+        return result;
         }
         else {
         for (Element el : doc.select("img")) {
