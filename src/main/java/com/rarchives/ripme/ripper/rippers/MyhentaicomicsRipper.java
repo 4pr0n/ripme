@@ -150,8 +150,6 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                         album_doc = null;
                         e.printStackTrace();
                     }
-                    // The index
-                    int x = 1;
                     for (Element el :album_doc.select("img")) {
                         String imageSource = el.attr("src");
                         // This bool is here so we don't try and download the site logo
@@ -168,13 +166,11 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                             if (isTag == true) {
                                 logger.info("Downloading from a tag or search");
                                 try {
-                                    Thread.sleep(250)
-                                    addURLToDownload(new URL("http://myhentaicomics.com/" + imageSource), getPrefix(x), url_string.split("/")[6]);
+                                    addURLToDownload(new URL("http://myhentaicomics.com/" + imageSource), "", url_string.split("/")[6]);
                                 }
                                 catch(MalformedURLException e) {
                                     logger.warn("Malformed URL");
                                     e.printStackTrace();
-                                x = x+1;
                                 }
                             }
                         }
