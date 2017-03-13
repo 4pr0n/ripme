@@ -104,12 +104,10 @@ public class ImgurRipper extends AlbumRipper {
                 */
 
                 String title = null;
-                elems = albumDoc.select("div.post-title-container");
-                if (elems.size() > 0) {
-                    Element postTitle = elems.get(0);
-                    if (postTitle != null) {
-                        title = postTitle.text();
-                    }
+                logger.info("\n\n\n\n\n\n_________________________________________________________________\nTrying to get album title");
+                elems = albumDoc.select("meta[property=og:title]");
+                if (elems!=null) {
+                    title = elems.attr("content");
                 }
 
                 String albumTitle = "imgur_";
@@ -138,18 +136,23 @@ public class ImgurRipper extends AlbumRipper {
         case ALBUM:
             // Fall-through
         case USER_ALBUM:
-            ripAlbum(this.url);
+            logger.info("Album type is USER_ALBUM");
+            ripAlbum(this.url, getAlbumTitle(this.url));
             break;
         case SERIES_OF_IMAGES:
+            logger.info("Album type is SERIES_OF_IMAGES");
             ripAlbum(this.url);
             break;
         case USER:
+            logger.info("Album type is USER");
             ripUserAccount(url);
             break;
         case SUBREDDIT:
+            logger.info("Album type is SUBREDDIT");
             ripSubreddit(url);
             break;
         case USER_IMAGES:
+            logger.info("Album type is USER_IMAGES");
             ripUserImages(url);
             break;
         }
