@@ -104,7 +104,7 @@ public class ImgurRipper extends AlbumRipper {
                 */
 
                 String title = null;
-                logger.info("\n\n\n\n\n\n_________________________________________________________________\nTrying to get album title");
+                logger.info("Trying to get album title");
                 elems = albumDoc.select("meta[property=og:title]");
                 if (elems!=null) {
                     title = elems.attr("content");
