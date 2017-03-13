@@ -166,6 +166,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                             if (isTag == true) {
                                 logger.info("Downloading from a tag or search");
                                 try {
+                                    sleep(500);
                                     addURLToDownload(new URL("http://myhentaicomics.com/" + imageSource), "", url_string.split("/")[6]);
                                 }
                                 catch(MalformedURLException e) {
@@ -197,6 +198,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
 
     @Override
     public void downloadURL(URL url, int index) {
+        sleep(500);
         addURLToDownload(url, getPrefix(index));
     }
 
