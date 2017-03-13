@@ -28,7 +28,7 @@ public class ImgurRipper extends AlbumRipper {
                                 HOST   = "imgur";
 
     private final int SLEEP_BETWEEN_ALBUMS;
-    
+
     private Document albumDoc;
 
     static enum ALBUM_TYPE {
@@ -104,7 +104,7 @@ public class ImgurRipper extends AlbumRipper {
                 */
 
                 String title = null;
-                elems = albumDoc.select(".post-title");
+                elems = albumDoc.select("div.post-title-container");
                 if (elems.size() > 0) {
                     Element postTitle = elems.get(0);
                     if (postTitle != null) {
@@ -338,7 +338,7 @@ public class ImgurRipper extends AlbumRipper {
         }
         return imgurAlbum;
     }
-    
+
     /**
      * Rips all albums in an imgur user's account.
      * @param url
@@ -366,7 +366,7 @@ public class ImgurRipper extends AlbumRipper {
             }
         }
     }
-    
+
     private void ripUserImages(URL url) throws IOException {
         int page = 0; int imagesFound = 0; int imagesTotal = 0;
         String jsonUrl = url.toExternalForm().replace("/all", "/ajax/images");
@@ -404,7 +404,7 @@ public class ImgurRipper extends AlbumRipper {
             }
         }
     }
-    
+
     private void ripSubreddit(URL url) throws IOException {
         int page = 0;
         while (true) {
