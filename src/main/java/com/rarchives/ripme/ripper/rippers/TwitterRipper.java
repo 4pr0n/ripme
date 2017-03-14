@@ -169,12 +169,12 @@ public class TwitterRipper extends AlbumRipper {
     }
 
     private boolean parseTweet(JSONObject tweet) throws MalformedURLException {
-        if (!tweet.has("entities")) {
+        if (!tweet.has("extended_entities")) {
             logger.error("XXX Tweet doesn't have entitites");
             return false;
         }
 
-        JSONObject entities = tweet.getJSONObject("entities");
+        JSONObject entities = tweet.getJSONObject("extended_entities");
 
         if (entities.has("media")) {
             JSONArray medias = entities.getJSONArray("media");
@@ -183,6 +183,18 @@ public class TwitterRipper extends AlbumRipper {
             for (int i = 0; i < medias.length(); i++) {
                 media = (JSONObject) medias.get(i);
                 url = media.getString("media_url");
+                if(media.getString("type").equals("video")) {
+                    JSONArray variants = media.getJSONObject("video_info").getJSONArray("variants");
+                    for(int j = 0; j < medias.length(); j++) {
+                        JSONObject variant = (JSONObject) variants.get(i);
+                        if (variant.has("bitrate") && variant.getInt("bitrate") == 832000) {
+                            addURLToDownload(new URL(variant.getString("url")));
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+                else if(media.getString("type").equals("photo")) {
                 if (url.contains(".twimg.com/")) {
                     url += ":orig";
                     addURLToDownload(new URL(url));
@@ -190,6 +202,7 @@ public class TwitterRipper extends AlbumRipper {
                 }
                 else {
                     logger.debug("Unexpected media_url: " + url);
+                }
                 }
             }
         }
