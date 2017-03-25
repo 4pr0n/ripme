@@ -45,6 +45,7 @@ public class XhamsterRipper extends AlbumRipper {
                     continue;
                 }
                 String image = thumb.attr("src");
+                // replace thumbnail urls with the urls to the full sized images
                 image = image.replaceAll(
                         "https://upt.xhcdn\\.",
                         "http://up.xhamster.");
