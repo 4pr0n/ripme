@@ -195,7 +195,7 @@ public class BasicRippersTest extends RippersTest {
     }
 
     public void testPornhubRip() throws IOException {
-        AbstractRipper ripper = new PornhubRipper(new URL("http://www.pornhub.com/album/428351"));
+        AbstractRipper ripper = new PornhubRipper(new URL("http://www.pornhub.com/album/16871122"));
         testRipper(ripper);
     }
 

@@ -2,26 +2,19 @@ package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MyhentaicomicsRipper extends AbstractHTMLRipper {
+
     public static boolean isTag;
 
     public MyhentaicomicsRipper(URL url) throws IOException {
@@ -99,10 +92,10 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                 String urlToGet = "http://myhentaicomics.com/index.php/" + pageUrl.split("\\?")[0] + "?page=" + Integer.toString(pageNumber);
                 Document nextAlbumPage;
                 try {
-                    logger.info("Grabbing " + urlToGet);
+                    LOGGER.info("Grabbing " + urlToGet);
                     nextAlbumPage = Http.url(urlToGet).get();
                 } catch(IOException e){
-                    logger.warn("Failed to log link in Jsoup");
+                    LOGGER.warn("Failed to log link in Jsoup");
                     nextAlbumPage = null;
                     e.printStackTrace();
                 }
@@ -110,13 +103,13 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                 String nextPage = elem.attr("href");
                 pageNumber = pageNumber + 1;
                 if(nextPage == ""){
-                    logger.info("Got " + pageNumber + " pages");
+                    LOGGER.info("Got " + pageNumber + " pages");
                     break;
                 }
                 else {
-                    logger.info(nextPage);
+                    LOGGER.info(nextPage);
                     albumPagesList.add(nextPage);
-                    logger.info("Adding " + nextPage);
+                    LOGGER.info("Adding " + nextPage);
                 }
             }
             return albumPagesList;
@@ -131,13 +124,13 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         if (doc.toString().contains("class=\"g-item g-album\"")) {
             for (Element elem : doc.select("li.g-album > a")) {
                 String link = elem.attr("href");
-                logger.info("Grabbing album " + link);
+                LOGGER.info("Grabbing album " + link);
                 pagesToRip = getNextAlbumPage(link);
-                logger.info(pagesToRip);
+                LOGGER.info(pagesToRip);
                 for (String element : pagesToRip) {
                     Document album_doc;
                     try {
-                        logger.info("grabbing " + element + " with jsoup");
+                        LOGGER.info("grabbing " + element + " with jsoup");
                         boolean startsWithhttp = element.startsWith("http");
                         if (startsWithhttp == false) {
                             album_doc = Http.url("http://myhentaicomics.com/" + element).get();
@@ -146,7 +139,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                             album_doc = Http.url(element).get();
                         }
                     } catch(IOException e){
-                        logger.warn("Failed to log link in Jsoup");
+                        LOGGER.warn("Failed to log link in Jsoup");
                         album_doc = null;
                         e.printStackTrace();
                     }
@@ -188,7 +181,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         url_string = url_string.replace("%29", "_");
         url_string = url_string.replace("%2C", "_");
         if (isTag == true) {
-            logger.info("Downloading from a tag or search");
+            LOGGER.info("Downloading from a tag or search");
             addURLToDownload(url, getPrefix(index), url_string.split("/")[6]);
         }
         else {
