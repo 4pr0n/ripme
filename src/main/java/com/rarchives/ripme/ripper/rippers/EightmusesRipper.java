@@ -40,7 +40,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://(www\\.)?8muses\\.com/index/category/([a-zA-Z0-9\\-_]+).*$");
+        Pattern p = Pattern.compile("^https?://(www\\.)?8muses\\.com/comix/album/([a-zA-Z0-9\\-_]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
 
         if (!m.matches())
@@ -55,7 +55,8 @@ public class EightmusesRipper extends AbstractHTMLRipper {
             // Attempt to use album title as GID
             Element titleElement = getFirstPage().select("meta[name=description]").first();
             String title = titleElement.attr("content");
-            title = title.substring(title.lastIndexOf('/') + 1);
+            title = title.replace("A huge collection of free porn comics for adults. Read", "");
+            title = title.replace("online for free at 8muses.com", "");
             return getHost() + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
@@ -130,13 +131,9 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
                     try {
                         LOGGER.info("Retrieving full-size image location from " + parentHref);
-                        Thread.sleep(1000);
                         image = getFullSizeImage(parentHref);
                     } catch (IOException e) {
                         LOGGER.error("Failed to get full-size image from " + parentHref, e);
-                        continue;
-                    } catch (InterruptedException e) {
-                        LOGGER.error("Interrupted while getting full-size image from " + parentHref, e);
                         continue;
                     }
                 }

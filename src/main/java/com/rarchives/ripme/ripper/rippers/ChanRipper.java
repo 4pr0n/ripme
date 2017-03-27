@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 public class ChanRipper extends AbstractHTMLRipper {
 
     private static final List<ChanSite> EXPLICIT_DOMAINS = Arrays.asList(
-            new ChanSite(Collections.singletonList("boards.4chan.org"), Collections.singletonList("4cdn.org")),
+            new ChanSite(Collections.singletonList("boards.4chan.org"), Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org")),
             new ChanSite(Collections.singletonList("archive.moe"), Collections.singletonList("data.archive.moe")),
             new ChanSite(Collections.singletonList("4archive.org"), Collections.singletonList("imgur.com")),
             new ChanSite(Collections.singletonList("archive.4plebs.org"), Collections.singletonList("img.4plebs.org")),

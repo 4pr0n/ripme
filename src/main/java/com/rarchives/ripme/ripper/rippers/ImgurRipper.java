@@ -119,13 +119,10 @@ public class ImgurRipper extends AlbumRipper {
                 */
 
                 String title = null;
-                elems = albumDoc.select(".post-title");
-
-                if (elems.size() > 0) {
-                    Element postTitle = elems.get(0);
-                    if (postTitle != null) {
-                        title = postTitle.text();
-                    }
+                LOGGER.info("Trying to get album title");
+                elems = albumDoc.select("meta[property=og:title]");
+                if (elems!=null) {
+                    title = elems.attr("content");
                 }
 
                 String albumTitle = "imgur_";
@@ -153,25 +150,30 @@ public class ImgurRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         switch (albumType) {
-            case ALBUM:
-                // Fall-through
-            case USER_ALBUM:
-                ripAlbum(this.url);
-                break;
-            case SERIES_OF_IMAGES:
-                ripAlbum(this.url);
-                break;
-            case USER:
-                ripUserAccount(url);
-                break;
-            case SUBREDDIT:
-                ripSubreddit(url);
-                break;
-            case USER_IMAGES:
-                ripUserImages(url);
-                break;
-            default:
-                break;
+        case ALBUM:
+            // Fall-through
+        case USER_ALBUM:
+            LOGGER.info("Album type is USER_ALBUM");
+            // Don't call getAlbumTitle(this.url) with this
+            // as it seems to cause the album to be downloaded to a subdir.
+            ripAlbum(this.url);
+            break;
+        case SERIES_OF_IMAGES:
+            LOGGER.info("Album type is SERIES_OF_IMAGES");
+            ripAlbum(this.url);
+            break;
+        case USER:
+            LOGGER.info("Album type is USER");
+            ripUserAccount(url);
+            break;
+        case SUBREDDIT:
+            LOGGER.info("Album type is SUBREDDIT");
+            ripSubreddit(url);
+            break;
+        case USER_IMAGES:
+            LOGGER.info("Album type is USER_IMAGES");
+            ripUserImages(url);
+            break;
         }
         waitForThreads();
     }

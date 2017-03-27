@@ -9,10 +9,12 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -21,6 +23,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class E621Ripper extends AbstractHTMLRipper {
+    public static final int POOL_IMAGES_PER_PAGE = 24;
+
 	private static Pattern gidPattern = null;
 	private static Pattern gidPattern2 = null;
 	private static Pattern gidPatternPool = null;
@@ -56,12 +60,30 @@ public class E621Ripper extends AbstractHTMLRipper {
 
 	@Override
 	public List<String> getURLsFromPage(Document page) {
-		Elements elements = page.select("#post-list .thumb a,#pool-show .thumb a");
-		List<String> res = new ArrayList<>(elements.size());
+        Elements elements = page.select("#post-list .thumb a,#pool-show .thumb a");
+        List<String> res = new ArrayList<String>(elements.size());
 
-		for (Element e : elements)
-			res.add(e.absUrl("href") + "#" + e.child(0).attr("id").substring(1));
+        if (page.getElementById("pool-show") != null) {
+            int index = 0;
 
+            Element e = page.getElementById("paginator");
+            if (e != null) {
+                e = e.getElementsByClass("current").first();
+                if (e != null) {
+                    index = (Integer.parseInt(e.text()) - 1) * POOL_IMAGES_PER_PAGE;
+                }
+            }
+
+            for (Element e_ : elements) {
+                res.add(e_.absUrl("href") + "#" + ++index);
+            }
+
+        } else {
+            for (Element e : elements) {
+                res.add(e.absUrl("href") + "#" + e.child(0).attr("id").substring(1));
+            }
+        }
+		
 		return res;
 	}
 
@@ -79,58 +101,86 @@ public class E621Ripper extends AbstractHTMLRipper {
 	public void downloadURL(final URL url, int index) {
 		e621ThreadPool.addThread(new Thread(() -> {
 			try {
-				Document page = Http.url(url).get();
+                Document page = Http.url(url).get();
+                Element e = page.getElementById("image");
 
-				addURLToDownload(new URL(page.getElementById("image").absUrl("src")), Utils.getConfigBoolean("download.save_order", true) ? url.getRef() + "-" : "");
-			} catch (IOException ex) {
+                if (e != null) {
+                    addURLToDownload(new URL(e.absUrl("src")), Utils.getConfigBoolean("download.save_order", true) ? url.getRef() + "-" : "");
+                } else if ((e = page.select(".content object>param[name=\"movie\"]").first()) != null) {
+                    addURLToDownload(new URL(e.absUrl("value")), Utils.getConfigBoolean("download.save_order", true) ? url.getRef() + "-" : "");
+                } else {
+                    Logger.getLogger(E621Ripper.class.getName()).log(Level.WARNING, "Unsupported media type - please report to program author: " + url.toString());
+                }			} catch (IOException ex) {
 				Logger.getLogger(E621Ripper.class.getName()).log(Level.SEVERE, null, ex);
 			}
 		}));
 	}
+	
+	private String getTerm(URL url) throws MalformedURLException{
+        String query = url.getQuery();
 
-	private String getTerm(URL url) throws MalformedURLException {
-		if (gidPattern == null)
-			gidPattern = Pattern.compile("^https?://(www\\.)?e621\\.net/post/index/[^/]+/([a-zA-Z0-9$_.+!*'(),%-]+)(/.*)?(#.*)?$");
-		if (gidPatternPool == null)
-			gidPatternPool = Pattern.compile("^https?://(www\\.)?e621\\.net/pool/show/([a-zA-Z0-9$_.+!*'(),%-]+)(\\?.*)?(/.*)?(#.*)?$");
+        if (query != null) {
+            return Utils.parseUrlQuery(query, "tags");
+        }
 
-		Matcher m = gidPattern.matcher(url.toExternalForm());
-		if (m.matches())
-			return m.group(2);
+        if (query == null) {
+            if ((query = url.getPath()).startsWith("/post/index/")) {
+                query = query.substring(12);
 
-		m = gidPatternPool.matcher(url.toExternalForm());
-		if (m.matches())
-			return m.group(2);
+                int pos = query.indexOf('/');
+                if (pos == -1) {
+                    return null;
+                }
 
-		throw new MalformedURLException("Expected e621.net URL format: e621.net/post/index/1/searchterm - got " + url + " instead");
-	}
+                // skip page number
+                query = query.substring(pos + 1);
+
+                if (query.endsWith("/")) {
+                    query = query.substring(0, query.length() - 1);
+                }
+
+                try {
+                    return URLDecoder.decode(query, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    // Shouldn't happen since UTF-8 is required to be supported
+                    throw new RuntimeException(e);
+                }
+
+            } else if (query.startsWith("/pool/show/")) {
+                query = query.substring(11);
+
+                if (query.endsWith("/")) {
+                    query = query.substring(0, query.length() - 1);
+                }
+
+                return query;
+            }
+        }
+
+        return null;	}
 
 	@Override
 	public String getGID(URL url) throws MalformedURLException {
-		try {
-			String prefix = "";
-			if (url.getPath().startsWith("/pool/show/"))
-				prefix = "pool_";
+        String prefix = "";
+        if (url.getPath().startsWith("/pool/show/")) {
+            prefix = "pool_";
+        } else {
+            prefix = "term_";
+        }
 
-			return Utils.filesystemSafe(prefix + new URI(getTerm(url)).getPath());
-		} catch (URISyntaxException ex) {
-			Logger.getLogger(PahealRipper.class.getName()).log(Level.SEVERE, null, ex);
-		}
-
-		throw new MalformedURLException("Expected e621.net URL format: e621.net/post/index/1/searchterm - got " + url + " instead");
-	}
+        return Utils.filesystemSafe(prefix + getTerm(url));
+    }
 
 	@Override
 	public URL sanitizeURL(URL url) throws MalformedURLException {
-		if (gidPattern2 == null)
-			gidPattern2 = Pattern.compile("^https?://(www\\.)?e621\\.net/post/search\\?tags=([a-zA-Z0-9$_.+!*'(),%-]+)(/.*)?(#.*)?$");
-
+		if(gidPattern2==null)
+			gidPattern2=Pattern.compile("^https?://(www\\.)?e621\\.net/post/search\\?tags=([a-zA-Z0-9$_.+!*'(),%-]+)(/.*)?(#.*)?$");
+		
 		Matcher m = gidPattern2.matcher(url.toExternalForm());
-
-		if (m.matches())
-			return new URL("https://e621.net/post/index/1/" + m.group(2).replace("+", "%20"));
-
+		if(m.matches())
+			return new URL("https://e621.net/post/index/1/"+m.group(2).replace("+","%20"));
+		
 		return url;
 	}
-
+	
 }
