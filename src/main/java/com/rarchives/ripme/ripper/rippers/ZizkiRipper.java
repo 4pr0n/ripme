@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 public class ZizkiRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<String,String>();
+    private Map<String, String> cookies = new HashMap<>();
 
     public ZizkiRipper(URL url) throws IOException {
         super(url);
@@ -29,6 +29,7 @@ public class ZizkiRipper extends AbstractHTMLRipper {
     public String getHost() {
         return "zizki";
     }
+
     @Override
     public String getDomain() {
         return "zizki.com";
@@ -58,7 +59,7 @@ public class ZizkiRipper extends AbstractHTMLRipper {
             return getHost() + "_" + author + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
-            LOGGER.info("Unable to find title at " + url);
+            LOGGER.info("Unable to find title at " + url, e);
         }
         return super.getAlbumTitle(url);
     }
@@ -75,37 +76,39 @@ public class ZizkiRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         // Page contains images
         LOGGER.info("Look for images.");
         for (Element thumb : page.select("img")) {
             LOGGER.info("Img");
-            if (super.isStopped()) break;
-            // Find thumbnail image source
-            String image = null;
-            String img_type = null;
-            String src = null;
-            if (thumb.hasAttr("typeof")) {
-                img_type = thumb.attr("typeof");
-                if (img_type.equals("foaf:Image")) {
-                    LOGGER.debug("Found image with " + img_type);
-                  if (thumb.parent() != null &&
-                      thumb.parent().parent() != null &&
-                      thumb.parent().parent().attr("class") != null &&
-                      thumb.parent().parent().attr("class").equals("aimage-center")
-                     )
-                  {
-                     src = thumb.attr("src");
-                      LOGGER.debug("Found url with " + src);
-                     if (!src.contains("zizki.com")) {
-                       continue;
-                     } else {
-                       imageURLs.add(src.replace("/styles/medium/public/","/styles/large/public/"));
-                     }
-                   }
-                }
+
+            if (super.isStopped())
+                break;
+
+            if (thumb.hasAttr("typeof"))
+                imageURLs = someFunc(imageURLs, thumb);
+        }
+        return imageURLs;
+    }
+
+    private List<String> someFunc(List<String> imageURLs, Element thumb) {
+        String imgType = thumb.attr("typeof");
+
+        if (("foaf:Image").equals(imgType)) {
+            LOGGER.debug("Found image with " + imgType);
+
+            if (thumb.parent() != null && thumb.parent().parent() != null &&
+                    thumb.parent().parent().attr("class") != null &&
+                    ("aimage-center").equals(thumb.parent().parent().attr("class"))) {
+
+                String src = thumb.attr("src");
+                LOGGER.debug("Found url with " + src);
+
+                if (src.contains("zizki.com"))
+                    imageURLs.add(src.replace("/styles/medium/public/", "/styles/large/public/"));
             }
         }
+
         return imageURLs;
     }
 
@@ -118,4 +121,5 @@ public class ZizkiRipper extends AbstractHTMLRipper {
     public String getPrefix(int index) {
         return String.format("%03d_", index);
     }
+
 }

@@ -28,7 +28,7 @@ import java.util.regex.Pattern;
 
 public class FuraffinityRipper extends AbstractHTMLRipper {
 
-    static Map<String, String> cookies = null;
+    Map<String, String> cookies = null;
     private static final String URL_BASE = "https://www.furaffinity.net";
 
     // Thread pool for finding direct image links from "image" pages (html)
@@ -78,7 +78,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         formData.put("retard_protection", "1");
         formData.put("name", user);
         formData.put("pass", pass);
-        formData.put("login", "Login toÂ FurAffinity");
+        formData.put("login", "Login to FurAffinity");
 
         Response doLogin = Http.url(URL_BASE + "/login/?ref=" + url).referrer(URL_BASE + "/login/")
                 .cookies(cookies).data(formData).method(Method.POST).response();
@@ -107,7 +107,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> urls = new ArrayList<>();
-        Elements urlElements = page.select("b[id^=sid_]");
+        Elements urlElements = page.select("figure[id^=sid-]");
 
         for (Element e : urlElements)
             urls.add(URL_BASE + e.select("a").first().attr("href"));

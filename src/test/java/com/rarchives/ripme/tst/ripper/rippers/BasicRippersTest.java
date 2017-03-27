@@ -108,10 +108,13 @@ public class BasicRippersTest extends RippersTest {
         testRipper(ripper);
     }
 
+    /*
+    GIFYO IS DOWN
     public void testGifyoAlbum() throws IOException {
         GifyoRipper ripper = new GifyoRipper(new URL("http://gifyo.com/PieSecrets/"));
         testRipper(ripper);
     }
+    */
 
     public void testGirlsofdesireAlbum() throws IOException {
         GirlsOfDesireRipper ripper = new GirlsOfDesireRipper(new URL("http://www.girlsofdesire.org/galleries/krillia/"));
@@ -185,6 +188,28 @@ public class BasicRippersTest extends RippersTest {
     public void testNfsfwRip() throws IOException {
         AbstractRipper ripper = new NfsfwRipper(new URL("http://nfsfw.com/gallery/v/Kitten/"));
         testRipper(ripper);
+    }
+
+    public void testNhentaiRip() throws IOException {
+        NhentaiRipper ripper = new NhentaiRipper(new URL("https://nhentai.net/g/159174/"));
+        testRipper(ripper);
+    }
+
+    public void testZizkiRip() throws IOException {
+        ZizkiRipper ripper = new ZizkiRipper(new URL("http://zizki.com/marcus-gray/emilys-secret"));
+        testRipper(ripper);
+    }
+
+    public void testMyHentaiComicsRip() throws IOException {
+        MyhentaicomicsRipper ripper = new MyhentaicomicsRipper(new URL("http://myhentaicomics.com/index.php/Furry-U"));
+        testRipper(ripper);
+    }
+
+    public void testMyHentaiComicsTag() throws IOException {
+        MyhentaicomicsRipper ripper = new MyhentaicomicsRipper(new URL("http://myhentaicomics.com/index.php/tag/2443/"));
+        testRipper(ripper);
+        deleteSubdirs(ripper.getWorkingDir());
+        deleteDir(ripper.getWorkingDir());
     }
 
     public void testPhotobucketRip() throws IOException {
