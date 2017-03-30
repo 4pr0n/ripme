@@ -157,6 +157,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                     // Set the page title
                     pageTitle = doc.select("meta[property=og:title]").attr("content");
                 }
+                if (explicit_domains.contains("www.totempole666.com") == true) {
+                    String postDate = doc.select("span.post-date").first().text().replaceAll("/", "_");
+                    String postTitle = doc.select("h2.post-title").first().text().replaceAll("#", "");
+                    pageTitle = postDate + "_" + postTitle;
+
+                }
                 result.add(elem.attr("src"));
             }
             return result;
