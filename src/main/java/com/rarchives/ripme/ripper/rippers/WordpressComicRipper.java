@@ -17,6 +17,7 @@ import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.utils.Http;
 
 public class WordpressComicRipper extends AbstractHTMLRipper {
+    String pageTitle ="";
 
     public WordpressComicRipper(URL url) throws IOException {
     super(url);
@@ -133,6 +134,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                     throw new IOException("No more pages");
                 }
                 else {
+                    sleep(500);
                     return Http.url(nextPage).get();
                 }
             }
@@ -148,8 +150,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 // If doc is the last page in the comic then elem.attr("src") returns null
                 // because there is no link <a> to the next page
                 if (elem == null) {
-                    logger.debug("Got last page in totempole666 comic");
                     elem = doc.select("div.comic-table > div#comic > img").first();
+                }
+                // Check if this is a site where we can get the page number from the title
+                if (explicit_domains.contains("buttsmithy.com") == true) {
+                    // Set the page title
+                    pageTitle = doc.select("meta[property=og:title]").attr("content");
                 }
                 result.add(elem.attr("src"));
             }
@@ -158,6 +164,13 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
 
         @Override
         public void downloadURL(URL url, int index) {
+            sleep(500);
+            // Download the url with the page title as the prefix
+            // so we can download them in any order (And don't have to rerip the whole site to update the local copy)
+            if (explicit_domains.contains("buttsmithy.com") == true) {
+                addURLToDownload(url, pageTitle.replaceAll(" ", "") + "_");
+            }
+            // If we're ripping a site where we can't get the page number/title we just rip normally
             addURLToDownload(url, getPrefix(index));
         }
 
