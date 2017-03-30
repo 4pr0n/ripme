@@ -24,7 +24,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     }
 
     public static List<String> explicit_domains = Arrays.asList("www.totempole666.com",
-    "buttsmithy.com", "themonsterunderthebed.net", "prismblush.com");
+    "buttsmithy.com", "themonsterunderthebed.net", "prismblush.com", "www.konradokonski.com");
         @Override
         public String getHost() {
             String host = url.toExternalForm().split("/")[2];
@@ -41,9 +41,16 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         public boolean canRip(URL url) {
             String url_name = url.toExternalForm();
             if (explicit_domains.contains(url_name.split("/")[2]) == true) {
+
                 Pattern totempole666Pat = Pattern.compile("https?://www\\.totempole666.com/comic/([a-zA-Z0-9_-]*)/?$");
                 Matcher totempole666Mat = totempole666Pat.matcher(url.toExternalForm());
                 if (totempole666Mat.matches()) {
+                    return true;
+                }
+
+                Pattern konradokonskiPat = Pattern.compile("https?://www.konradokonski.com/sawdust/comic/([a-zA-Z0-9_-]*)/?$");
+                Matcher konradokonskiMat = konradokonskiPat.matcher(url.toExternalForm());
+                if (konradokonskiMat.matches()) {
                     return true;
                 }
 
@@ -95,6 +102,18 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 return "prismblush.com_" + prismblushMat.group(1).replaceAll("-pg-\\d+", "");
             }
 
+            Pattern konradokonskiSawdustPat = Pattern.compile("http://www.konradokonski.com/sawdust/comic/([a-zA-Z0-9_-]*)/?$");
+            Matcher konradokonskiSawdustMat = konradokonskiSawdustPat.matcher(url.toExternalForm());
+            if (konradokonskiSawdustMat.matches()) {
+                return "konradokonski.com_sawdust";
+            }
+
+            Pattern konradokonskiWioryPat = Pattern.compile("http://www.konradokonski.com/wiory/comic/([a-zA-Z0-9_-]*)/?$");
+            Matcher konradokonskiWioryMat = konradokonskiWioryPat.matcher(url.toExternalForm());
+            if (konradokonskiWioryMat.matches()) {
+                return "konradokonski.com_wiory";
+            }
+
             return super.getAlbumTitle(url);
         }
 
@@ -123,7 +142,8 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             if (explicit_domains.contains("www.totempole666.com") == true
             || explicit_domains.contains("buttsmithy.com") == true
             || explicit_domains.contains("themonsterunderthebed.net")
-            || explicit_domains.contains("prismblush.com")) {
+            || explicit_domains.contains("prismblush.com")
+            || explicit_domains.contains("www.konradokonski.com")) {
                 elem = doc.select("a.comic-nav-next").first();
                 if (elem == null) {
                     throw new IOException("No more pages");
@@ -145,7 +165,8 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             if (explicit_domains.contains("www.totempole666.com") == true
             || explicit_domains.contains("buttsmithy.com") == true
             || explicit_domains.contains("themonsterunderthebed.net")
-            || explicit_domains.contains("prismblush.com")) {
+            || explicit_domains.contains("prismblush.com")
+            || explicit_domains.contains("www.konradokonski.com")) {
                 Element elem = doc.select("div.comic-table > div#comic > a > img").first();
                 // If doc is the last page in the comic then elem.attr("src") returns null
                 // because there is no link <a> to the next page
