@@ -155,7 +155,9 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 // Check if this is a site where we can get the page number from the title
                 if (url.toExternalForm().contains("buttsmithy.com") == true) {
                     // Set the page title
-                    pageTitle = doc.select("meta[property=og:title]").attr("content").replace(" ", "");
+                    pageTitle = doc.select("meta[property=og:title]").attr("content");
+                    pageTitle = pageTitle.replace(" ", "");
+                    pageTitle = pageTitle.replace("P", "p");
                 }
                 if (url.toExternalForm().contains("www.totempole666.com") == true) {
                     String postDate = doc.select("span.post-date").first().text().replaceAll("/", "_");
