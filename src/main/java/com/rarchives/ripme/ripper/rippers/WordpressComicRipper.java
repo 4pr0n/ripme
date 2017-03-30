@@ -153,14 +153,23 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                     elem = doc.select("div.comic-table > div#comic > img").first();
                 }
                 // Check if this is a site where we can get the page number from the title
-                if (explicit_domains.contains("buttsmithy.com") == true) {
+                if (url.toExternalForm().contains("buttsmithy.com") == true) {
                     // Set the page title
-                    pageTitle = doc.select("meta[property=og:title]").attr("content");
+                    pageTitle = doc.select("meta[property=og:title]").attr("content").replace(" ", "");
                 }
-                if (explicit_domains.contains("www.totempole666.com") == true) {
+                if (url.toExternalForm().contains("www.totempole666.com") == true) {
                     String postDate = doc.select("span.post-date").first().text().replaceAll("/", "_");
                     String postTitle = doc.select("h2.post-title").first().text().replaceAll("#", "");
                     pageTitle = postDate + "_" + postTitle;
+                }
+                if (url.toExternalForm().contains("themonsterunderthebed.net") == true) {
+                    pageTitle = doc.select("title").first().text().replaceAll("#", "");
+                    pageTitle = pageTitle.replace("“", "");
+                    pageTitle = pageTitle.replace("”", "");
+                    pageTitle = pageTitle.replace("The Monster Under the Bed", "");
+                    pageTitle = pageTitle.replace("–", "");
+                    pageTitle = pageTitle.replace(",", "");
+                    pageTitle = pageTitle.replace(" ", "");
 
                 }
                 result.add(elem.attr("src"));
@@ -173,8 +182,10 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             sleep(500);
             // Download the url with the page title as the prefix
             // so we can download them in any order (And don't have to rerip the whole site to update the local copy)
-            if (explicit_domains.contains("buttsmithy.com") == true) {
-                addURLToDownload(url, pageTitle.replaceAll(" ", "") + "_");
+            if (explicit_domains.contains("buttsmithy.com") == true
+            || explicit_domains.contains("www.totempole666.com") == true
+            || explicit_domains.contains("themonsterunderthebed.net") == true) {
+                addURLToDownload(url, pageTitle + "_");
             }
             // If we're ripping a site where we can't get the page number/title we just rip normally
             addURLToDownload(url, getPrefix(index));
