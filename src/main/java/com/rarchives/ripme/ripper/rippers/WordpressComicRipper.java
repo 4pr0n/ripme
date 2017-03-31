@@ -24,7 +24,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     }
 
     public static List<String> explicit_domains = Arrays.asList("www.totempole666.com",
-    "buttsmithy.com", "themonsterunderthebed.net", "prismblush.com", "www.konradokonski.com");
+    "buttsmithy.com", "themonsterunderthebed.net", "prismblush.com", "www.konradokonski.com", "freeadultcomix.com");
         @Override
         public String getHost() {
             String host = url.toExternalForm().split("/")[2];
@@ -72,6 +72,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                     return true;
                 }
 
+                Pattern freeadultcomixPat = Pattern.compile("https?://freeadultcomix.com/([a-zA-Z0-9_\\-]*)/?$");
+                Matcher freeadultcomixMat = freeadultcomixPat.matcher(url.toExternalForm());
+                if (freeadultcomixMat.matches()) {
+                    return true;
+                }
+
             }
             return false;
         }
@@ -112,6 +118,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             Matcher konradokonskiWioryMat = konradokonskiWioryPat.matcher(url.toExternalForm());
             if (konradokonskiWioryMat.matches()) {
                 return "konradokonski.com_wiory";
+            }
+
+            Pattern freeadultcomixPat = Pattern.compile("https?://freeadultcomix.com/([a-zA-Z0-9_\\-]*)/?$");
+            Matcher freeadultcomixMat = freeadultcomixPat.matcher(url.toExternalForm());
+            if (freeadultcomixMat.matches()) {
+                return getHost() + "_" + freeadultcomixMat.group(1);
             }
 
             return super.getAlbumTitle(url);
@@ -162,11 +174,11 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         @Override
         public List<String> getURLsFromPage(Document doc) {
             List<String> result = new ArrayList<String>();
-            if (explicit_domains.contains("www.totempole666.com") == true
-            || explicit_domains.contains("buttsmithy.com") == true
-            || explicit_domains.contains("themonsterunderthebed.net")
-            || explicit_domains.contains("prismblush.com")
-            || explicit_domains.contains("www.konradokonski.com")) {
+            if (getHost().contains("www.totempole666.com") == true
+            || getHost().contains("buttsmithy.com") == true
+            || getHost().contains("themonsterunderthebed.net")
+            || getHost().contains("prismblush.com")
+            || getHost().contains("www.konradokonski.com")) {
                 Element elem = doc.select("div.comic-table > div#comic > a > img").first();
                 // If doc is the last page in the comic then elem.attr("src") returns null
                 // because there is no link <a> to the next page
@@ -197,6 +209,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 }
                 result.add(elem.attr("src"));
             }
+
+            if (explicit_domains.contains("freeadultcomix.com") == true) {
+                for (Element elem : doc.select("div.single-post > p > img.aligncenter")) {
+                    result.add("http://freeadultcomix.com" + elem.attr("src"));
+                }
+            }
             return result;
         }
 
@@ -205,9 +223,9 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             sleep(500);
             // Download the url with the page title as the prefix
             // so we can download them in any order (And don't have to rerip the whole site to update the local copy)
-            if (explicit_domains.contains("buttsmithy.com") == true
-            || explicit_domains.contains("www.totempole666.com") == true
-            || explicit_domains.contains("themonsterunderthebed.net") == true) {
+            if (getHost().contains("buttsmithy.com") == true
+            || getHost().contains("www.totempole666.com") == true
+            || getHost().contains("themonsterunderthebed.net") == true) {
                 addURLToDownload(url, pageTitle + "_");
             }
             // If we're ripping a site where we can't get the page number/title we just rip normally
