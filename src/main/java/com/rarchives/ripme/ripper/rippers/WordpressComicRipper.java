@@ -23,6 +23,15 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     super(url);
     }
 
+    // Test links
+    // http://www.totempole666.com/comic/first-time-for-everything-00-cover/
+    // http://buttsmithy.com/archives/comic/p1
+    // http://themonsterunderthebed.net/?comic=test-post
+    // http://prismblush.com/comic/hella-trap-pg-01/
+    // http://www.konradokonski.com/sawdust/
+    // http://www.konradokonski.com/wiory/
+    // http://freeadultcomix.com/finders-feepaid-in-full-sparrow/
+
     public static List<String> explicit_domains = Arrays.asList("www.totempole666.com",
     "buttsmithy.com", "themonsterunderthebed.net", "prismblush.com", "www.konradokonski.com", "freeadultcomix.com",
     "thisis.delvecomic.com");
