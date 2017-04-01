@@ -24,7 +24,8 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     }
 
     public static List<String> explicit_domains = Arrays.asList("www.totempole666.com",
-    "buttsmithy.com", "themonsterunderthebed.net", "prismblush.com", "www.konradokonski.com", "freeadultcomix.com");
+    "buttsmithy.com", "themonsterunderthebed.net", "prismblush.com", "www.konradokonski.com", "freeadultcomix.com",
+    "thisis.delvecomic.com");
         @Override
         public String getHost() {
             String host = url.toExternalForm().split("/")[2];
@@ -78,6 +79,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                     return true;
                 }
 
+                Pattern thisisDelvecomicPat = Pattern.compile("https?://thisis.delvecomic.com/NewWP/comic/([a-zA-Z0-9_\\-]*)/?$");
+                Matcher thisisDelvecomicMat = thisisDelvecomicPat.matcher(url.toExternalForm());
+                if (thisisDelvecomicMat.matches()) {
+                    return true;
+                }
+
             }
             return false;
         }
@@ -126,6 +133,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 return getHost() + "_" + freeadultcomixMat.group(1);
             }
 
+            Pattern thisisDelvecomicPat = Pattern.compile("https?://thisis.delvecomic.com/NewWP/comic/([a-zA-Z0-9_\\-]*)/?$");
+            Matcher thisisDelvecomicMat = thisisDelvecomicPat.matcher(url.toExternalForm());
+            if (thisisDelvecomicMat.matches()) {
+                return getHost() + "_" + "Delve";
+            }
+
             return super.getAlbumTitle(url);
         }
 
@@ -151,11 +164,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             // Find next page
             String nextPage = "";
             Element elem = null;
-            if (explicit_domains.contains("www.totempole666.com") == true
-            || explicit_domains.contains("buttsmithy.com") == true
-            || explicit_domains.contains("themonsterunderthebed.net")
-            || explicit_domains.contains("prismblush.com")
-            || explicit_domains.contains("www.konradokonski.com")) {
+            if (getHost().contains("www.totempole666.com") == true
+            || getHost().contains("buttsmithy.com") == true
+            || getHost().contains("themonsterunderthebed.net")
+            || getHost().contains("prismblush.com")
+            || getHost().contains("www.konradokonski.com")
+            || getHost().contains("thisis.delvecomic.com")) {
                 elem = doc.select("a.comic-nav-next").first();
                 if (elem == null) {
                     throw new IOException("No more pages");
@@ -178,7 +192,8 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             || getHost().contains("buttsmithy.com") == true
             || getHost().contains("themonsterunderthebed.net")
             || getHost().contains("prismblush.com")
-            || getHost().contains("www.konradokonski.com")) {
+            || getHost().contains("www.konradokonski.com")
+            || getHost().contains("thisis.delvecomic.com")) {
                 Element elem = doc.select("div.comic-table > div#comic > a > img").first();
                 // If doc is the last page in the comic then elem.attr("src") returns null
                 // because there is no link <a> to the next page
@@ -210,7 +225,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 result.add(elem.attr("src"));
             }
 
-            if (explicit_domains.contains("freeadultcomix.com") == true) {
+            if (url.toExternalForm().contains("freeadultcomix.com") == true) {
                 for (Element elem : doc.select("div.single-post > p > img.aligncenter")) {
                     result.add("http://freeadultcomix.com" + elem.attr("src"));
                 }
