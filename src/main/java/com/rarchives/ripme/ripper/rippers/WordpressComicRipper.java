@@ -31,10 +31,11 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     // http://www.konradokonski.com/sawdust/
     // http://www.konradokonski.com/wiory/
     // http://freeadultcomix.com/finders-feepaid-in-full-sparrow/
+    // http://comics-xxx.com/republic-rendezvous-palcomix-star-wars-xxx/
 
     public static List<String> explicit_domains = Arrays.asList("www.totempole666.com",
     "buttsmithy.com", "themonsterunderthebed.net", "prismblush.com", "www.konradokonski.com", "freeadultcomix.com",
-    "thisis.delvecomic.com");
+    "thisis.delvecomic.com", "comics-xxx.com");
         @Override
         public String getHost() {
             String host = url.toExternalForm().split("/")[2];
@@ -94,6 +95,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                     return true;
                 }
 
+                Pattern comicsxxxPat = Pattern.compile("https?://comics-xxx.com/([a-zA-Z0-9_\\-]*)/?$");
+                Matcher comicsxxxMat = comicsxxxPat.matcher(url.toExternalForm());
+                if (comicsxxxMat.matches()) {
+                    return true;
+                }
+
             }
             return false;
         }
@@ -146,6 +153,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             Matcher thisisDelvecomicMat = thisisDelvecomicPat.matcher(url.toExternalForm());
             if (thisisDelvecomicMat.matches()) {
                 return getHost() + "_" + "Delve";
+            }
+
+            Pattern comicsxxxPat = Pattern.compile("https?://comics-xxx.com/([a-zA-Z0-9_\\-]*)/?$");
+            Matcher comicsxxxMat = comicsxxxPat.matcher(url.toExternalForm());
+            if (comicsxxxMat.matches()) {
+                return getHost() + "_" + comicsxxxMat.group(1);
             }
 
             return super.getAlbumTitle(url);
@@ -234,9 +247,17 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                 result.add(elem.attr("src"));
             }
 
+
+            // freeadultcomix gets it own if because it needs to add http://freeadultcomix.com to the start of each link
             if (url.toExternalForm().contains("freeadultcomix.com") == true) {
                 for (Element elem : doc.select("div.single-post > p > img.aligncenter")) {
                     result.add("http://freeadultcomix.com" + elem.attr("src"));
+                }
+            }
+
+            if (url.toExternalForm().contains("comics-xxx.com") == true) {
+                for (Element elem : doc.select("div.single-post > center > p > img")) {
+                    result.add(elem.attr("src"));
                 }
             }
             return result;
