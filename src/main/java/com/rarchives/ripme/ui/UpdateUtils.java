@@ -21,7 +21,6 @@ public class UpdateUtils {
     private static final Logger LOGGER = Logger.getLogger(UpdateUtils.class);
     private static final String DEFAULT_VERSION = "1.4.6";
     private static final String UPDATE_JSON_URL = "https://raw.githubusercontent.com/4pr0n/ripme/master/ripme.json";
-    private static final String UPDATE_JAR_URL = "http://rarchives.com/ripme.jar";
     private static final String MAIN_FILE_NAME = "ripme.jar";
     private static final String UPDATE_FILE_NAME = "ripme.jar.update";
 
@@ -47,7 +46,8 @@ public class UpdateUtils {
     public static void updateProgram(JLabel configUpdateLabel) {
         configUpdateLabel.setText("Checking for update...");
 
-        Document doc = null;
+        Document doc;
+
         try {
             LOGGER.debug("Retrieving " + UpdateUtils.UPDATE_JSON_URL);
             doc = Jsoup.connect(UpdateUtils.UPDATE_JSON_URL).timeout(10_000).ignoreContentType(true).get();
@@ -60,10 +60,12 @@ public class UpdateUtils {
         } finally {
             configUpdateLabel.setText("Current version: " + getThisJarVersion());
         }
+
         String jsonString = doc.body().html().replaceAll("&quot;", "\"");
         JSONObject json = new JSONObject(jsonString);
         JSONArray jsonChangeList = json.getJSONArray("changeList");
         StringBuilder changeList = new StringBuilder();
+
         for (int i = 0; i < jsonChangeList.length(); i++) {
             String change = jsonChangeList.getString(i);
 
@@ -110,6 +112,7 @@ public class UpdateUtils {
     private static boolean isNewerVersion(String latestVersion) {
         int[] oldVersions = versionStringToInt(getThisJarVersion());
         int[] newVersions = versionStringToInt(latestVersion);
+
         if (oldVersions.length < newVersions.length) {
             System.err.println("Calculated: " + Arrays.toString(oldVersions) + " < " + latestVersion);
             return true;
@@ -146,10 +149,7 @@ public class UpdateUtils {
                 .timeout(Utils.getConfigInteger("download.timeout", 60_000))
                 .maxBodySize(1024 ^ 2 * 100).execute();
 
-        FileOutputStream out = new FileOutputStream(UPDATE_FILE_NAME);
-        out.write(response.bodyAsBytes());
-        out.close();
-        LOGGER.info("Download of new version complete; saved to " + UPDATE_FILE_NAME);
+        downloadNewVersion(response);
 
         // Setup updater script
         final String batchFile;
@@ -183,26 +183,54 @@ public class UpdateUtils {
             batchExec = new String[]{"sh", batchPath};
         }
 
-        // Create updater script
-        BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile));
-        bw.write(script);
-        bw.flush();
-        bw.close();
-        LOGGER.info("Saved update script to " + batchFile);
+        createUpdaterScript(batchFile, script);
+
         // Run updater script on exit
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {
-                try {
-                    LOGGER.info("Executing: " + batchFile);
-                    Runtime.getRuntime().exec(batchExec);
-                } catch (IOException e) {
-                    LOGGER.error(e.getMessage(), e);
-                }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                LOGGER.info("Executing: " + batchFile);
+                Runtime.getRuntime().exec(batchExec);
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage(), e);
             }
-        });
+        }));
+
         LOGGER.info("Exiting older version, should execute update script (" + batchFile + ") during exit");
         System.exit(0);
+    }
+
+    /**
+     * Method that generates the script updater
+     *
+     * @param batchFile Path where the script will be saved
+     * @param script    Script content
+     */
+    private static void createUpdaterScript(String batchFile, String script) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(batchFile))) {
+            // Create updater script
+            bw.write(script);
+            bw.flush();
+            bw.close();
+            LOGGER.info("Saved update script to " + batchFile);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Method that receives a response from the server with the new version of the application
+     * and downloads the file
+     *
+     * @param response Response coming from the Update Server
+     */
+    private static void downloadNewVersion(Response response) {
+        try (FileOutputStream out = new FileOutputStream(UPDATE_FILE_NAME)) {
+            out.write(response.bodyAsBytes());
+            out.close();
+            LOGGER.info("Download of new version complete; saved to " + UPDATE_FILE_NAME);
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
     }
 
 }
