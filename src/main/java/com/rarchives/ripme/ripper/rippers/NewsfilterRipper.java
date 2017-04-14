@@ -13,6 +13,14 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import com.rarchives.ripme.ripper.AlbumRipper;
+
 public class NewsfilterRipper extends AlbumRipper {
     private static final String HOST = "newsfilter";
 
@@ -43,29 +51,20 @@ public class NewsfilterRipper extends AlbumRipper {
     public void rip() throws IOException {
         String gid = getGID(this.url);
         String theurl = "http://newsfilter.org/gallery/" + gid;
-
-        Connection.Response resp;
         LOGGER.info("Loading " + theurl);
-        resp = Jsoup.connect(theurl).timeout(5000).referrer("").userAgent(USER_AGENT)
+
+        Connection.Response resp = Jsoup.connect(theurl).timeout(5000).referrer("").userAgent(USER_AGENT)
                 .method(Connection.Method.GET).execute();
 
         Document doc = resp.parse();
-        //Element gallery  = doc.getElementById("thegalmain");
-        //Elements piclinks = gallery.getElementsByAttributeValue("itemprop","contentURL");
-        Pattern pat = Pattern.compile(gid + "/\\d+");
-        Elements piclinks = doc.getElementsByAttributeValueMatching("href", pat);
 
-        for (Element picelem : piclinks) {
-            String picurl = "http://newsfilter.org" + picelem.attr("href");
-            LOGGER.info("Getting to picture page: " + picurl);
-
-            resp = Jsoup.connect(picurl).timeout(5000).referrer(theurl).userAgent(USER_AGENT)
-                    .method(Connection.Method.GET).execute();
-
-            Document picdoc = resp.parse();
-            String dlurl = picdoc.getElementsByAttributeValue("itemprop", "contentURL").first().attr("src");
-            addURLToDownload(new URL(dlurl));
+        Elements thumbnails = doc.select("#galleryImages .inner-block img");
+        for (Element thumb : thumbnails) {
+            String thumbUrl = thumb.attr("src");
+            String picUrl = thumbUrl.replace("thumbs/", "");
+            addURLToDownload(new URL(picUrl));
         }
+
         waitForThreads();
     }
 
