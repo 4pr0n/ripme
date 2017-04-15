@@ -11,20 +11,13 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.Line;
 import javax.sound.sampled.LineEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.lang.reflect.Constructor;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -40,6 +33,7 @@ public class Utils {
 
     private static final Logger LOGGER = Logger.getLogger(Utils.class);
     private static final String[] MAGS = {"", "k", "m", "g", "t"};
+    private static final String CLASS_NOT_FOUND_EXCEPTION_LOADING = "ClassNotFoundException loading ";
 
     private static PropertiesConfiguration config;
 
@@ -55,24 +49,35 @@ public class Utils {
             config = new PropertiesConfiguration(configPath);
             LOGGER.info(LOADED + config.getPath());
 
-            if (f.exists()) {
-                // Config was loaded from file
-                if (!config.containsKey("twitter.auth") || !config.containsKey("twitter.max_requests")
-                        || !config.containsKey("tumblr.auth") || !config.containsKey("error.skip404")
-                        || !config.containsKey("gw.api") || !config.containsKey("page.timeout")
-                        || !config.containsKey("download.max_size")) {
-                    // Config is missing key fields
-                    // Need to reload the default config
-                    // See https://github.com/4pr0n/ripme/issues/158
-                    LOGGER.warn("Config does not contain key fields, deleting old config");
-                    f.delete();
-                    config = new PropertiesConfiguration(CONFIG_FILE);
-                    LOGGER.info(LOADED + config.getPath());
-                }
+            // Config was loaded from file
+            if (f.exists() && configNotContainsKey()) {
+                // Config is missing key fields
+                // Need to reload the default config
+                // See https://github.com/4pr0n/ripme/issues/158
+                LOGGER.warn("Config does not contain key fields, deleting old config");
+                f.delete();
+                config = new PropertiesConfiguration(CONFIG_FILE);
+                LOGGER.info(LOADED + config.getPath());
             }
         } catch (Exception e) {
             LOGGER.error("[!] Failed to load properties file from " + CONFIG_FILE, e);
         }
+    }
+
+    private static boolean configNotContainsKey() {
+        boolean notContain = config.containsKey("twitter.auth") || !config.containsKey("twitter.max_requests");
+
+        if (notContain)
+            return true;
+
+        notContain = !config.containsKey("tumblr.auth") || !config.containsKey("error.skip404");
+
+        if (notContain)
+            return true;
+
+        notContain = !config.containsKey("gw.api") || !config.containsKey("page.timeout") || !config.containsKey("download.max_size");
+
+        return notContain;
     }
 
     private Utils() {
@@ -196,6 +201,8 @@ public class Utils {
             paramIndex = url.indexOf('&' + parameter);
         }
 
+        String urlUpdated = url;
+
         if (paramIndex > 0) {
             int nextParam = url.indexOf('&', paramIndex + 1);
             if (nextParam != -1) {
@@ -204,12 +211,12 @@ public class Utils {
                 if (wasFirstParam)
                     c = "?";
 
-                url = url.substring(0, paramIndex) + c + url.substring(nextParam + 1, url.length());
+                urlUpdated = url.substring(0, paramIndex) + c + url.substring(nextParam + 1, url.length());
             } else
-                url = url.substring(0, paramIndex);
+                urlUpdated = url.substring(0, paramIndex);
         }
 
-        return url;
+        return urlUpdated;
     }
 
     /**
@@ -261,7 +268,7 @@ public class Utils {
                         try {
                             classes.add(Class.forName(className));
                         } catch (ClassNotFoundException e) {
-                            throw new RuntimeException("ClassNotFoundException loading " + className, e);
+                            throw new RuntimeException(CLASS_NOT_FOUND_EXCEPTION_LOADING + className, e);
                         }
                     }
                 }
@@ -284,9 +291,9 @@ public class Utils {
                         try {
                             classes.add(Class.forName(className));
                         } catch (ClassNotFoundException e) {
-                            LOGGER.error("ClassNotFoundException loading " + className, e);
+                            LOGGER.error(CLASS_NOT_FOUND_EXCEPTION_LOADING + className, e);
                             jarFile.close(); // Resource leak fix?
-                            throw new RuntimeException("ClassNotFoundException loading " + className);
+                            throw new RuntimeException(CLASS_NOT_FOUND_EXCEPTION_LOADING + className);
                         }
                     }
                 }
@@ -312,12 +319,12 @@ public class Utils {
     }
 
     public static String filesystemSafe(String text) {
-        text = text.replaceAll("[^a-zA-Z0-9.-]", "_").replaceAll("__", "_").replaceAll("_+$", "");
+        String textSafe = text.replaceAll("[^a-zA-Z0-9.-]", "_").replaceAll("__", "_").replaceAll("_+$", "");
 
-        if (text.length() > 100)
-            text = text.substring(0, 99);
+        if (textSafe.length() > 100)
+            textSafe = textSafe.substring(0, 99);
 
-        return text;
+        return textSafe;
     }
 
     public static String bytesToHumanReadable(int bytes) {
@@ -420,27 +427,24 @@ public class Utils {
     /**
      * Parses an URL query
      *
-     * @param query
-     *          The query part of an URL
+     * @param query The query part of an URL
      * @return The map of all query parameters
      */
-    public static Map<String,String> parseUrlQuery(String query) {
-        Map<String,String> res = new HashMap<String, String>();
+    public static Map<String, String> parseUrlQuery(String query) {
+        Map<String, String> res = new HashMap<>();
 
-        if (query.equals("")){
+        if ("".equals(query))
             return res;
-        }
 
         String[] parts = query.split("&");
         int pos;
 
         try {
             for (String part : parts) {
-                if ((pos = part.indexOf('=')) >= 0){
-                    res.put(URLDecoder.decode(part.substring(0, pos), "UTF-8"), URLDecoder.decode(part.substring(pos + 1), "UTF-8"));
-                }else{
-                    res.put(URLDecoder.decode(part, "UTF-8"), "");
-                }
+                if ((pos = part.indexOf('=')) >= 0)
+                    res.put(URLDecoder.decode(part.substring(0, pos), StandardCharsets.UTF_8.name()), URLDecoder.decode(part.substring(pos + 1), StandardCharsets.UTF_8.name()));
+                else
+                    res.put(URLDecoder.decode(part, StandardCharsets.UTF_8.name()), "");
             }
         } catch (UnsupportedEncodingException e) {
             // Shouldn't happen since UTF-8 is required to be supported
@@ -453,16 +457,13 @@ public class Utils {
     /**
      * Parses an URL query and returns the requested parameter's value
      *
-     * @param query
-     *          The query part of an URL
-     * @param key
-     *          The key whose value is requested
+     * @param query The query part of an URL
+     * @param key   The key whose value is requested
      * @return The associated value or null if key wasn't found
      */
     public static String parseUrlQuery(String query, String key) {
-        if (query.equals("")){
+        if ("".equals(query))
             return null;
-        }
 
         String[] parts = query.split("&");
         int pos;
@@ -470,13 +471,10 @@ public class Utils {
         try {
             for (String part : parts) {
                 if ((pos = part.indexOf('=')) >= 0) {
-                    if (URLDecoder.decode(part.substring(0, pos), "UTF-8").equals(key)){
-                        return URLDecoder.decode(part.substring(pos + 1), "UTF-8");
-                    }
-
-                } else if (URLDecoder.decode(part, "UTF-8").equals(key)) {
+                    if (URLDecoder.decode(part.substring(0, pos), StandardCharsets.UTF_8.name()).equals(key))
+                        return URLDecoder.decode(part.substring(pos + 1), StandardCharsets.UTF_8.name());
+                } else if (URLDecoder.decode(part, StandardCharsets.UTF_8.name()).equals(key))
                     return "";
-                }
             }
         } catch (UnsupportedEncodingException e) {
             // Shouldn't happen since UTF-8 is required to be supported
@@ -485,4 +483,21 @@ public class Utils {
 
         return null;
     }
+
+    /**
+     * Method for closing used resources
+     *
+     * @param closeable Resource to be closed
+     */
+    public static void closeResource(Closeable closeable) {
+        if (closeable == null)
+            return;
+
+        try {
+            closeable.close();
+        } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
+        }
+    }
+
 }

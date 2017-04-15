@@ -115,7 +115,8 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                 try {
                     Thread.sleep(IP_BLOCK_SLEEP_TIME);
                 } catch (InterruptedException e) {
-                    throw new IOException("Interrupted while waiting for rate limit to subside");
+                    Thread.currentThread().interrupt();
+                    throw new IOException("Interrupted while waiting for rate limit to subside", e);
                 }
             } else
                 return doc;
@@ -180,6 +181,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
             Thread.sleep(IMAGE_SLEEP_TIME);
         } catch (InterruptedException e) {
             LOGGER.warn("Interrupted while waiting to load next image", e);
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -251,4 +253,5 @@ public class EHentaiRipper extends AbstractHTMLRipper {
             }
         }
     }
+
 }

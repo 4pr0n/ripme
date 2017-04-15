@@ -25,6 +25,9 @@ public class RedditRipper extends AlbumRipper {
     private static final String REDDIT_USER_AGENT = "RipMe:github/4pr0n/ripme:" + UpdateUtils.getThisJarVersion() + " (by /u/4_pr0n)";
 
     private static final int SLEEP_TIME = 2000;
+    private static final String REPLIES = "replies";
+    private static final String AFTER = "after";
+    private static final String CHILDREN = "children";
 
     //private static final String USER_AGENT = "ripme by /u/4_pr0n github.com/4pr0n/ripme";
 
@@ -85,20 +88,20 @@ public class RedditRipper extends AlbumRipper {
                 continue;
 
             data = json.getJSONObject("data");
-            if (!data.has("children"))
+            if (!data.has(CHILDREN))
                 continue;
 
-            children = data.getJSONArray("children");
+            children = data.getJSONArray(CHILDREN);
             for (int j = 0; j < children.length(); j++)
                 parseJsonChild(children.getJSONObject(j));
 
-            if (data.has("after") && !data.isNull("after")) {
-                String nextURLString = Utils.stripURLParameter(url.toExternalForm(), "after");
+            if (data.has(AFTER) && !data.isNull(AFTER)) {
+                String nextURLString = Utils.stripURLParameter(url.toExternalForm(), AFTER);
 
                 if (nextURLString.contains("?"))
-                    nextURLString = nextURLString.concat("&after=" + data.getString("after"));
+                    nextURLString = nextURLString.concat("&after=" + data.getString(AFTER));
                 else
-                    nextURLString = nextURLString.concat("?after=" + data.getString("after"));
+                    nextURLString = nextURLString.concat("?after=" + data.getString(AFTER));
 
                 nextURL = new URL(nextURLString);
             }
@@ -109,6 +112,7 @@ public class RedditRipper extends AlbumRipper {
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             LOGGER.warn("Interrupted while sleeping", e);
+            Thread.currentThread().interrupt();
         }
 
         return nextURL;
@@ -123,6 +127,7 @@ public class RedditRipper extends AlbumRipper {
                 Thread.sleep(timeDiff);
             } catch (InterruptedException e) {
                 LOGGER.warn("[!] Interrupted while waiting to load next page", e);
+                Thread.currentThread().interrupt();
                 return new JSONArray();
             }
         }
@@ -160,8 +165,8 @@ public class RedditRipper extends AlbumRipper {
                 handleURL(data.getString("url"), data.getString("id"));
             }
 
-            if (data.has("replies") && data.get("replies") instanceof JSONObject) {
-                JSONArray replies = data.getJSONObject("replies").getJSONObject("data").getJSONArray("children");
+            if (data.has(REPLIES) && data.get(REPLIES) instanceof JSONObject) {
+                JSONArray replies = data.getJSONObject(REPLIES).getJSONObject("data").getJSONArray(CHILDREN);
 
                 for (int i = 0; i < replies.length(); i++)
                     parseJsonChild(replies.getJSONObject(i));

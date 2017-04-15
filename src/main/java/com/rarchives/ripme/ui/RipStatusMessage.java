@@ -43,4 +43,5 @@ public class RipStatusMessage {
     public String toString() {
         return status.value + ": " + object.toString();
     }
+
 }

@@ -103,24 +103,25 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
             m = p.matcher(style);
 
             if (m.find()) {
-                String imgUrl = m.group(1);
+                StringBuilder imgUrl = new StringBuilder();
+                       imgUrl.append(m.group(1));
 
-                if (imgUrl.startsWith("//"))
-                    imgUrl = "http:" + imgUrl;
+                if (imgUrl.toString().startsWith("//"))
+                    imgUrl.append("http:").append(imgUrl);
 
-                if (imgUrl.startsWith("/"))
-                    imgUrl = "http://" + this.url.getHost() + imgUrl;
+                if (imgUrl.toString().startsWith("/"))
+                    imgUrl.append("http://").append(this.url.getHost()).append(imgUrl);
 
                 //convert thumbnail url into fullsize url
-                imgUrl = imgUrl.replace("list_thumb_inbox", "xlarge");
+               String imgUrlString = imgUrl.toString().replace("list_thumb_inbox", "xlarge");
 
                 // Don't download the same URL twice
-                if (imageURLs.contains(imgUrl)) {
-                    LOGGER.debug("Already attempted: " + imgUrl);
+                if (imageURLs.contains(imgUrlString)) {
+                    LOGGER.debug("Already attempted: " + imgUrlString);
                     continue;
                 }
 
-                imageURLs.add(imgUrl);
+                imageURLs.add(imgUrlString);
                 if (isThisATest())
                     break;
             }
@@ -135,4 +136,5 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index), "", this.url.toString(), null);
     }
+
 }

@@ -1,16 +1,15 @@
 package com.rarchives.ripme.ripper.rippers.video;
 
+import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.VideoRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class VineRipper extends VideoRipper {
 
@@ -57,4 +56,5 @@ public class VineRipper extends VideoRipper {
         addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
+
 }

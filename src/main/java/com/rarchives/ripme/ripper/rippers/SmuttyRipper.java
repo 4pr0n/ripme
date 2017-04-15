@@ -98,6 +98,7 @@ public class SmuttyRipper extends AlbumRipper {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 LOGGER.error("[!] Interrupted while waiting to load next album:", e);
+                Thread.currentThread().interrupt();
                 break;
             }
         }

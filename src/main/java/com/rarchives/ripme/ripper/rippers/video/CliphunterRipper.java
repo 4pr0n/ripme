@@ -55,16 +55,16 @@ public class CliphunterRipper extends VideoRipper {
         JSONObject json = new JSONObject(new String(Base64.decode(jsonString), StandardCharsets.UTF_8.name()));
         JSONObject jsonURL = new JSONObject(new String(Base64.decode(json.getString("url")), StandardCharsets.UTF_8.name()));
         String encryptedURL = jsonURL.getJSONObject("u").getString("l");
-        String vidURL = "";
+        StringBuilder vidURL = new StringBuilder();
 
         for (char c : encryptedURL.toCharArray()) {
             if (DECRYPT_DICT.has(Character.toString(c)))
-                vidURL += DECRYPT_DICT.getString(Character.toString(c));
+                vidURL.append(DECRYPT_DICT.getString(Character.toString(c)));
             else
-                vidURL += c;
+                vidURL.append(c);
         }
 
-        addURLToDownload(new URL(vidURL), HOST + "_" + getGID(this.url));
+        addURLToDownload(new URL(vidURL.toString()), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
 

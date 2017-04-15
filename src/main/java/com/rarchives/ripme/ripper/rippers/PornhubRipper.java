@@ -113,6 +113,7 @@ public class PornhubRipper extends AlbumRipper {
                 Thread.sleep(IMAGE_SLEEP_TIME);
             } catch (InterruptedException e) {
                 LOGGER.warn("Interrupted while waiting to load next image", e);
+                Thread.currentThread().interrupt();
             }
         }
 
@@ -168,4 +169,5 @@ public class PornhubRipper extends AlbumRipper {
             }
         }
     }
+
 }

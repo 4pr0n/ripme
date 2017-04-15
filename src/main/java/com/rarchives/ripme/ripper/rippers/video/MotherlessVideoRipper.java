@@ -47,8 +47,9 @@ public class MotherlessVideoRipper extends VideoRipper {
         LOGGER.info("    Retrieving " + this.url);
         String html = Http.url(this.url).get().toString();
 
+        //Look this fucking descriptive error message: "WTF"
         if (html.contains("__fileurl = '"))
-            System.err.println("WTF");
+            LOGGER.error("WTF");
 
         List<String> vidUrls = Utils.between(html, "__fileurl = '", "';");
         if (vidUrls.isEmpty())
@@ -58,4 +59,5 @@ public class MotherlessVideoRipper extends VideoRipper {
         addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
+
 }

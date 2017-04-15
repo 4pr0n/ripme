@@ -70,4 +70,5 @@ public class VkRipper extends VideoRipper {
 
         return videoURL;
     }
+
 }

@@ -32,7 +32,7 @@ class TapasticEpisode {
 
 public class TapasticRipper extends AbstractHTMLRipper {
 
-    private List<TapasticEpisode> episodes = new ArrayList<TapasticEpisode>();
+    private List<TapasticEpisode> episodes = new ArrayList<>();
 
     public TapasticRipper(URL url) throws IOException {
         super(url);
@@ -88,13 +88,15 @@ public class TapasticRipper extends AbstractHTMLRipper {
             for (int i = 0; i < images.size(); i++) {
                 String link = images.get(i).attr("src");
                 TapasticEpisode episode = episodes.get(index - 1);
+
+                String formatOne = "ep%0" + epiLog + "d";
+                String formatTwo = "-%0" + imgLog + "dof%0" + imgLog + "d-";
+
                 // Build elaborate filename prefix
-                StringBuilder prefix = new StringBuilder();
-                prefix.append(String.format("ep%0" + epiLog + "d", index));
-                prefix.append(String.format("-%0" + imgLog + "dof%0" + imgLog + "d-", i + 1, images.size()));
-                prefix.append(episode.filename.replace(' ', '-'));
-                prefix.append('-');
-                addURLToDownload(new URL(link), prefix.toString());
+                String prefix = String.format(formatOne, index) +
+                        String.format(formatTwo, i + 1, images.size()) +
+                        episode.filename.replace(' ', '-') + '-';
+                addURLToDownload(new URL(link), prefix);
 
                 if (isThisATest())
                     break;

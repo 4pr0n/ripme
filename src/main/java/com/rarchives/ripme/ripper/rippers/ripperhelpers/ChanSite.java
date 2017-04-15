@@ -26,4 +26,5 @@ public class ChanSite {
         domains = Domains;
         cdnDomains = Domains;
     }
+
 }

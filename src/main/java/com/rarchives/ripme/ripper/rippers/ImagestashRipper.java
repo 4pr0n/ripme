@@ -83,4 +83,5 @@ public class ImagestashRipper extends AbstractJSONRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
+
 }

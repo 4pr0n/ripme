@@ -33,4 +33,5 @@ public class RipStatusComplete {
 
         return result;
     }
+
 }

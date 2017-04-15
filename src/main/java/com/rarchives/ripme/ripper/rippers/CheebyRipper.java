@@ -79,7 +79,7 @@ public class CheebyRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         // Not implemented here
-        return null;
+        return new ArrayList<>();
     }
 
     public List<Image> getImagesFromPage(Document page) {
@@ -177,4 +177,5 @@ public class CheebyRipper extends AbstractHTMLRipper {
             this.index = index;
         }
     }
+
 }

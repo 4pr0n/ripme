@@ -65,4 +65,5 @@ public class AES {
         System.arraycopy(keyBytes, 0, keyBytes, nBits / 2, nBits / 2);
         return new SecretKeySpec(keyBytes, "AES");
     }
+
 }

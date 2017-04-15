@@ -68,4 +68,5 @@ public class GfycatRipper extends VideoRipper {
 
         return vidUrl;
     }
+
 }

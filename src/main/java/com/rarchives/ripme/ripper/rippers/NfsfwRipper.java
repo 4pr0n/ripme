@@ -21,6 +21,7 @@ public class NfsfwRipper extends AlbumRipper {
 
     private static final String DOMAIN = "nfsfw.com";
     private static final String HOST = "nfsfw";
+    private static final String HTTP_NFSFW_COM = "http://nfsfw.com";
 
     private Document albumDoc = null;
 
@@ -92,7 +93,7 @@ public class NfsfwRipper extends AlbumRipper {
                 if (isStopped() || isThisATest())
                     break;
 
-                String subURL = "http://nfsfw.com" + suba.attr("href");
+                String subURL = HTTP_NFSFW_COM + suba.attr("href");
                 String subdir = subURL;
 
                 while (subdir.endsWith("/"))
@@ -106,7 +107,7 @@ public class NfsfwRipper extends AlbumRipper {
                 if (isStopped())
                     break;
 
-                String imagePage = "http://nfsfw.com" + thumb.attr("href");
+                String imagePage = HTTP_NFSFW_COM + thumb.attr("href");
 
                 try {
                     NfsfwImageThread t = new NfsfwImageThread(new URL(imagePage), nextSubalbum, ++index);
@@ -124,7 +125,7 @@ public class NfsfwRipper extends AlbumRipper {
 
             // Get next page
             for (Element a : albumDoc.select("a.next")) {
-                subAlbums.add(0, new Pair("http://nfsfw.com" + a.attr("href"), ""));
+                subAlbums.add(0, new Pair(HTTP_NFSFW_COM + a.attr("href"), ""));
                 break;
             }
 
@@ -136,6 +137,7 @@ public class NfsfwRipper extends AlbumRipper {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 LOGGER.error("Interrupted while waiting to load next page", e);
+                Thread.currentThread().interrupt();
                 throw new IOException(e);
             }
         }
@@ -177,7 +179,7 @@ public class NfsfwRipper extends AlbumRipper {
 
                 String file = images.first().attr("src");
                 if (file.startsWith("/"))
-                    file = "http://nfsfw.com" + file;
+                    file = HTTP_NFSFW_COM + file;
 
                 String prefix = "";
                 if (Utils.getConfigBoolean("download.save_order", true))
@@ -199,4 +201,5 @@ public class NfsfwRipper extends AlbumRipper {
             this.second = second;
         }
     }
+
 }

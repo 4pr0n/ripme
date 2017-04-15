@@ -172,4 +172,5 @@ public class MediacrushRipper extends AbstractJSONRipper {
 
         return preferredUrl;
     }
+
 }

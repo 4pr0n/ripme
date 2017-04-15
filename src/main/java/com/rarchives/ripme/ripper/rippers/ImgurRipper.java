@@ -121,7 +121,7 @@ public class ImgurRipper extends AlbumRipper {
                 String title = null;
                 LOGGER.info("Trying to get album title");
                 elems = albumDoc.select("meta[property=og:title]");
-                if (elems!=null) {
+                if (elems != null) {
                     title = elems.attr("content");
                 }
 
@@ -150,30 +150,30 @@ public class ImgurRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         switch (albumType) {
-        case ALBUM:
-            // Fall-through
-        case USER_ALBUM:
-            LOGGER.info("Album type is USER_ALBUM");
-            // Don't call getAlbumTitle(this.url) with this
-            // as it seems to cause the album to be downloaded to a subdir.
-            ripAlbum(this.url);
-            break;
-        case SERIES_OF_IMAGES:
-            LOGGER.info("Album type is SERIES_OF_IMAGES");
-            ripAlbum(this.url);
-            break;
-        case USER:
-            LOGGER.info("Album type is USER");
-            ripUserAccount(url);
-            break;
-        case SUBREDDIT:
-            LOGGER.info("Album type is SUBREDDIT");
-            ripSubreddit(url);
-            break;
-        case USER_IMAGES:
-            LOGGER.info("Album type is USER_IMAGES");
-            ripUserImages(url);
-            break;
+            case ALBUM:
+                // Fall-through
+            case USER_ALBUM:
+                LOGGER.info("Album type is USER_ALBUM");
+                // Don't call getAlbumTitle(this.url) with this
+                // as it seems to cause the album to be downloaded to a subdir.
+                ripAlbum(this.url);
+                break;
+            case SERIES_OF_IMAGES:
+                LOGGER.info("Album type is SERIES_OF_IMAGES");
+                ripAlbum(this.url);
+                break;
+            case USER:
+                LOGGER.info("Album type is USER");
+                ripUserAccount(url);
+                break;
+            case SUBREDDIT:
+                LOGGER.info("Album type is SUBREDDIT");
+                ripSubreddit(url);
+                break;
+            case USER_IMAGES:
+                LOGGER.info("Album type is USER_IMAGES");
+                ripUserImages(url);
+                break;
         }
         waitForThreads();
     }
@@ -486,6 +486,7 @@ public class ImgurRipper extends AlbumRipper {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 LOGGER.error("Interrupted while waiting to load next album: ", e);
+                Thread.currentThread().interrupt();
                 break;
             }
         }
@@ -558,12 +559,13 @@ public class ImgurRipper extends AlbumRipper {
         if (m.matches()) {
             // Imgur subreddit aggregator
             albumType = ALBUM_TYPE.SUBREDDIT;
-            String album = m.group(2);
+            StringBuilder album = new StringBuilder();
+            album.append(m.group(2));
             for (int i = 3; i <= m.groupCount(); i++) {
                 if (m.group(i) != null)
-                    album += "_" + m.group(i).replace("/", "");
+                    album.append("_").append(m.group(i).replace("/", ""));
             }
-            return album;
+            return album.toString();
         }
 
         p = Pattern.compile("^https?://(i\\.|www\\.|m\\.)?imgur\\.com/r/(\\w+)/([a-zA-Z0-9,]{5,}).*$");

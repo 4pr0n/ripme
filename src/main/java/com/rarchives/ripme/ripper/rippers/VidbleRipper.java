@@ -81,4 +81,5 @@ public class VidbleRipper extends AbstractHTMLRipper {
 
         return urls;
     }
+
 }

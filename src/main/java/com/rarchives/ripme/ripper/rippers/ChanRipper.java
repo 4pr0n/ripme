@@ -195,4 +195,5 @@ public class ChanRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index), "", this.url.toString(), null);
     }
+
 }

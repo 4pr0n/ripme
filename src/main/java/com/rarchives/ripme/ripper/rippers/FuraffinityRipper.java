@@ -188,27 +188,34 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         File saveFileAs;
         String saveAs = text.split("\n")[0];
 
-        for (int i = 1; i < text.split("\n").length; i++)
+        for (int i = 1; i < text.split("\n").length; i++) {
             newText = newText.replace("\\", "").replace("/", "").replace("~", "") + "\n" + text.split("\n")[i];
+        }
+
+        String newSubDirectory = subdirectory;
+
+        if (!subdirectory.trim().isEmpty())
+            newSubDirectory = File.separator + subdirectory;
+
+        int o = url.toString().lastIndexOf('/') - 1;
+        String test = url.toString().substring(url.toString().lastIndexOf('/', o) + 1);
+        test = test.replace("/", "");
+        // This is probably not the best way to do this.
+        test = test.replace("\\", "");
+
+        FileOutputStream fileOutputStream = null;
 
         try {
-            if (!subdirectory.trim().isEmpty())
-                subdirectory = File.separator + subdirectory;
-
-            int o = url.toString().lastIndexOf('/') - 1;
-            String test = url.toString().substring(url.toString().lastIndexOf('/', o) + 1);
-            test = test.replace("/", "");
-            // This is probably not the best way to do this.
-            test = test.replace("\\", "");
             // CLOSE ENOUGH!
-            saveFileAs = new File(workingDir.getCanonicalPath() + subdirectory + File.separator + getPrefix(index)
+            saveFileAs = new File(workingDir.getCanonicalPath() + newSubDirectory + File.separator + getPrefix(index)
                     + saveAs + " " + test + ".txt");
             // Write the file
-            FileOutputStream out = new FileOutputStream(saveFileAs);
-            out.write(text.getBytes());
-            out.close();
+            fileOutputStream = new FileOutputStream(saveFileAs);
+            fileOutputStream.write(text.getBytes());
+            Utils.closeResource(fileOutputStream);
         } catch (IOException e) {
             LOGGER.error("[!] Error creating save file path for description '" + url + "':", e);
+            Utils.closeResource(fileOutputStream);
             return false;
         }
 

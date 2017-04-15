@@ -56,11 +56,13 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private static final String FILE_OVERWRITE = "file.overwrite";
     private static final String DESCRIPTIONS_SAVE = "descriptions.save";
     private static final String PREFER_MP4 = "prefer.mp4";
-    private static final String RIPPER = "Ripper";
+    private static final String RIPPER_TEXT = "Ripper";
     private static final String HIDE = "Hide";
     private static final String SHOW = "Show";
     private static final String HISTORY_JSON = "history.json";
     private static final String WINDOW_POSITION = "window.position";
+    private static final String QUEUE = "Queue";
+    private static final String QUEUE_PARENTHESIS = "Queue (";
 
     private boolean isRipping = false; // Flag to indicate if we're ripping something
 
@@ -117,9 +119,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
     private JCheckBox configSaveDescriptions;
     private JCheckBox configPreferMp4;
 
-    private static TrayIcon trayIcon;
-    private static MenuItem trayMenuMain;
-    private static CheckboxMenuItem trayMenuAutorip;
+    private TrayIcon trayIcon;
+    private MenuItem trayMenuMain;
+    private CheckboxMenuItem trayMenuAutorip;
 
     private static Image mainIcon;
 
@@ -276,7 +278,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
         optionsPanel.setBorder(emptyBorder);
         optionLog = new JButton("Log");
         optionHistory = new JButton("History");
-        optionQueue = new JButton("Queue");
+        optionQueue = new JButton(QUEUE);
         optionConfiguration = new JButton("Configuration");
 
         optionLog.setIcon(getImageIcon("comment"));
@@ -416,9 +418,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
         }
 
         if (!queueListModel.isEmpty())
-            optionQueue.setText("Queue (" + queueListModel.size() + ")");
+            optionQueue.setText(QUEUE_PARENTHESIS + queueListModel.size() + ")");
         else
-            optionQueue.setText("Queue");
+            optionQueue.setText(QUEUE);
 
         gbc.gridx = 0;
         JPanel queueListPanel = new JPanel(new GridBagLayout());
@@ -781,7 +783,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 Desktop desktop = Desktop.getDesktop();
                 try {
                     desktop.open(file);
-                } catch (Exception e1) {
+                } catch (Exception exc) {
+                    LOGGER.error(exc.getMessage(), exc);
                 }
             }
         });
@@ -849,9 +852,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
             @Override
             public void intervalAdded(ListDataEvent arg0) {
                 if (!queueListModel.isEmpty())
-                    optionQueue.setText("Queue (" + queueListModel.size() + ")");
+                    optionQueue.setText(QUEUE_PARENTHESIS + queueListModel.size() + ")");
                 else
-                    optionQueue.setText("Queue");
+                    optionQueue.setText(QUEUE);
 
                 if (!isRipping)
                     ripNextAlbum();
@@ -941,8 +944,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
                     about.append("<li>");
                     ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
 
-                    if (ripper.contains(RIPPER))
-                        ripper = ripper.substring(0, ripper.indexOf(RIPPER));
+                    if (ripper.contains(RIPPER_TEXT))
+                        ripper = ripper.substring(0, ripper.indexOf(RIPPER_TEXT));
 
                     about.append(ripper);
                     about.append("</li>");
@@ -962,8 +965,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
                     about.append("<li>");
                     ripper = ripper.substring(ripper.lastIndexOf('.') + 1);
 
-                    if (ripper.contains(RIPPER))
-                        ripper = ripper.substring(0, ripper.indexOf(RIPPER));
+                    if (ripper.contains(RIPPER_TEXT))
+                        ripper = ripper.substring(0, ripper.indexOf(RIPPER_TEXT));
 
                     about.append(ripper);
                     about.append("</li>");
@@ -1118,9 +1121,9 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
         String nextAlbum = (String) queueListModel.remove(0);
         if (queueListModel.isEmpty()) {
-            optionQueue.setText("Queue");
+            optionQueue.setText(QUEUE);
         } else {
-            optionQueue.setText("Queue (" + queueListModel.size() + ")");
+            optionQueue.setText(QUEUE_PARENTHESIS + queueListModel.size() + ")");
         }
 
         Thread t = ripAlbum(nextAlbum);
@@ -1129,6 +1132,8 @@ public class MainWindow implements Runnable, RipStatusHandler {
                 Thread.sleep(500);
             } catch (InterruptedException ie) {
                 LOGGER.error("Interrupted while waiting to rip next album", ie);
+                Thread.currentThread().interrupt();
+
             }
             ripNextAlbum();
         } else {
@@ -1388,12 +1393,12 @@ public class MainWindow implements Runnable, RipStatusHandler {
         try {
             point = frame.getLocationOnScreen();
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
 
             try {
                 point = frame.getLocation();
-            } catch (Exception e2) {
-                e2.printStackTrace();
+            } catch (Exception ex) {
+                LOGGER.error(ex.getMessage(), ex);
                 return;
             }
         }
@@ -1432,7 +1437,7 @@ public class MainWindow implements Runnable, RipStatusHandler {
 
             frame.setBounds(x, y, w, h);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error(e.getMessage(), e);
         }
     }
 

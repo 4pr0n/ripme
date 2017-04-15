@@ -61,4 +61,5 @@ public class ImgboxRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
+
 }

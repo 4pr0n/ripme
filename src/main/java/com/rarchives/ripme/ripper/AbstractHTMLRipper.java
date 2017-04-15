@@ -161,6 +161,7 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
             saveAs = saveAs.substring(0, saveAs.indexOf(':'));
 
         File saveFileAs;
+        FileOutputStream fileOutputStream = null;
 
         try {
             // Not sure about this part
@@ -172,11 +173,12 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
                     saveAs + ".txt");
 
             // Write the file
-            FileOutputStream out = new FileOutputStream(saveFileAs);
-            out.write(text.getBytes());
-            out.close();
+            fileOutputStream = new FileOutputStream(saveFileAs);
+            fileOutputStream.write(text.getBytes());
+            Utils.closeResource(fileOutputStream);
         } catch (IOException e) {
             LOGGER.error("[!] Error creating save file path for description '" + url + "':", e);
+            Utils.closeResource(fileOutputStream);
             return false;
         }
 
@@ -197,4 +199,5 @@ public abstract class AbstractHTMLRipper extends AlbumRipper {
 
         return prefix;
     }
+
 }

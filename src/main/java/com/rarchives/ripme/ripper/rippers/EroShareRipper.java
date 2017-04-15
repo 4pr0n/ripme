@@ -51,7 +51,7 @@ public class EroShareRipper extends AbstractHTMLRipper {
             return getHost() + "_" + getGID(url) + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
-            LOGGER.info("Unable to find title at " + url);
+            LOGGER.info("Unable to find title at " + url, e);
         }
         return super.getAlbumTitle(url);
     }
@@ -64,9 +64,10 @@ public class EroShareRipper extends AbstractHTMLRipper {
         Elements imgs = doc.getElementsByTag("img");
         for (Element img : imgs) {
             if (img.hasClass("album-image")) {
-                String imageURL = img.attr("src");
-                imageURL = "https:" + imageURL;
-                urls.add(imageURL);
+                StringBuilder imageURL = new StringBuilder();
+                imageURL.append(img.attr("src"));
+                imageURL.append("https:").append(imageURL);
+                urls.add(imageURL.toString());
             }
         }
 
@@ -109,9 +110,10 @@ public class EroShareRipper extends AbstractHTMLRipper {
         Elements imgs = doc.getElementsByTag("img");
         for (Element img : imgs) {
             if (img.hasClass("album-image")) {
-                String imageURL = img.attr("src");
-                imageURL = "https:" + imageURL;
-                urls.add(new URL(imageURL));
+                StringBuilder imageURL = new StringBuilder();
+                imageURL.append(img.attr("src"));
+                imageURL.append("https:").append(imageURL);
+                urls.add(new URL(imageURL.toString()));
             }
         }
 
@@ -127,4 +129,5 @@ public class EroShareRipper extends AbstractHTMLRipper {
 
         return urls;
     }
+
 }

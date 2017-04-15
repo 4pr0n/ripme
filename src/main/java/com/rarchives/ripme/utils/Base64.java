@@ -41,12 +41,12 @@ public class Base64 {
             ar[a++] = ALPHABET[b2 & mask];
         }
 
-        switch (size % 3) {
-            case 1:
-                ar[--a] = '=';
-            case 2:
-                ar[--a] = '=';
-        }
+        if (size % 3 == 1) {
+            ar[--a] = '=';
+            ar[--a] = '=';
+        } else if (size % 3 == 2)
+            ar[--a] = '=';
+
         return new String(ar);
     }
 
@@ -81,4 +81,5 @@ public class Base64 {
         }
         return buffer;
     }
+
 }

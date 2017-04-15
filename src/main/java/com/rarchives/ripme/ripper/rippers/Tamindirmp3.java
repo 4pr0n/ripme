@@ -13,9 +13,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class tamindirmp3 extends AbstractHTMLRipper {
+public class Tamindirmp3 extends AbstractHTMLRipper {
 
-    public tamindirmp3(URL url) throws IOException {
+    public Tamindirmp3(URL url) throws IOException {
         super(url);
     }
 
@@ -61,4 +61,5 @@ public class tamindirmp3 extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
+
 }

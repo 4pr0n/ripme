@@ -14,6 +14,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,6 +25,12 @@ public class TwitterRipper extends AlbumRipper {
 
     private static final int MAX_REQUESTS = Utils.getConfigInteger("twitter.max_requests", 10);
     private static final int WAIT_TIME = 2000;
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String CONTENT_TYPE = "Content-Type";
+    private static final String CONTENT_TYPE_VALUE = "application/x-www-form-urlencoded;charset=UTF-8";
+    private static final String USER_AGENT_KEY = "User-agent";
+    private static final String USER_AGENT_VALUE = "ripe and zipe";
+    private static final String QUOT = "&quot;";
 
     // Base 64 of consumer key : consumer secret
     private String authKey;
@@ -77,11 +84,11 @@ public class TwitterRipper extends AlbumRipper {
 
     private void getAccessToken() throws IOException {
         Document doc = Http.url("https://api.twitter.com/oauth2/token")
-                .ignoreContentType().header("Authorization", "Basic " + authKey)
-                .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
-                .header("User-agent", "ripe and zipe").data("grant_type", "client_credentials").post();
+                .ignoreContentType().header(AUTHORIZATION, "Basic " + authKey)
+                .header(CONTENT_TYPE, CONTENT_TYPE_VALUE)
+                .header(USER_AGENT_KEY, USER_AGENT_VALUE).data("grant_type", "client_credentials").post();
 
-        String body = doc.body().html().replaceAll("&quot;", "\"");
+        String body = doc.body().html().replaceAll(QUOT, "\"");
 
         try {
             JSONObject json = new JSONObject(body);
@@ -94,11 +101,11 @@ public class TwitterRipper extends AlbumRipper {
 
     private void checkRateLimits(String resource, String api) throws IOException {
         Document doc = Http.url("https://api.twitter.com/1.1/application/rate_limit_status.json?resources=" + resource)
-                .ignoreContentType().header("Authorization", "Bearer " + accessToken)
-                .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
-                .header("User-agent", "ripe and zipe").get();
+                .ignoreContentType().header(AUTHORIZATION, "Bearer " + accessToken)
+                .header(CONTENT_TYPE, CONTENT_TYPE_VALUE)
+                .header(USER_AGENT_KEY, USER_AGENT_VALUE).get();
 
-        String body = doc.body().html().replaceAll("&quot;", "\"");
+        String body = doc.body().html().replaceAll(QUOT, "\"");
 
         try {
             JSONObject json = new JSONObject(body);
@@ -119,18 +126,17 @@ public class TwitterRipper extends AlbumRipper {
 
     private String getApiURL(Long maxID) {
         StringBuilder req = new StringBuilder();
-        switch (albumType) {
-            case ACCOUNT:
-                req.append("https://api.twitter.com/1.1/statuses/user_timeline.json").append("?screen_name=")
-                        .append(this.accountName).append("&include_entities=true")
-                        .append("&exclude_replies=true").append("&trim_user=true")
-                        .append("&include_rts=false").append("&count=" + 200);
-                break;
-            case SEARCH:
-                req.append("https://api.twitter.com/1.1/search/tweets.json").append("?q=")
-                        .append(this.searchText).append("&include_entities=true")
-                        .append("&result_type=recent").append("&count=100");
-                break;
+        if (albumType == ALBUM_TYPE.ACCOUNT) {
+            req.append("https://api.twitter.com/1.1/statuses/user_timeline.json").append("?screen_name=")
+                    .append(this.accountName).append("&include_entities=true")
+                    .append("&exclude_replies=true").append("&trim_user=true")
+                    .append("&include_rts=false").append("&count=" + 200);
+
+        } else if (albumType == ALBUM_TYPE.SEARCH) {
+            req.append("https://api.twitter.com/1.1/search/tweets.json").append("?q=")
+                    .append(this.searchText).append("&include_entities=true")
+                    .append("&result_type=recent").append("&count=100");
+
         }
 
         if (maxID > 0)
@@ -144,11 +150,11 @@ public class TwitterRipper extends AlbumRipper {
         LOGGER.info("    Retrieving " + url);
 
         Document doc = Http.url(url).ignoreContentType()
-                .header("Authorization", "Bearer " + accessToken)
-                .header("Content-Type", "application/x-www-form-urlencoded;charset=UTF-8")
-                .header("User-agent", "ripe and zipe").get();
+                .header(AUTHORIZATION, "Bearer " + accessToken)
+                .header(CONTENT_TYPE, CONTENT_TYPE_VALUE)
+                .header(USER_AGENT_KEY, USER_AGENT_VALUE).get();
 
-        String body = doc.body().html().replaceAll("&quot;", "\"");
+        String body = doc.body().html().replaceAll(QUOT, "\"");
         Object jsonObj = new JSONTokener(body).nextValue();
         JSONArray statuses;
 
@@ -180,19 +186,19 @@ public class TwitterRipper extends AlbumRipper {
 
         if (entities.has("media")) {
             JSONArray medias = entities.getJSONArray("media");
-            String url;
+            StringBuilder url = new StringBuilder();
             JSONObject media;
 
             for (int i = 0; i < medias.length(); i++) {
                 media = (JSONObject) medias.get(i);
-                url = media.getString("media_url");
+                url.append(media.getString("media_url"));
 
-                if (url.contains(".twimg.com/")) {
-                    url += ":orig";
-                    addURLToDownload(new URL(url));
+                if (url.toString().contains(".twimg.com/")) {
+                    url.append(":orig");
+                    addURLToDownload(new URL(url.toString()));
                     return true;
                 } else
-                    LOGGER.debug("Unexpected media_url: " + url);
+                    LOGGER.debug("Unexpected media_url: " + url.toString());
             }
         }
 
@@ -217,14 +223,10 @@ public class TwitterRipper extends AlbumRipper {
     public void rip() throws IOException {
         getAccessToken();
 
-        switch (albumType) {
-            case ACCOUNT:
-                checkRateLimits("statuses", "/statuses/user_timeline");
-                break;
-            case SEARCH:
-                checkRateLimits("search", "/search/tweets");
-                break;
-        }
+        if (albumType == ALBUM_TYPE.ACCOUNT)
+            checkRateLimits("statuses", "/statuses/user_timeline");
+        else if (albumType == ALBUM_TYPE.SEARCH)
+            checkRateLimits("search", "/search/tweets");
 
         Long lastMaxID = 0L;
         int parsedCount = 0;
@@ -238,7 +240,7 @@ public class TwitterRipper extends AlbumRipper {
             }
 
             LOGGER.debug("Twitter response #" + (i + 1) + " Tweets:\n" + tweets);
-            if (tweets.size() == 1 && lastMaxID.equals(tweets.get(0).getString("id_str"))) {
+            if (tweets.size() == 1 && Objects.equals(lastMaxID.toString(), tweets.get(0).getString("id_str"))) {
                 LOGGER.info("   No more tweet found.");
                 break;
             }
@@ -259,6 +261,7 @@ public class TwitterRipper extends AlbumRipper {
                 Thread.sleep(WAIT_TIME);
             } catch (InterruptedException e) {
                 LOGGER.error("[!] Interrupted while waiting to load more results", e);
+                Thread.currentThread().interrupt();
                 break;
             }
         }
@@ -273,25 +276,24 @@ public class TwitterRipper extends AlbumRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        switch (albumType) {
-            case ACCOUNT:
-                return "account_" + accountName;
-            case SEARCH:
-                StringBuilder gid = new StringBuilder();
+        if (albumType == ALBUM_TYPE.ACCOUNT) {
+            return "account_" + accountName;
+        } else if (albumType == ALBUM_TYPE.SEARCH) {
+            StringBuilder gid = new StringBuilder();
 
-                for (int i = 0; i < searchText.length(); i++) {
-                    char c = searchText.charAt(i);
-                    // Ignore URL-encoded chars
-                    if (c == '%') {
-                        gid.append('_');
-                        i += 2;
-                        continue;
-                        // Ignore non-alphanumeric chars
-                    } else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
-                        gid.append(c);
-                    }
+            for (int i = 0; i < searchText.length(); i++) {
+                char c = searchText.charAt(i);
+                // Ignore URL-encoded chars
+                if (c == '%') {
+                    gid.append('_');
+                    i += 2;
+                    continue;
+                    // Ignore non-alphanumeric chars
+                } else if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+                    gid.append(c);
                 }
-                return "search_" + gid.toString();
+            }
+            return "search_" + gid.toString();
         }
         throw new MalformedURLException("Could not decide type of URL (search/account): " + url);
     }

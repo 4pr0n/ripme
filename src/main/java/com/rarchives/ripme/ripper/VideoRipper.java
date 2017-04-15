@@ -148,4 +148,5 @@ public abstract class VideoRipper extends AbstractRipper {
         if (bytesCompleted >= bytesTotal)
             super.checkIfComplete();
     }
+
 }

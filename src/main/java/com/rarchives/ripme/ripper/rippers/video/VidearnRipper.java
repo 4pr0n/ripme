@@ -57,4 +57,5 @@ public class VidearnRipper extends VideoRipper {
         addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
+
 }

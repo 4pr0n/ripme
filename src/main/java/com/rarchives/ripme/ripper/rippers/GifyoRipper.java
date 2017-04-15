@@ -107,4 +107,5 @@ public class GifyoRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url);
     }
+
 }

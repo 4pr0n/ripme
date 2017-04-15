@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 public class PahealRipper extends AbstractHTMLRipper {
 	private static Map<String, String> cookies = null;
-	private static Pattern gidPattern = null;
+	private Pattern gidPattern = null;
 
 	public PahealRipper(URL url) throws IOException {
 		super(url);
@@ -56,7 +56,7 @@ public class PahealRipper extends AbstractHTMLRipper {
 	@Override
 	public Document getNextPage(Document page) throws IOException {
 		for (Element e : page.select("#paginator a")) {
-			if ("next".equals(e.text().toLowerCase()))
+			if ("next".equalsIgnoreCase(e.text()))
 				return Http.url(e.absUrl("href")).cookies(getCookies()).get();
 		}
 

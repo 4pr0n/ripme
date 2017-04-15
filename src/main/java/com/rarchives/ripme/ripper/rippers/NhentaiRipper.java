@@ -108,6 +108,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
             Thread.sleep(IMAGE_SLEEP_TIME);
         } catch (InterruptedException e) {
             LOGGER.warn("Interrupted while waiting to load next image", e);
+            Thread.currentThread().interrupt();
         }
     }
 

@@ -90,7 +90,7 @@ public class InstagramRipper extends AbstractJSONRipper {
         try {
             nextPageAvailable = json.getBoolean("more_available");
         } catch (Exception e) {
-            throw new IOException("No additional pages found");
+            throw new IOException("No additional pages found", e);
         }
 
         if (nextPageAvailable) {

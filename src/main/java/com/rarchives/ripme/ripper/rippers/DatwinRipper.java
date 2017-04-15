@@ -60,4 +60,5 @@ public class DatwinRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
+
 }

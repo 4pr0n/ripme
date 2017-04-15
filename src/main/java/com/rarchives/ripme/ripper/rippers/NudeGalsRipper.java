@@ -90,4 +90,5 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
         // Send referrer when downloading images
         addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), null);
     }
+
 }

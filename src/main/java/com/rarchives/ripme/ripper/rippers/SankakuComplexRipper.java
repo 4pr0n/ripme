@@ -101,4 +101,5 @@ public class SankakuComplexRipper extends AbstractHTMLRipper {
         else
             return null;
     }
+
 }

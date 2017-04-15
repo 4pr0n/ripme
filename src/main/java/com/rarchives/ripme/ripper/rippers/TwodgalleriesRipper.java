@@ -119,4 +119,5 @@ public class TwodgalleriesRipper extends AbstractHTMLRipper {
                 .method(Method.POST).response();
         cookies = resp.cookies();
     }
+
 }

@@ -226,13 +226,13 @@ public class DeviantartRipper extends AbstractHTMLRipper {
      * @throws Exception If it can't find the full-size URL
      */
     public static String thumbToFull(String thumb, boolean throwException) throws Exception {
-        thumb = thumb.replace("http://th", "http://fc");
-        List<String> fields = new ArrayList<>(Arrays.asList(thumb.split("/")));
+        String thumbReplaced = thumb.replace("http://th", "http://fc");
+        List<String> fields = new ArrayList<>(Arrays.asList(thumbReplaced.split("/")));
         fields.remove(4);
 
         // Not a full-size image
         if (!"f".equals(fields.get(4)) && throwException)
-            throw new Exception("Can't get full size image from " + thumb);
+            throw new Exception("Can't get full size image from " + thumbReplaced);
 
         StringBuilder result = new StringBuilder();
 
@@ -381,4 +381,5 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         // We are logged in, save the cookies
         return resp.cookies();
     }
+
 }

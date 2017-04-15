@@ -134,7 +134,6 @@ public class Http {
     }
 
     public Response response() throws IOException {
-        Response response;
         IOException lastException = null;
         int retries = this.retries;
         while (--retries >= 0) {
@@ -148,4 +147,5 @@ public class Http {
         }
         throw new IOException("Failed to load " + url + " after " + this.retries + " attempts", lastException);
     }
+
 }

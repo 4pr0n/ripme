@@ -46,28 +46,32 @@ public class ImagearnRipper extends AbstractHTMLRipper {
     public URL sanitizeURL(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^.*imagearn.com/{1,}image.php\\?id=[0-9]{1,}.*$");
         Matcher m = p.matcher(url.toExternalForm());
+        URL urlUpdated = url;
+
         if (m.matches()) {
             // URL points to imagearn *image*, not gallery
             try {
-                url = getGalleryFromImage(url);
+                urlUpdated = getGalleryFromImage(url);
             } catch (Exception e) {
                 LOGGER.error("[!] " + e.getMessage(), e);
             }
         }
-        return url;
+        return urlUpdated;
     }
 
     private URL getGalleryFromImage(URL url) throws IOException {
         Document doc = Http.url(url).get();
+        URL urlUpdated = url;
+
         for (Element link : doc.select("a[href~=^gallery\\.php.*$]")) {
             LOGGER.info("LINK: " + link.toString());
             if (link.hasAttr("href") && link.attr("href").contains("gallery.php")) {
-                url = new URL("http://imagearn.com/" + link.attr("href"));
-                LOGGER.info("[!] Found gallery from given link: " + url);
-                return url;
+                urlUpdated = new URL("http://imagearn.com/" + link.attr("href"));
+                LOGGER.info("[!] Found gallery from given link: " + urlUpdated);
+                return urlUpdated;
             }
         }
-        throw new IOException("Failed to find gallery at URL " + url);
+        throw new IOException("Failed to find gallery at URL " + urlUpdated);
     }
 
     @Override
@@ -91,4 +95,5 @@ public class ImagearnRipper extends AbstractHTMLRipper {
         addURLToDownload(url, getPrefix(index));
         sleep(1000);
     }
+
 }

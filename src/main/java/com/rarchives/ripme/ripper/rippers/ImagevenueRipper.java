@@ -120,4 +120,5 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
             }
         }
     }
+
 }

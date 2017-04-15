@@ -55,11 +55,6 @@ public class RajceRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException {
-        return super.getNextPage(doc);
-    }
-
-    @Override
     public List<String> getURLsFromPage(Document page) {
         List<String> result = new ArrayList<>();
 

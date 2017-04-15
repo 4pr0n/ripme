@@ -22,9 +22,6 @@ public abstract class AlbumRipper extends AbstractRipper {
         super(url);
     }
 
-    @Override
-    public abstract boolean canRip(URL url);
-
     public boolean allowDuplicates() {
         return false;
     }

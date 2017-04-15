@@ -21,6 +21,7 @@ public class TumblrRipper extends AlbumRipper {
     private static final String DOMAIN = "tumblr.com";
     private static final String HOST = "tumblr";
     private static final String IMAGE_PATTERN = "([^\\s]+(\\.(?i)(jpg|png|gif|bmp))$)";
+    private static final String URL_API_TUMBLR_BLOG = "http://api.tumblr.com/v2/blog/";
 
     private enum ALBUM_TYPE {
         SUBDOMAIN,
@@ -33,7 +34,7 @@ public class TumblrRipper extends AlbumRipper {
     private String tagName;
     private String postNumber;
 
-    private static String TUMBLR_AUTH_CONFIG_KEY = "tumblr.auth";
+    private static String tumblrAuthConfigKey = "tumblr.auth";
 
     private static boolean useDefaultApiKey = false; // fall-back for bad user-specified key
     private static final String DEFAULT_API_KEY = "JFNLu3CbINQjRdUvZibXW9VpSEVYYtiPJ86o8YmvgLZIoKyuNX";
@@ -41,7 +42,7 @@ public class TumblrRipper extends AlbumRipper {
     private static final String API_KEY;
 
     static {
-        API_KEY = Utils.getConfigString(TUMBLR_AUTH_CONFIG_KEY, DEFAULT_API_KEY);
+        API_KEY = Utils.getConfigString(tumblrAuthConfigKey, DEFAULT_API_KEY);
     }
 
     private static String getApiKey() {
@@ -66,19 +67,21 @@ public class TumblrRipper extends AlbumRipper {
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
         String u = url.toExternalForm();
+
+        URL newUrl = url;
         // Convert <FQDN>.tumblr.com/path to <FQDN>/path if needed
         if (StringUtils.countMatches(u, ".") > 2) {
-            url = new URL(u.replace(".tumblr.com", ""));
-            if (isTumblrURL(url))
-                LOGGER.info("Detected tumblr site: " + url);
+            newUrl = new URL(u.replace(".tumblr.com", ""));
+            if (isTumblrURL(newUrl))
+                LOGGER.info("Detected tumblr site: " + newUrl);
             else
-                LOGGER.info("Not a tumblr site: " + url);
+                LOGGER.info("Not a tumblr site: " + newUrl);
         }
-        return url;
+        return newUrl;
     }
 
     public boolean isTumblrURL(URL url) {
-        String checkURL = "http://api.tumblr.com/v2/blog/";
+        String checkURL = URL_API_TUMBLR_BLOG;
         checkURL += url.getHost();
         checkURL += "/info?api_key=" + getApiKey();
         try {
@@ -139,7 +142,7 @@ public class TumblrRipper extends AlbumRipper {
                     LOGGER.info(message);
                     sendUpdate(STATUS.DOWNLOAD_WARN, message);
 
-                    Utils.setConfigString(TUMBLR_AUTH_CONFIG_KEY, apiKey); // save the default key to the config
+                    Utils.setConfigString(tumblrAuthConfigKey, apiKey); // save the default key to the config
 
                     // retry loading the JSON
 
@@ -154,6 +157,7 @@ public class TumblrRipper extends AlbumRipper {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     LOGGER.error("[!] Interrupted while waiting to load next album:", e);
+                    Thread.currentThread().interrupt();
                     break;
                 }
 
@@ -230,7 +234,7 @@ public class TumblrRipper extends AlbumRipper {
         StringBuilder sb = new StringBuilder();
 
         if (albumType == ALBUM_TYPE.POST) {
-            sb.append("http://api.tumblr.com/v2/blog/")
+            sb.append(URL_API_TUMBLR_BLOG)
                     .append(subdomain)
                     .append("/posts?id=")
                     .append(postNumber)
@@ -239,7 +243,7 @@ public class TumblrRipper extends AlbumRipper {
             return sb.toString();
         }
 
-        sb.append("http://api.tumblr.com/v2/blog/")
+        sb.append(URL_API_TUMBLR_BLOG)
                 .append(subdomain)
                 .append("/posts/")
                 .append(mediaType)

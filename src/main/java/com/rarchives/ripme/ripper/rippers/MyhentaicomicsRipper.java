@@ -152,7 +152,8 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                         albumDoc = null;
                     }
 
-                    result = searchImages(albumDoc, result);
+                    if (albumDoc != null)
+                        result = searchImages(albumDoc, result);
                 }
 
             }
@@ -194,6 +195,5 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             addURLToDownload(url, getPrefix(index));
 
     }
-
 
 }

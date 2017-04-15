@@ -39,6 +39,7 @@ public class DownloadThreadPool {
             threadPool.awaitTermination(3600, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             LOGGER.error("[!] Interrupted while waiting for threads to finish: ", e);
+            Thread.currentThread().interrupt();
         }
     }
 

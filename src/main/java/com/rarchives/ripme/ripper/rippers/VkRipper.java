@@ -21,6 +21,7 @@ public class VkRipper extends AlbumRipper {
     private static final String DOMAIN = "vk.com";
     private static final String HOST = "vk";
     private static final String[] KEYS = {"z_src", "y_src", "x_src"};
+    private static final String SHOW_PHOTO = "showPhoto('";
 
     public VkRipper(URL url) throws IOException {
         super(url);
@@ -86,6 +87,7 @@ public class VkRipper extends AlbumRipper {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
                 LOGGER.error("Interrupted while waiting to fetch next video URL", e);
+                Thread.currentThread().interrupt();
                 break;
             }
         }
@@ -117,13 +119,13 @@ public class VkRipper extends AlbumRipper {
             Set<String> photoIDsToGet = new HashSet<>();
 
             for (Element a : elements) {
-                if (!a.attr("onclick").contains("showPhoto('")) {
+                if (!a.attr("onclick").contains(SHOW_PHOTO)) {
                     LOGGER.error("a: " + a);
                     continue;
                 }
 
                 String photoID = a.attr("onclick");
-                photoID = photoID.substring(photoID.indexOf("showPhoto('") + "showPhoto('".length());
+                photoID = photoID.substring(photoID.indexOf(SHOW_PHOTO) + SHOW_PHOTO.length());
                 photoID = photoID.substring(0, photoID.indexOf('\''));
 
                 if (!photoIDsToGet.contains(photoID))

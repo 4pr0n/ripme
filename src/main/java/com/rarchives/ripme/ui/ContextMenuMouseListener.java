@@ -125,4 +125,5 @@ public class ContextMenuMouseListener extends MouseAdapter {
             popup.show(e.getComponent(), nx, e.getY() - popup.getSize().height);
         }
     }
+
 }

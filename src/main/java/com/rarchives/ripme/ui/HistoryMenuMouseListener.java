@@ -68,4 +68,5 @@ public class HistoryMenuMouseListener extends MouseAdapter {
             popup.show(e.getComponent(), nx, e.getY() - popup.getSize().height);
         }
     }
+
 }

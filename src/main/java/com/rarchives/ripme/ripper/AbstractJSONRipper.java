@@ -102,4 +102,5 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
 
         return prefix;
     }
+
 }

@@ -74,6 +74,7 @@ public class VineRipper extends AlbumRipper {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
                 LOGGER.error("[!] Interrupted while waiting to load next page", e);
+                Thread.currentThread().interrupt();
                 break;
             }
         }

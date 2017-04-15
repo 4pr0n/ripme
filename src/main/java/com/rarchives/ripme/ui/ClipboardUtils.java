@@ -84,6 +84,7 @@ class AutoripThread extends Thread {
             }
         } catch (InterruptedException e) {
             LOGGER.error(e.getMessage(), e);
+            Thread.currentThread().interrupt();
         }
     }
 

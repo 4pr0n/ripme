@@ -114,7 +114,7 @@ public class UpdateUtils {
         int[] newVersions = versionStringToInt(latestVersion);
 
         if (oldVersions.length < newVersions.length) {
-            System.err.println("Calculated: " + Arrays.toString(oldVersions) + " < " + latestVersion);
+           LOGGER.info("Calculated: " + Arrays.toString(oldVersions) + " < " + latestVersion);
             return true;
         }
 

@@ -11,11 +11,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -122,18 +118,19 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                 if (thumb.hasAttr("data-cfsrc"))
                     image = thumb.attr("data-cfsrc");
                 else {
-                    String parentHref = thumb.parent().attr("href");
+                    StringBuilder parentHref = new StringBuilder();
+                    parentHref.append(thumb.parent().attr("href"));
 
-                    if (parentHref.isEmpty())
+                    if (parentHref.toString().isEmpty())
                         continue;
-                    if (parentHref.startsWith("/"))
-                        parentHref = "https://www.8muses.com" + parentHref;
+                    if (parentHref.toString().startsWith("/"))
+                        parentHref.append("https://www.8muses.com").append(parentHref);
 
                     try {
-                        LOGGER.info("Retrieving full-size image location from " + parentHref);
-                        image = getFullSizeImage(parentHref);
+                        LOGGER.info("Retrieving full-size image location from " + parentHref.toString());
+                        image = getFullSizeImage(parentHref.toString());
                     } catch (IOException e) {
-                        LOGGER.error("Failed to get full-size image from " + parentHref, e);
+                        LOGGER.error("Failed to get full-size image from " + parentHref.toString(), e);
                         continue;
                     }
                 }
@@ -169,4 +166,5 @@ public class EightmusesRipper extends AbstractHTMLRipper {
     public String getPrefix(int index) {
         return String.format("%03d_", index);
     }
+
 }

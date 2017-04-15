@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class XbooruRipper extends AbstractHTMLRipper {
-	private static Pattern gidPattern = null;
+	private Pattern gidPattern = null;
 
 	public XbooruRipper(URL url) throws IOException {
 		super(url);

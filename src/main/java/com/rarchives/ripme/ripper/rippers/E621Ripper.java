@@ -25,7 +25,7 @@ public class E621Ripper extends AbstractHTMLRipper {
 
     private static final int POOL_IMAGES_PER_PAGE = 24;
     private static final String POOL_SHOW = "/pool/show/";
-    private static Pattern gidPattern2 = null;
+    private Pattern gidPattern2 = null;
 
     private DownloadThreadPool e621ThreadPool = new DownloadThreadPool("e621");
 

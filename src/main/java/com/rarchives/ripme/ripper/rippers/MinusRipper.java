@@ -103,17 +103,11 @@ public class MinusRipper extends AlbumRipper {
 
     @Override
     public void rip() throws IOException {
-        switch (albumType) {
-            case ACCOUNT:
-                ripAccount(this.url);
-                break;
-            case ACCOUNT_ALBUM:
-                ripAlbum(this.url);
-                break;
-            case GUEST:
-                ripAlbum(this.url);
-                break;
-        }
+        if (albumType == ALBUM_TYPE.ACCOUNT)
+            ripAccount(this.url);
+        else if (albumType == ALBUM_TYPE.ACCOUNT_ALBUM || albumType == ALBUM_TYPE.GUEST)
+            ripAlbum(this.url);
+
         waitForThreads();
     }
 

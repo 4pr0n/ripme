@@ -51,7 +51,7 @@ public class FapprovedRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         pageIndex = 1;
-        String pageURL = getPageURL(pageIndex);
+        String pageURL = getPageURL();
         return Http.url(pageURL).ignoreContentType().get();
     }
 
@@ -62,11 +62,11 @@ public class FapprovedRipper extends AbstractHTMLRipper {
 
         sleep(1000);
         pageIndex++;
-        String pageURL = getPageURL(pageIndex);
+        String pageURL = getPageURL();
         return Http.url(pageURL).ignoreContentType().get();
     }
 
-    private String getPageURL(int index) throws IOException {
+    private String getPageURL() throws IOException {
         if (username == null)
             username = getGID(this.url);
 
@@ -94,4 +94,5 @@ public class FapprovedRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index));
     }
+
 }

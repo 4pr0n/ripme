@@ -160,7 +160,8 @@ public class FlickrRipper extends AbstractHTMLRipper {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             LOGGER.error("Interrupted while waiting to load next page", e);
-            throw new IOException("Interrupted while waiting to load next page " + nextURL);
+            Thread.currentThread().interrupt();
+            throw new IOException("Interrupted while waiting to load next page " + nextURL, e);
         }
         return Http.url(nextURL).get();
     }
@@ -287,11 +288,12 @@ public class FlickrRipper extends AbstractHTMLRipper {
                 if (ola.isEmpty())
                     largestImagePage = this.url.toExternalForm();
                 else {
-                    String candImage = ola.get(0).attr("href");
-                    if (candImage.startsWith("/"))
-                        candImage = FLICKR_URL + candImage;
+                    StringBuilder candImage = new StringBuilder();
+                    candImage.append(ola.get(0).attr("href"));
+                    if (candImage.toString().startsWith("/"))
+                        candImage.append(FLICKR_URL).append(candImage);
 
-                    largestImagePage = candImage;
+                    largestImagePage = candImage.toString();
                 }
             }
 
@@ -302,4 +304,5 @@ public class FlickrRipper extends AbstractHTMLRipper {
             return doc;
         }
     }
+
 }

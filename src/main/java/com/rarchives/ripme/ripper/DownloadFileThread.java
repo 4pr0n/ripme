@@ -96,18 +96,21 @@ public class DownloadFileThread extends Thread {
                 huc.setInstanceFollowRedirects(true);
                 huc.setConnectTimeout(timeout);
                 huc.setRequestProperty("accept", "*/*");
-                if (!referrer.isEmpty()) {
-                    huc.setRequestProperty("Referer", referrer); // Sic
-                }
-                huc.setRequestProperty("User-agent", AbstractRipper.USER_AGENT);
-                String cookie = "";
-                for (String key : cookies.keySet()) {
-                    if (!cookie.isEmpty())
-                        cookie += "; ";
 
-                    cookie += key + "=" + cookies.get(key);
+                if (!referrer.isEmpty())
+                    huc.setRequestProperty("Referer", referrer); // Sic
+
+                huc.setRequestProperty("User-agent", AbstractRipper.USER_AGENT);
+                StringBuilder cookie = new StringBuilder();
+
+                for (String key : cookies.keySet()) {
+                    if (!cookie.toString().isEmpty())
+                        cookie.append("; ");
+
+                    cookie.append(key).append("=").append(cookies.get(key));
                 }
-                huc.setRequestProperty("Cookie", cookie);
+
+                huc.setRequestProperty("Cookie", cookie.toString());
                 LOGGER.debug("Request properties: " + huc.getRequestProperties());
                 huc.connect();
 

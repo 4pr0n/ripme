@@ -41,6 +41,7 @@ public class DownloadVideoThread extends Thread {
         try {
             observer.stopCheck();
         } catch (IOException e) {
+            LOGGER.error(e.getMessage(), e);
             observer.downloadErrored(url, "Download interrupted");
             return;
         }
