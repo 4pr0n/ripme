@@ -53,6 +53,7 @@ public class ShesFreakyRipper extends AbstractHTMLRipper {
 
         for (Element thumb : doc.select("a[data-lightbox=\"gallery\"]")) {
             String image = thumb.attr("href");
+            image = image.replace("//","http://");
             imageURLs.add(image);
         }
 

@@ -2,7 +2,6 @@ package com.rarchives.ripme.tst.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.utils.Utils;
-import junit.framework.TestCase;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -12,21 +11,26 @@ import org.junit.Assert;
 import java.io.File;
 import java.io.IOException;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 /**
  * Contains helper methods for testing rippers.
  */
-public class RippersTest extends TestCase {
+public class RippersTest {
 
     private final Logger logger = Logger.getLogger(RippersTest.class);
 
     /**
-     * Dummy test to make JUnit not complain
+     * File extensions that are safe to delete.
      */
-    public void test() {
-        assert (true);
-    }
+    private static final String[] SAFE_EXTENSIONS = {
+            "png", "jpg", "jpeg", "gif",
+            "mp4", "webm", "mov", "mpg",
+            "mpeg", "txt", "log", "php"
+    };
 
-    protected void testRipper(AbstractRipper ripper) {
+    void testRipper(AbstractRipper ripper) {
         try {
             // Turn on Debug logging
             ((ConsoleAppender) Logger.getRootLogger().getAppender("stdout")).setThreshold(Level.DEBUG);
@@ -56,47 +60,41 @@ public class RippersTest extends TestCase {
     }
 
     /**
-     * File extensions that are safe to delete.
-     */
-    private static final String[] SAFE_EXTENSIONS = {
-            "png", "jpg", "jpeg", "gif",
-            "mp4", "webm", "mov", "mpg",
-            "mpeg", "txt", "log", "php"
-    };
-
-    /**
      * Recursively deletes a directory
      */
-    protected void deleteDir(File dir) {
+    void deleteDir(File dir) {
         if (!dir.getName().contains("_")) {
             // All ripped albums contain an underscore
             // Don't delete an album if it doesn't have an underscore
             return;
         }
+
         for (File f : dir.listFiles()) {
             boolean safe = false;
-            for (String ext : SAFE_EXTENSIONS) {
+
+            for (String ext : SAFE_EXTENSIONS)
                 safe |= f.getAbsolutePath().toLowerCase().endsWith("." + ext);
-            }
-            if (!safe) {
-                // Found a file we shouldn't delete! Stop deleting immediately.
+
+            // Found a file we shouldn't delete! Stop deleting immediately.
+            if (!safe)
                 return;
-            }
-            if (f.isDirectory()) {
+
+            if (f.isDirectory())
                 deleteDir(f);
-            }
+
             f.delete();
         }
         dir.delete();
     }
 
-    protected void deleteSubdirs(File workingDir) {
+    void deleteSubdirs(File workingDir) {
         for (File f : workingDir.listFiles()) {
             if (f.isDirectory()) {
                 for (File sf : f.listFiles()) {
                     logger.debug("Deleting " + sf);
                     sf.delete();
                 }
+
                 logger.debug("Deleting " + f);
                 f.delete();
             }

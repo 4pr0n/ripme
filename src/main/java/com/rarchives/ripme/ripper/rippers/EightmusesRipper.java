@@ -123,8 +123,11 @@ public class EightmusesRipper extends AbstractHTMLRipper {
 
                     if (parentHref.toString().isEmpty())
                         continue;
-                    if (parentHref.toString().startsWith("/"))
-                        parentHref.append("https://www.8muses.com").append(parentHref);
+                    if (parentHref.toString().startsWith("/")) {
+                        String url = "https://www.8muses.com" + parentHref;
+                        parentHref = new StringBuilder();
+                        parentHref.append(url);
+                    }
 
                     try {
                         LOGGER.info("Retrieving full-size image location from " + parentHref.toString());

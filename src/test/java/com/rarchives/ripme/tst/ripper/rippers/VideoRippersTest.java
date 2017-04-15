@@ -5,11 +5,14 @@ import com.rarchives.ripme.ripper.rippers.video.PornhubRipper;
 import com.rarchives.ripme.ripper.rippers.video.VineRipper;
 import com.rarchives.ripme.ripper.rippers.video.XvideosRipper;
 import com.rarchives.ripme.ripper.rippers.video.YoupornRipper;
+import org.junit.Test;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 public class VideoRippersTest extends RippersTest {
 
@@ -36,7 +39,8 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
-    public void testXvideosRipper() throws IOException {
+    @Test
+    public void xvideosRipperTest() throws Exception {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("http://www.xvideos.com/video1428195/stephanie_first_time_anal"));
         contentURLs.add(new URL("http://www.xvideos.com/video7136868/vid-20140205-wa0011"));
@@ -46,7 +50,8 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
-    public void testPornhubRipper() throws IOException {
+    @Test
+    public void pornhubRipperTest() throws Exception {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("http://www.pornhub.com/view_video.php?viewkey=993166542"));
         for (URL url : contentURLs) {
@@ -55,18 +60,21 @@ public class VideoRippersTest extends RippersTest {
         }
     }
 
-    public void testVineRipper() throws IOException {
+    @Test
+    public void vineRipperTest() throws Exception {
         List<URL> contentURLs = new ArrayList<>();
-        contentURLs.add(new URL("https://vine.co/v/hiqQrP0eUZx"));
+        contentURLs.add(new URL("https://vine.co/v/hteQnv7lEnB"));
         for (URL url : contentURLs) {
             VineRipper ripper = new VineRipper(url);
             videoTestHelper(ripper);
         }
     }
 
-    public void testYoupornRipper() throws IOException {
+    @Test
+    public void youPornRipperTest() throws Exception {
         List<URL> contentURLs = new ArrayList<>();
         contentURLs.add(new URL("http://www.youporn.com/watch/7669155/mrs-li-amateur-69-orgasm/?from=categ"));
+        contentURLs.add(new URL("https://www.youporn.com/watch/13678059/bang-casting-amateur-bonnie-grey-gaping-pussy-cum-slut/"));
         for (URL url : contentURLs) {
             YoupornRipper ripper = new YoupornRipper(url);
             videoTestHelper(ripper);

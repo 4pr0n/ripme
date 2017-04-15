@@ -104,16 +104,22 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
 
             if (m.find()) {
                 StringBuilder imgUrl = new StringBuilder();
-                       imgUrl.append(m.group(1));
+                imgUrl.append(m.group(1));
 
-                if (imgUrl.toString().startsWith("//"))
-                    imgUrl.append("http:").append(imgUrl);
+                if (imgUrl.toString().startsWith("//")) {
+                    String urlText = "http:" + imgUrl;
+                    imgUrl = new StringBuilder();
+                    imgUrl.append(urlText);
+                }
 
-                if (imgUrl.toString().startsWith("/"))
-                    imgUrl.append("http://").append(this.url.getHost()).append(imgUrl);
+                if (imgUrl.toString().startsWith("/")) {
+                    String urlText = "http://" + this.url.getHost() + imgUrl;
+                    imgUrl = new StringBuilder();
+                    imgUrl.append(urlText);
+                }
 
                 //convert thumbnail url into fullsize url
-               String imgUrlString = imgUrl.toString().replace("list_thumb_inbox", "xlarge");
+                String imgUrlString = imgUrl.toString().replace("list_thumb_inbox", "xlarge");
 
                 // Don't download the same URL twice
                 if (imageURLs.contains(imgUrlString)) {
