@@ -38,7 +38,7 @@ public abstract class AlbumRipper extends AbstractRipper {
         return itemsCompleted.size() + itemsErrored.size();
     }
 
-    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
+    public boolean  addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies, String[] fileTypes) {
         // Only download one file if this is a test.
         if (super.isThisATest() &&
                 (itemsPending.size() > 0 || itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
@@ -77,14 +77,21 @@ public abstract class AlbumRipper extends AbstractRipper {
             if (cookies != null) {
                 dft.setCookies(cookies);
             }
+            if (fileTypes != null) {
+            	dft.setFileTypes(fileTypes);
+            }
             threadPool.addThread(dft);
         }
         return true;
     }
+    
+    public void addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
+    	addURLToDownload(url, saveAs, referrer, cookies, null);
+    }
 
     @Override
     public boolean addURLToDownload(URL url, File saveAs) {
-        return addURLToDownload(url, saveAs, null, null);
+        return addURLToDownload(url, saveAs, null, null, null);
     }
 
     /**

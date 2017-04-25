@@ -30,8 +30,10 @@ public class DownloadFileThread extends Thread {
 
     private String referrer = "";
     private Map<String,String> cookies = new HashMap<String,String>();
+    private String[] fileTypes = null;
 
     private URL url;
+    private URL originalURL;
     private File saveAs;
     private String prettySaveAs;
     private AbstractRipper observer;
@@ -42,6 +44,7 @@ public class DownloadFileThread extends Thread {
     public DownloadFileThread(URL url, File saveAs, AbstractRipper observer) {
         super();
         this.url = url;
+        this.originalURL = url;
         this.saveAs = saveAs;
         this.prettySaveAs = Utils.removeCWD(saveAs);
         this.observer = observer;
@@ -54,6 +57,9 @@ public class DownloadFileThread extends Thread {
     }
     public void setCookies(Map<String,String> cookies) {
         this.cookies = cookies;
+    }
+    public void setFileTypes(String[] fileTypes) {
+    	this.fileTypes = fileTypes;
     }
 
     /**
@@ -128,9 +134,30 @@ public class DownloadFileThread extends Thread {
                     throw new IOException("Redirect status code " + statusCode + " - redirect to " + location);
                 }
                 if (statusCode / 100 == 4) { // 4xx errors
-                    logger.error("[!] Non-retriable status code " + statusCode + " while downloading from " + url);
-                    observer.downloadErrored(url, "Non-retriable status code " + statusCode + " while downloading " + url.toExternalForm());
-                    return; // Not retriable, drop out.
+                	//Check for 404s that should be ignored due to file type fallback support
+                	if (fileTypes != null && statusCode == 404) {
+                		for (int i=0; i<fileTypes.length-1; i++) {
+                			String nextFormat = this.url.toString().replaceAll("\\." + fileTypes[i], "." + fileTypes[i+1]);
+                        	logger.error("404 on the ." + fileTypes[i] + ", trying ." + fileTypes[i+1] + " : " + this.url.toExternalForm());                    	
+                        	this.url = new URL(nextFormat);
+                        	this.saveAs = new File(this.saveAs.toString().replaceAll("\\." + fileTypes[i], "." + fileTypes[i+1]));                    	
+                        	huc = httpRequest();
+                        	statusCode = huc.getResponseCode();
+                        	if (statusCode == 200)
+                        		break;
+                		}
+                		if (statusCode == 404) {
+	                        logger.error("404 on the ." + fileTypes[fileTypes.length-1] + ", quitting : " + this.url.toExternalForm());
+	    	                observer.downloadErrored(originalURL, "404 on the ." + fileTypes[fileTypes.length-1] + ", quitting : " + this.url.toExternalForm());
+		                    return; // Not retriable, drop out.
+                		}
+                	}
+                	//Check if still 4XX error or if fileType fallback worked
+                	if (statusCode / 100 == 4) {
+	                    logger.error("[!] Non-retriable status code " + statusCode + " while downloading from " + url);
+		                observer.downloadErrored(url, "Non-retriable status code " + statusCode + " while downloading " + url.toExternalForm());
+		                return; // Not retriable, drop out.\
+                	}
                 }
                 if (statusCode / 100 == 5) { // 5xx errors
                     observer.downloadErrored(url, "Retriable status code " + statusCode + " while downloading " + url.toExternalForm());
@@ -174,8 +201,27 @@ public class DownloadFileThread extends Thread {
                 return;
             }
         } while (true);
-        observer.downloadCompleted(url, saveAs);
+        observer.downloadCompleted(originalURL, saveAs);
         logger.info("[+] Saved " + url + " as " + this.prettySaveAs);
+    }
+    
+    private HttpURLConnection httpRequest() throws IOException {
+    	// Setup HTTP request
+        HttpURLConnection huc = (HttpURLConnection) this.url.openConnection();
+        huc.setConnectTimeout(TIMEOUT);
+        huc.setRequestProperty("accept",  "*/*");
+        huc.setRequestProperty("Referer", referrer); // Sic
+        huc.setRequestProperty("User-agent", AbstractRipper.USER_AGENT);
+        String cookie = "";
+        for (String key : cookies.keySet()) {
+            if (!cookie.equals("")) {
+                cookie += "; ";
+            }
+            cookie += key + "=" + cookies.get(key);
+        }
+        huc.setRequestProperty("Cookie", cookie);
+        huc.connect();
+        return huc;
     }
 
 }
