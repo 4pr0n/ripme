@@ -254,11 +254,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.weightx = 2; gbc.ipadx = 2; gbc.gridx = 0;
         gbc.weighty = 2; gbc.ipady = 2; gbc.gridy = 0;
-<<<<<<< HEAD
 
-=======
-                
->>>>>>> Added isEmpty to History, fixed some best practices in the code.
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException e) {

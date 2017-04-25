@@ -11,19 +11,12 @@ import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.RipUtils;
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-import com.rarchives.ripme.utils.Utils;
->>>>>>> Added same imgur and stuff album downloaders characteristics to ChanRipper.
-=======
->>>>>>> Added isEmpty to History, fixed some best practices in the code.
+
 
 public class ChanRipper extends AbstractHTMLRipper {
     public static List<ChanSite> explicit_domains = Arrays.asList(
