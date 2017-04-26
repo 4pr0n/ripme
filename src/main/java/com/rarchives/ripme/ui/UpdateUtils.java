@@ -19,7 +19,7 @@ import java.util.Arrays;
 public class UpdateUtils {
 
     private static final Logger LOGGER = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.4.6";
+    private static final String DEFAULT_VERSION = "1.4.8";
     private static final String UPDATE_JSON_URL = "https://raw.githubusercontent.com/4pr0n/ripme/master/ripme.json";
     private static final String MAIN_FILE_NAME = "ripme.jar";
     private static final String UPDATE_FILE_NAME = "ripme.jar.update";

@@ -47,6 +47,7 @@ public class XhamsterRipper extends AlbumRipper {
 
                 String image = thumb.attr("src");
                 image = image.replaceAll("https://upt.xhcdn\\.", "http://up.xhamster.");
+                image = image.replaceAll("ept\\.xhcdn", "ep.xhamster");
                 image = image.replaceAll("_160\\.", "_1000.");
                 index += 1;
                 String prefix = "";
