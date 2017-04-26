@@ -1,5 +1,11 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,13 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class VidbleRipper extends AbstractHTMLRipper {
 
@@ -25,24 +24,21 @@ public class VidbleRipper extends AbstractHTMLRipper {
     public String getHost() {
         return "vidble";
     }
+
     @Override
     public String getDomain() {
         return "vidble.com";
     }
-    
+
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p; Matcher m;
+        Pattern p = Pattern.compile("^.*vidble.com/album/([a-zA-Z0-9_\\-]+).*$");
+        Matcher m = p.matcher(url.toExternalForm());
 
-        p = Pattern.compile("^.*vidble.com/album/([a-zA-Z0-9_\\-]+).*$");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
+        if (m.matches())
             return m.group(1);
-        }
-        throw new MalformedURLException(
-                "Expected vidble.com album format: "
-                        + "vidble.com/album/####"
-                        + " Got: " + url);
+
+        throw new MalformedURLException("Expected vidble.com album format: vidble.com/album/#### Got: " + url);
     }
 
     @Override
@@ -56,19 +52,20 @@ public class VidbleRipper extends AbstractHTMLRipper {
     }
 
     private static List<String> getURLsFromPageStatic(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         Elements els = doc.select("#ContentPlaceHolder1_divContent");
         Elements imgs = els.select("img");
+
         for (Element img : imgs) {
             String src = img.absUrl("src");
             src = src.replaceAll("_[a-zA-Z]{3,5}", "");
-            
-            if (!src.equals("")) {
+
+            if (!src.isEmpty())
                 imageURLs.add(src);
-            }
         }
+
         return imageURLs;
-   }
+    }
 
     @Override
     public void downloadURL(URL url, int index) {
@@ -76,11 +73,13 @@ public class VidbleRipper extends AbstractHTMLRipper {
     }
 
     public static List<URL> getURLsFromPage(URL url) throws IOException {
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         Document doc = Http.url(url).get();
-        for (String stringURL : getURLsFromPageStatic(doc)) {
+
+        for (String stringURL : getURLsFromPageStatic(doc))
             urls.add(new URL(stringURL));
-        }
+
         return urls;
     }
+
 }

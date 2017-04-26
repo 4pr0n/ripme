@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/4pr0n/ripme.svg?branch=master)](https://travis-ci.org/4pr0n/ripme)
 [![Join the chat at https://gitter.im/4pr0n-ripme/Lobby](https://badges.gitter.im/4pr0n-ripme/Lobby.svg)](https://gitter.im/4pr0n-ripme/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Album ripper for various websites. Runs on your computer. Requires Java 1.6
+Album ripper for various websites. Runs on your computer. Requires Java 1.8
 
 ![Screenshot](http://i.imgur.com/kWzhsIu.png)
 
@@ -72,11 +72,11 @@ mvn test
 
 # Dependencies
 
-* junit-3.8.1
-* jsoup-1.7.3
-* json-20140107
-* apache-commons-configuration-1.7
+* junit-4.12
+* jsoup-1.9.2
+* json-20160212
+* apache-commons-configuration-1.10
 * log4j-1.2.17
-* commons-cli-1.2
-* commons-io-1.3.2
-* httpcomponents-4.3.3
+* commons-cli-1.3.1
+* commons-io-2.5
+* httpcomponents-4.5.2

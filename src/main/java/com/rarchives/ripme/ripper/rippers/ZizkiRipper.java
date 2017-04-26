@@ -1,29 +1,25 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
-
 public class ZizkiRipper extends AbstractHTMLRipper {
 
     private Document albumDoc = null;
-    private Map<String,String> cookies = new HashMap<String,String>();
+    private Map<String, String> cookies = new HashMap<>();
 
     public ZizkiRipper(URL url) throws IOException {
         super(url);
@@ -33,6 +29,7 @@ public class ZizkiRipper extends AbstractHTMLRipper {
     public String getHost() {
         return "zizki";
     }
+
     @Override
     public String getDomain() {
         return "zizki.com";
@@ -58,11 +55,11 @@ public class ZizkiRipper extends AbstractHTMLRipper {
 
             Element authorSpan = getFirstPage().select("span[class=creator]").first();
             String author = authorSpan.select("a").first().text();
-            logger.debug("Author: " + author);
+            LOGGER.debug("Author: " + author);
             return getHost() + "_" + author + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
-            logger.info("Unable to find title at " + url);
+            LOGGER.info("Unable to find title at " + url, e);
         }
         return super.getAlbumTitle(url);
     }
@@ -79,37 +76,39 @@ public class ZizkiRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
         // Page contains images
-        logger.info("Look for images.");
+        LOGGER.info("Look for images.");
         for (Element thumb : page.select("img")) {
-            logger.info("Img");
-            if (super.isStopped()) break;
-            // Find thumbnail image source
-            String image = null;
-            String img_type = null;
-            String src = null;
-            if (thumb.hasAttr("typeof")) {
-                img_type = thumb.attr("typeof");
-                if (img_type.equals("foaf:Image")) {
-                  logger.debug("Found image with " + img_type);
-                  if (thumb.parent() != null &&
-                      thumb.parent().parent() != null &&
-                      thumb.parent().parent().attr("class") != null &&
-                      thumb.parent().parent().attr("class").equals("aimage-center")
-                     )
-                  {
-                     src = thumb.attr("src");
-                     logger.debug("Found url with " + src);
-                     if (!src.contains("zizki.com")) {
-                       continue;
-                     } else {
-                       imageURLs.add(src.replace("/styles/medium/public/","/styles/large/public/"));
-                     }
-                   }
-                }
+            LOGGER.info("Img");
+
+            if (super.isStopped())
+                break;
+
+            if (thumb.hasAttr("typeof"))
+                imageURLs = someFunc(imageURLs, thumb);
+        }
+        return imageURLs;
+    }
+
+    private List<String> someFunc(List<String> imageURLs, Element thumb) {
+        String imgType = thumb.attr("typeof");
+
+        if (("foaf:Image").equals(imgType)) {
+            LOGGER.debug("Found image with " + imgType);
+
+            if (thumb.parent() != null && thumb.parent().parent() != null &&
+                    thumb.parent().parent().attr("class") != null &&
+                    ("aimage-center").equals(thumb.parent().parent().attr("class"))) {
+
+                String src = thumb.attr("src");
+                LOGGER.debug("Found url with " + src);
+
+                if (src.contains("zizki.com"))
+                    imageURLs.add(src.replace("/styles/medium/public/", "/styles/large/public/"));
             }
         }
+
         return imageURLs;
     }
 
@@ -122,4 +121,5 @@ public class ZizkiRipper extends AbstractHTMLRipper {
     public String getPrefix(int index) {
         return String.format("%03d_", index);
     }
+
 }

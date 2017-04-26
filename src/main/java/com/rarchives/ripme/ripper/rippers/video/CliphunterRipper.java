@@ -1,22 +1,22 @@
 package com.rarchives.ripme.ripper.rippers.video;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.json.JSONObject;
-
 import com.rarchives.ripme.ripper.VideoRipper;
 import com.rarchives.ripme.utils.Base64;
 import com.rarchives.ripme.utils.Http;
+import org.json.JSONObject;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class CliphunterRipper extends VideoRipper {
 
     private static final String HOST = "cliphunter";
-    private static final String decryptString="{'$':':','&':'.','(':'=','-':'-','_':'_','^':'&','a':'h','c':'c','b':'b','e':'v','d':'e','g':'f','f':'o','i':'d','m':'a','l':'n','n':'m','q':'t','p':'u','r':'s','w':'w','v':'p','y':'l','x':'r','z':'i','=':'/','?':'?'}";
-    private static final JSONObject decryptDict = new JSONObject(decryptString);
+    private static final String DECRYPT_STRING = "{'$':':','&':'.','(':'=','-':'-','_':'_','^':'&','a':'h','c':'c','b':'b','e':'v','d':'e','g':'f','f':'o','i':'d','m':'a','l':'n','n':'m','q':'t','p':'u','r':'s','w':'w','v':'p','y':'l','x':'r','z':'i','=':'/','?':'?'}";
+    private static final JSONObject DECRYPT_DICT = new JSONObject(DECRYPT_STRING);
 
     public CliphunterRipper(URL url) throws IOException {
         super(url);
@@ -33,45 +33,39 @@ public class CliphunterRipper extends VideoRipper {
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
-    
-    @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
-    }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://[wm.]*cliphunter\\.com/w/([0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
 
-        throw new MalformedURLException(
-                "Expected cliphunter format:"
-                        + "cliphunter.com/w/####..."
-                        + " Got: " + url);
+        if (m.matches())
+            return m.group(1);
+
+        throw new MalformedURLException("Expected cliphunter format: cliphunter.com/w/####... Got: " + url);
     }
 
     @Override
     public void rip() throws IOException {
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         String html = Http.url(url).get().html();
         String jsonString = html.substring(html.indexOf("var flashVars = {d: '") + 21);
-        jsonString = jsonString.substring(0, jsonString.indexOf("'"));
-        JSONObject json    = new JSONObject(new String(Base64.decode(jsonString)));
-        JSONObject jsonURL = new JSONObject(new String(Base64.decode(json.getString("url"))));
+        jsonString = jsonString.substring(0, jsonString.indexOf('\''));
+
+        JSONObject json = new JSONObject(new String(Base64.decode(jsonString), StandardCharsets.UTF_8.name()));
+        JSONObject jsonURL = new JSONObject(new String(Base64.decode(json.getString("url")), StandardCharsets.UTF_8.name()));
         String encryptedURL = jsonURL.getJSONObject("u").getString("l");
-        String vidURL = "";
+        StringBuilder vidURL = new StringBuilder();
+
         for (char c : encryptedURL.toCharArray()) {
-            if (decryptDict.has(Character.toString(c))) {
-                vidURL += decryptDict.getString(Character.toString(c));
-            }
-            else {
-                vidURL += c;
-            }
+            if (DECRYPT_DICT.has(Character.toString(c)))
+                vidURL.append(DECRYPT_DICT.getString(Character.toString(c)));
+            else
+                vidURL.append(c);
         }
-        addURLToDownload(new URL(vidURL), HOST + "_" + getGID(this.url));
+
+        addURLToDownload(new URL(vidURL.toString()), HOST + "_" + getGID(this.url));
         waitForThreads();
     }
+
 }

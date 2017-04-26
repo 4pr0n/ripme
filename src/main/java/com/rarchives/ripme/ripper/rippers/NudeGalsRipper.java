@@ -1,5 +1,11 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,13 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class NudeGalsRipper extends AbstractHTMLRipper {
     // Current HTML document
@@ -33,6 +32,7 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
         return "nude-gals.com";
     }
 
+    @Override
     public String getAlbumTitle(URL url) throws MalformedURLException {
         try {
             Document doc = getFirstPage();
@@ -45,39 +45,35 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
             return getHost() + "_" + girl + "-" + magazine + "-" + title;
         } catch (Exception e) {
             // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
+            LOGGER.warn("Failed to get album title from " + url, e);
         }
         return super.getAlbumTitle(url);
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p;
-        Matcher m;
+        Pattern p = Pattern.compile("^.*nude-gals\\.com\\/photoshoot\\.php\\?photoshoot_id=(\\d+)$");
+        Matcher m = p.matcher(url.toExternalForm());
 
-        p = Pattern.compile("^.*nude-gals\\.com\\/photoshoot\\.php\\?photoshoot_id=(\\d+)$");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
+        if (m.matches())
             return m.group(1);
-        }
 
         throw new MalformedURLException(
-                "Expected nude-gals.com gallery format: "
-                        + "nude-gals.com/photoshoot.php?phtoshoot_id=####"
-                        + " Got: " + url);
+                "Expected nude-gals.com gallery format: nude-gals.com/photoshoot.php?phtoshoot_id=#### Got: " + url
+        );
     }
 
     @Override
     public Document getFirstPage() throws IOException {
-        if (albumDoc == null) {
+        if (albumDoc == null)
             albumDoc = Http.url(url).get();
-        }
+
         return albumDoc;
     }
 
     @Override
     public List<String> getURLsFromPage(Document doc) {
-        List<String> imageURLs = new ArrayList<String>();
+        List<String> imageURLs = new ArrayList<>();
 
         Elements thumbs = doc.select("#grid_container .grid > .grid_box");
         for (Element thumb : thumbs) {
@@ -94,4 +90,5 @@ public class NudeGalsRipper extends AbstractHTMLRipper {
         // Send referrer when downloading images
         addURLToDownload(url, getPrefix(index), "", this.url.toExternalForm(), null);
     }
+
 }

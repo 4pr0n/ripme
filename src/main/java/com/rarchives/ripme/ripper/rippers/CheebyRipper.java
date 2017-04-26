@@ -1,5 +1,11 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -11,17 +17,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
-
 public class CheebyRipper extends AbstractHTMLRipper {
 
     private int offset = 0;
-    private Map<String, Integer> albumSets = new HashMap<String, Integer>();
+    private Map<String, Integer> albumSets = new HashMap<>();
 
     public CheebyRipper(URL url) throws IOException {
         super(url);
@@ -31,6 +30,7 @@ public class CheebyRipper extends AbstractHTMLRipper {
     public String getHost() {
         return "cheeby";
     }
+
     @Override
     public String getDomain() {
         return "cheeby.com";
@@ -40,9 +40,10 @@ public class CheebyRipper extends AbstractHTMLRipper {
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://[w.]*cheeby.com/u/([a-zA-Z0-9\\-_]{3,}).*$");
         Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
+
+        if (m.matches())
             return m.group(1);
-        }
+
         throw new MalformedURLException("cheeby user not found in " + url + ", expected http://cheeby.com/u/username");
     }
 
@@ -54,8 +55,7 @@ public class CheebyRipper extends AbstractHTMLRipper {
     @Override
     public Document getFirstPage() throws IOException {
         String url = this.url + "?limit=10&offset=0";
-        return Http.url(url)
-                   .get();
+        return Http.url(url).get();
     }
 
     @Override
@@ -64,9 +64,10 @@ public class CheebyRipper extends AbstractHTMLRipper {
         offset += 1;
         String url = this.url + "?p=" + offset;
         Document nextDoc = Http.url(url).get();
-        if (nextDoc.select("div.i a img").size() == 0) {
+
+        if (nextDoc.select("div.i a img").isEmpty())
             throw new IOException("No more images to fetch");
-        }
+
         return nextDoc;
     }
 
@@ -78,11 +79,11 @@ public class CheebyRipper extends AbstractHTMLRipper {
     @Override
     public List<String> getURLsFromPage(Document page) {
         // Not implemented here
-        return null;
+        return new ArrayList<>();
     }
 
     public List<Image> getImagesFromPage(Document page) {
-        List<Image> imageURLs = new ArrayList<Image>();
+        List<Image> imageURLs = new ArrayList<>();
         for (Element image : page.select("div.i a img")) {
             // Get image URL
             String imageURL = image.attr("src");
@@ -90,91 +91,91 @@ public class CheebyRipper extends AbstractHTMLRipper {
 
             // Get "album" from image link
             String href = image.parent().attr("href");
-            while (href.endsWith("/")) {
+
+            while (href.endsWith("/"))
                 href = href.substring(0, href.length() - 2);
-            }
+
             String[] hrefs = href.split("/");
             String prefix = hrefs[hrefs.length - 1];
 
             // Keep track of how many images are in this album
             int albumSetCount = 0;
-            if (albumSets.containsKey(prefix)) {
+
+            if (albumSets.containsKey(prefix))
                 albumSetCount = albumSets.get(prefix);
-            }
+
             albumSetCount++;
             albumSets.put(prefix, albumSetCount);
 
             imageURLs.add(new Image(imageURL, prefix, albumSetCount));
-
         }
         return imageURLs;
     }
-    
+
     @Override
     public void rip() throws IOException {
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         Document doc = getFirstPage();
-        
+
         while (doc != null) {
             List<Image> images = getImagesFromPage(doc);
 
-            if (images.size() == 0) {
+            if (images.isEmpty())
                 throw new IOException("No images found at " + doc.location());
-            }
-            
+
             for (Image image : images) {
-                if (isStopped()) {
+                if (isStopped())
                     break;
-                }
+
                 // Don't create subdirectory if "album" only has 1 image
-                if (albumSets.get(image.prefix) > 1) {
+                if (albumSets.get(image.prefix) > 1)
                     addURLToDownload(new URL(image.url), getPrefix(image.index), image.prefix);
-                }
-                else {
+                else
                     addURLToDownload(new URL(image.url));
-                }
             }
 
-            if (isStopped()) {
+            if (isStopped())
                 break;
-            }
 
             try {
                 sendUpdate(STATUS.LOADING_RESOURCE, "next page");
                 doc = getNextPage(doc);
             } catch (IOException e) {
-                logger.info("Can't get next page: " + e.getMessage());
+                LOGGER.info("Can't get next page: " + e.getMessage(), e);
                 break;
             }
         }
 
         // If they're using a thread pool, wait for it.
-        if (getThreadPool() != null) {
+        if (getThreadPool() != null)
             getThreadPool().waitForThreads();
-        }
+
         waitForThreads();
 
         // Delete empty subdirectories
         for (String prefix : albumSets.keySet()) {
-            if (prefix.trim().equals("")) {
+            if ("".equals(prefix.trim()))
                 continue;
-            }
+
             File f = new File(this.workingDir, prefix);
             if (f.list() != null && f.list().length == 0) {
-                logger.info("Deleting empty directory: " + f.getAbsolutePath());
+                LOGGER.info("Deleting empty directory: " + f.getAbsolutePath());
                 f.delete();
             }
         }
     }
-    
+
     private class Image {
-        String url, prefix;
+        String url;
+        String prefix;
         int index;
+
         public Image(String url, String prefix, int index) {
             this.url = url;
             this.prefix = prefix;
             this.index = index;
         }
     }
+
 }

@@ -1,181 +1,178 @@
-
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
-/**
- *
- * @author
- */
 public class E621Ripper extends AbstractHTMLRipper {
-	public static final int POOL_IMAGES_PER_PAGE = 24;
 
-	private DownloadThreadPool e621ThreadPool = new DownloadThreadPool("e621");
+    private static final int POOL_IMAGES_PER_PAGE = 24;
+    private static final String POOL_SHOW = "/pool/show/";
+    private Pattern gidPattern2 = null;
 
-	public E621Ripper(URL url) throws IOException {
-		super(url);
-	}
+    private DownloadThreadPool e621ThreadPool = new DownloadThreadPool("e621");
 
-	@Override
-	public DownloadThreadPool getThreadPool() {
-		return e621ThreadPool;
-	}
+    public E621Ripper(URL url) throws IOException {
+        super(url);
+    }
 
-	@Override
-	public String getDomain() {
-		return "e621.net";
-	}
+    @Override
+    public DownloadThreadPool getThreadPool() {
+        return e621ThreadPool;
+    }
 
-	@Override
-	public String getHost() {
-		return "e621";
-	}
+    @Override
+    public String getDomain() {
+        return "e621.net";
+    }
 
-	@Override
-	public Document getFirstPage() throws IOException {
-		if (url.getPath().startsWith("/pool/show/")) {
-			return Http.url("https://e621.net/pool/show/" + getTerm(url)).get();
-		} else {
-			return Http.url("https://e621.net/post/index/1/" + getTerm(url)).get();
-		}
-	}
+    @Override
+    public String getHost() {
+        return "e621";
+    }
 
-	@Override
-	public List<String> getURLsFromPage(Document page) {
-		Elements elements = page.select("#post-list .thumb a,#pool-show .thumb a");
-		List<String> res = new ArrayList<String>(elements.size());
+    @Override
+    public Document getFirstPage() throws IOException {
+        if (url.getPath().startsWith(POOL_SHOW))
+            return Http.url("https://e621.net/pool/show/" + getTerm(url)).get();
+        else
+            return Http.url("https://e621.net/post/index/1/" + getTerm(url)).get();
+    }
 
-		if (page.getElementById("pool-show") != null) {
-			int index = 0;
+    @Override
+    public List<String> getURLsFromPage(Document page) {
+        Elements elements = page.select("#post-list .thumb a,#pool-show .thumb a");
+        List<String> res = new ArrayList<>(elements.size());
 
-			Element e = page.getElementById("paginator");
-			if (e != null) {
-				e = e.getElementsByClass("current").first();
-				if (e != null) {
-					index = (Integer.parseInt(e.text()) - 1) * POOL_IMAGES_PER_PAGE;
-				}
-			}
+        if (page.getElementById("pool-show") != null) {
+            int index = 0;
 
-			for (Element e_ : elements) {
-				res.add(e_.absUrl("href") + "#" + ++index);
-			}
+            Element e = page.getElementById("paginator");
+            if (e != null) {
+                e = e.getElementsByClass("current").first();
+                if (e != null)
+                    index = (Integer.parseInt(e.text()) - 1) * POOL_IMAGES_PER_PAGE;
+            }
 
-		} else {
-			for (Element e : elements) {
-				res.add(e.absUrl("href") + "#" + e.child(0).attr("id").substring(1));
-			}
-		}
+            for (Element e_ : elements)
+                res.add(e_.absUrl("href") + "#" + ++index);
 
-		return res;
-	}
+        } else {
+            for (Element e : elements)
+                res.add(e.absUrl("href") + "#" + e.child(0).attr("id").substring(1));
+        }
 
-	@Override
-	public Document getNextPage(Document page) throws IOException {
-		for (Element e : page.select("#paginator a")) {
-			if (e.attr("rel").equals("next")) {
-				return Http.url(e.absUrl("href")).get();
-			}
-		}
+        return res;
+    }
 
-		return null;
-	}
+    @Override
+    public Document getNextPage(Document page) throws IOException {
+        for (Element e : page.select("#paginator a")) {
+            if ("next".equals(e.attr("rel")))
+                return Http.url(e.absUrl("href")).get();
+        }
 
-	@Override
-	public void downloadURL(final URL url, int index) {
-		e621ThreadPool.addThread(new Thread(new Runnable() {
-			public void run() {
-				try {
-					Document page = Http.url(url).get();
-					Element e = page.getElementById("image");
+        return null;
+    }
 
-					if (e != null) {
-						addURLToDownload(new URL(e.absUrl("src")), Utils.getConfigBoolean("download.save_order", true) ? url.getRef() + "-" : "");
-					} else if ((e = page.select(".content object>param[name=\"movie\"]").first()) != null) {
-						addURLToDownload(new URL(e.absUrl("value")), Utils.getConfigBoolean("download.save_order", true) ? url.getRef() + "-" : "");
-					} else {
-						Logger.getLogger(E621Ripper.class.getName()).log(Level.WARNING, "Unsupported media type - please report to program author: " + url.toString());
-					}
+    @Override
+    public void downloadURL(final URL url, int index) {
+        e621ThreadPool.addThread(new Thread(() -> {
+            try {
+                Document page = Http.url(url).get();
+                Element e = page.getElementById("image");
 
-				} catch (IOException ex) {
-					Logger.getLogger(E621Ripper.class.getName()).log(Level.SEVERE, null, ex);
-				}
-			}
-		}));
-	}
+                if (e != null)
+                    addURLToDownload(new URL(e.absUrl("src")), Utils.getConfigBoolean("download.save_order", true) ? url.getRef() + "-" : "");
+                else if ((e = page.select(".content object>param[name=\"movie\"]").first()) != null)
+                    addURLToDownload(new URL(e.absUrl("value")), Utils.getConfigBoolean("download.save_order", true) ? url.getRef() + "-" : "");
+                else
+                    Logger.getLogger(E621Ripper.class.getName()).log(Level.WARNING, "Unsupported media type - please report to program author: " + url.toString());
+            } catch (IOException ex) {
+                Logger.getLogger(E621Ripper.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }));
+    }
 
-	private String getTerm(URL url) throws MalformedURLException {
-		String query = url.getQuery();
+    private String getTerm(URL url) throws MalformedURLException {
+        String query = url.getQuery();
 
-		if (query != null) {
-			return Utils.parseUrlQuery(query, "tags");
-		}
+        if (query != null)
+            return Utils.parseUrlQuery(query, "tags");
 
-		if (query == null) {
-			if ((query = url.getPath()).startsWith("/post/index/")) {
-				query = query.substring(12);
+        query = url.getPath();
 
-				int pos = query.indexOf('/');
-				if (pos == -1) {
-					return null;
-				}
+        if (query.startsWith("/post/index/")) {
+            query = query.substring(12);
 
-				// skip page number
-				query = query.substring(pos + 1);
+            int pos = query.indexOf('/');
+            if (pos == -1)
+                return null;
 
-				if (query.endsWith("/")) {
-					query = query.substring(0, query.length() - 1);
-				}
+            // skip page number
+            query = query.substring(pos + 1);
 
-				try {
-					return URLDecoder.decode(query, "UTF-8");
-				} catch (UnsupportedEncodingException e) {
-					// Shouldn't happen since UTF-8 is required to be supported
-					throw new RuntimeException(e);
-				}
+            if (query.endsWith("/"))
+                query = query.substring(0, query.length() - 1);
 
-			} else if (query.startsWith("/pool/show/")) {
-				query = query.substring(11);
+            try {
+                return URLDecoder.decode(query, StandardCharsets.UTF_8.name());
+            } catch (UnsupportedEncodingException e) {
+                // Shouldn't happen since UTF-8 is required to be supported
+                throw new RuntimeException(e);
+            }
 
-				if (query.endsWith("/")) {
-					query = query.substring(0, query.length() - 1);
-				}
+        } else if (query.startsWith(POOL_SHOW)) {
+            query = query.substring(11);
 
-				return query;
-			}
-		}
+            if (query.endsWith("/"))
+                query = query.substring(0, query.length() - 1);
 
-		return null;
-	}
+            return query;
+        }
 
-	@Override
-	public String getGID(URL url) throws MalformedURLException {
-		String prefix = "";
-		if (url.getPath().startsWith("/pool/show/")) {
-			prefix = "pool_";
-		} else {
-			prefix = "term_";
-		}
+        return null;
+    }
 
-		return Utils.filesystemSafe(prefix + getTerm(url));
-	}
+    @Override
+    public String getGID(URL url) throws MalformedURLException {
+        String prefix;
+
+        if (url.getPath().startsWith(POOL_SHOW))
+            prefix = "pool_";
+        else
+            prefix = "term_";
+
+        return Utils.filesystemSafe(prefix + getTerm(url));
+    }
+
+    @Override
+    public URL sanitizeURL(URL url) throws MalformedURLException {
+        if (gidPattern2 == null)
+            gidPattern2 = Pattern.compile("^https?://(www\\.)?e621\\.net/post/search\\?tags=([a-zA-Z0-9$_.+!*'(),%-]+)(/.*)?(#.*)?$");
+
+        Matcher m = gidPattern2.matcher(url.toExternalForm());
+        if (m.matches())
+            return new URL("https://e621.net/post/index/1/" + m.group(2).replace("+", "%20"));
+
+        return url;
+    }
 
 }

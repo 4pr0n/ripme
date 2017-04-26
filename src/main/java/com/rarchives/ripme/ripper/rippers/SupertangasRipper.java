@@ -1,19 +1,18 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Appears to be broken as of 2015-02-11.
@@ -21,8 +20,8 @@ import com.rarchives.ripme.utils.Http;
  */
 public class SupertangasRipper extends AlbumRipper {
 
-    private static final String DOMAIN = "supertangas.com",
-                                HOST   = "supertangas";
+    private static final String DOMAIN = "supertangas.com";
+    private static final String HOST = "supertangas";
 
     public SupertangasRipper(URL url) throws IOException {
         super(url);
@@ -43,33 +42,39 @@ public class SupertangasRipper extends AlbumRipper {
         int page = 0;
         String baseURL = "http://www.supertangas.com/fotos/?level=search&exact=1&searchterms=" + this.getGID(this.url);
         Document doc;
+
         while (true) {
             page++;
             String theURL = baseURL;
-            if (page > 1) {
+
+            if (page > 1)
                 theURL += "&plog_page=" + page;
-            }
+
             try {
-                logger.info("    Retrieving " + theURL);
+                LOGGER.info("    Retrieving " + theURL);
                 sendUpdate(STATUS.LOADING_RESOURCE, theURL);
                 doc = Http.url(theURL).get();
             } catch (HttpStatusException e) {
-                logger.debug("Hit end of pages at page " + page, e);
+                LOGGER.debug("Hit end of pages at page " + page, e);
                 break;
             }
+
             Elements images = doc.select("li.thumbnail a");
-            if (images.size() == 0) {
+
+            if (images.isEmpty())
                 break;
-            }
+
             for (Element imageElement : images) {
                 String image = imageElement.attr("href");
                 image = image.replaceAll("\\/fotos\\/", "/fotos/images/");
                 addURLToDownload(new URL(image));
             }
+
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                logger.error("[!] Interrupted while waiting to load next page", e);
+                LOGGER.error("[!] Interrupted while waiting to load next page", e);
+                Thread.currentThread().interrupt();
                 break;
             }
         }
@@ -86,9 +91,10 @@ public class SupertangasRipper extends AlbumRipper {
         // http://www.supertangas.com/fotos/?level=search&exact=1&searchterms=Tahiticora%20(France)
         Pattern p = Pattern.compile("^https?://[w.]*supertangas\\.com/fotos/\\?.*&searchterms=([a-zA-Z0-9%()+]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
-        if (!m.matches()) {
+
+        if (!m.matches())
             throw new MalformedURLException("Expected format: http://supertangas.com/fotos/?level=search&exact=1&searchterms=...");
-        }
+
         return m.group(m.groupCount());
     }
 

@@ -1,62 +1,62 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
-import com.rarchives.ripme.utils.Http;
-
 public class ChanRipper extends AbstractHTMLRipper {
-    public static List<ChanSite> explicit_domains = Arrays.asList(
-        new ChanSite(Arrays.asList("boards.4chan.org"),   Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org")),
-        new ChanSite(Arrays.asList("archive.moe"),        Arrays.asList("data.archive.moe")),
-        new ChanSite(Arrays.asList("4archive.org"),       Arrays.asList("imgur.com")),
-        new ChanSite(Arrays.asList("archive.4plebs.org"), Arrays.asList("img.4plebs.org")),
-        new ChanSite(Arrays.asList("fgts.jp"),            Arrays.asList("dat.fgtsi.org"))
-        );
 
-    public static List<String> url_piece_blacklist = Arrays.asList(
-        "=http",
-        "http://imgops.com/",
-        "iqdb.org",
-        "saucenao.com"
-        );
+    private static final List<ChanSite> EXPLICIT_DOMAINS = Arrays.asList(
+            new ChanSite(Collections.singletonList("boards.4chan.org"), Arrays.asList("4cdn.org", "is.4chan.org", "is2.4chan.org")),
+            new ChanSite(Collections.singletonList("archive.moe"), Collections.singletonList("data.archive.moe")),
+            new ChanSite(Collections.singletonList("4archive.org"), Collections.singletonList("imgur.com")),
+            new ChanSite(Collections.singletonList("archive.4plebs.org"), Collections.singletonList("img.4plebs.org")),
+            new ChanSite(Collections.singletonList("fgts.jp"), Collections.singletonList("dat.fgtsi.org"))
+    );
 
-    public ChanSite chanSite;
-    public Boolean generalChanSite = true;
+    private static final List<String> URL_PIECE_BLACKLIST = Arrays.asList(
+            "=http", "http://imgops.com/", "iqdb.org", "saucenao.com"
+    );
+
+    private ChanSite chanSite;
+    private Boolean generalChanSite = true;
 
     public ChanRipper(URL url) throws IOException {
         super(url);
-        for (ChanSite _chanSite : explicit_domains) {
+
+        for (ChanSite _chanSite : EXPLICIT_DOMAINS) {
             if (_chanSite.domains.contains(url.getHost())) {
                 chanSite = _chanSite;
                 generalChanSite = false;
             }
         }
-        if (chanSite == null) {
-            chanSite = new ChanSite(Arrays.asList(url.getHost()));
-        }
+
+        if (chanSite == null)
+            chanSite = new ChanSite(Collections.singletonList(url.getHost()));
     }
 
     @Override
     public String getHost() {
         String host = this.url.getHost();
         host = host.substring(0, host.lastIndexOf('.'));
+
         if (host.contains(".")) {
             // Host has subdomain (www)
             host = host.substring(host.lastIndexOf('.') + 1);
         }
+
         String board = this.url.toExternalForm().split("/")[3];
         return host + "_" + board;
     }
@@ -70,27 +70,28 @@ public class ChanRipper extends AbstractHTMLRipper {
             return getHost() + "_" + getGID(url) + "_" + subject;
         } catch (Exception e) {
             // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
+            LOGGER.warn("Failed to get album title from " + url, e);
         }
+
         return super.getAlbumTitle(url);
     }
 
     @Override
     public boolean canRip(URL url) {
-        for (ChanSite _chanSite : explicit_domains) {
-            if (_chanSite.domains.contains(url.getHost())) {
+        for (ChanSite _chanSite : EXPLICIT_DOMAINS) {
+            if (_chanSite.domains.contains(url.getHost()))
                 return true;
-            }
         }
-        return  url.toExternalForm().contains("/res/")     // Most chans
-             || url.toExternalForm().contains("/thread/"); // 4chan, archive.moe
+
+        // Most chans or 4chan, archive.moe
+        return url.toExternalForm().contains("/res/") || url.toExternalForm().contains("/thread/");
     }
 
     /**
      * For example the archives are all known. (Check 4chan-x)
      * Should be based on the software the specific chan uses.
      * FoolFuuka uses the same (url) layout as 4chan
-     * */
+     */
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p;
@@ -100,22 +101,19 @@ public class ChanRipper extends AbstractHTMLRipper {
         if (u.contains("/thread/") || u.contains("/res/")) {
             p = Pattern.compile("^.*\\.[a-z]{1,3}/[a-zA-Z0-9]+/(thread|res)/([0-9]+)(\\.html|\\.php)?.*$");
             m = p.matcher(u);
-            if (m.matches()) {
+
+            if (m.matches())
                 return m.group(2);
-            }
 
             // Drawchan is weird, has drawchan.net/dc/dw/res/####.html
             p = Pattern.compile("^.*\\.[a-z]{1,3}/[a-zA-Z0-9]+/[a-zA-Z0-9]+/res/([0-9]+)(\\.html|\\.php)?.*$");
             m = p.matcher(u);
-            if (m.matches()) {
+
+            if (m.matches())
                 return m.group(1);
-            }
         }
 
-        throw new MalformedURLException(
-                "Expected *chan URL formats: "
-                        + ".*/@/(res|thread)/####.html"
-                        + " Got: " + u);
+        throw new MalformedURLException("Expected *chan URL formats: .*/@/(res|thread)/####.html Got: " + u);
     }
 
     @Override
@@ -129,64 +127,66 @@ public class ChanRipper extends AbstractHTMLRipper {
     }
 
     private boolean isURLBlacklisted(String url) {
-        for (String blacklist_item : url_piece_blacklist) {
+        for (String blacklist_item : URL_PIECE_BLACKLIST) {
             if (url.contains(blacklist_item)) {
-                logger.debug("Skipping link that contains '"+blacklist_item+"': " + url);
+                LOGGER.debug("Skipping link that contains '" + blacklist_item + "': " + url);
                 return true;
             }
         }
         return false;
     }
+
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> imageURLs = new ArrayList<String>();
-        Pattern p; Matcher m;
+        List<String> imageURLs = new ArrayList<>();
+        Pattern p;
+        Matcher m;
+
         for (Element link : page.select("a")) {
-            if (!link.hasAttr("href")) {
+            if (!link.hasAttr("href"))
                 continue;
-            }
+
             String href = link.attr("href").trim();
 
-            if (isURLBlacklisted(href)) {
+            if (isURLBlacklisted(href))
                 continue;
-            }
+
             //Check all blacklist items
-            Boolean self_hosted = false;
+            Boolean selfHosted = false;
             if (!generalChanSite) {
                 for (String cdnDomain : chanSite.cdnDomains) {
-                    if (href.contains(cdnDomain)){
-                        self_hosted = true;
-                    }
+                    if (href.contains(cdnDomain))
+                        selfHosted = true;
                 }
             }
 
-            if (self_hosted || generalChanSite){
+            if (selfHosted || generalChanSite) {
                 p = Pattern.compile("^.*\\.(jpg|jpeg|png|gif|apng|webp|tif|tiff|webm)$", Pattern.CASE_INSENSITIVE);
                 m = p.matcher(href);
+
                 if (m.matches()) {
-                    if (href.startsWith("//")) {
+                    if (href.startsWith("//"))
                         href = "http:" + href;
-                    }
-                    if (href.startsWith("/")) {
+
+                    if (href.startsWith("/"))
                         href = "http://" + this.url.getHost() + href;
-                    }
+
                     // Don't download the same URL twice
                     if (imageURLs.contains(href)) {
-                        logger.debug("Already attempted: " + href);
+                        LOGGER.debug("Already attempted: " + href);
                         continue;
                     }
+
                     imageURLs.add(href);
-                    if (isThisATest()) {
+                    if (isThisATest())
                         break;
-                    }
                 }
             } else {
                 //TODO also grab imgur/flickr albums (And all other supported rippers) Maybe add a setting?
             }
 
-            if (isStopped()) {
+            if (isStopped())
                 break;
-            }
         }
         return imageURLs;
     }
@@ -195,4 +195,5 @@ public class ChanRipper extends AbstractHTMLRipper {
     public void downloadURL(URL url, int index) {
         addURLToDownload(url, getPrefix(index), "", this.url.toString(), null);
     }
+
 }

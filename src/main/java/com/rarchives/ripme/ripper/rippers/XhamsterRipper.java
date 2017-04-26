@@ -1,17 +1,16 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class XhamsterRipper extends AlbumRipper {
 
@@ -37,40 +36,40 @@ public class XhamsterRipper extends AlbumRipper {
     public void rip() throws IOException {
         int index = 0;
         String nextURL = this.url.toExternalForm();
+
         while (nextURL != null) {
-            logger.info("    Retrieving " + nextURL);
+            LOGGER.info("    Retrieving " + nextURL);
             Document doc = Http.url(nextURL).get();
+
             for (Element thumb : doc.select("table.iListing div.img img")) {
-                if (!thumb.hasAttr("src")) {
+                if (!thumb.hasAttr("src"))
                     continue;
-                }
+
                 String image = thumb.attr("src");
-                image = image.replaceAll(
-                        "https://upt.xhcdn\\.",
-                        "http://up.xhamster.");
+                image = image.replaceAll("https://upt.xhcdn\\.", "http://up.xhamster.");
                 image = image.replaceAll("ept\\.xhcdn", "ep.xhamster");
-                image = image.replaceAll(
-                        "_160\\.",
-                        "_1000.");
+                image = image.replaceAll("_160\\.", "_1000.");
                 index += 1;
                 String prefix = "";
-                if (Utils.getConfigBoolean("download.save_order", true)) {
+
+                if (Utils.getConfigBoolean("download.save_order", true))
                     prefix = String.format("%03d_", index);
-                }
+
                 addURLToDownload(new URL(image), prefix);
-                if (isThisATest()) {
+                if (isThisATest())
                     break;
-                }
             }
-            if (isThisATest()) {
+
+            if (isThisATest())
                 break;
-            }
+
             nextURL = null;
             for (Element element : doc.select("a.last")) {
                 nextURL = element.attr("href");
                 break;
             }
         }
+
         waitForThreads();
     }
 
@@ -83,13 +82,13 @@ public class XhamsterRipper extends AlbumRipper {
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://([a-z0-9.]*?)xhamster\\.com/photos/gallery/([0-9]{1,})/.*\\.html");
         Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
+
+        if (m.matches())
             return m.group(2);
-        }
+
         throw new MalformedURLException(
-                "Expected xhamster.com gallery formats: "
-                        + "xhamster.com/photos/gallery/#####/xxxxx..html"
-                        + " Got: " + url);
+                "Expected xhamster.com gallery formats: xhamster.com/photos/gallery/#####/xxxxx..html Got: " + url
+        );
     }
 
 }

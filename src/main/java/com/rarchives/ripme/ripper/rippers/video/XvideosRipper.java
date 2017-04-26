@@ -1,18 +1,18 @@
 package com.rarchives.ripme.ripper.rippers.video;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.VideoRipper;
-import com.rarchives.ripme.utils.Http;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class XvideosRipper extends VideoRipper {
 
@@ -33,43 +33,38 @@ public class XvideosRipper extends VideoRipper {
         Matcher m = p.matcher(url.toExternalForm());
         return m.matches();
     }
-    
-    @Override
-    public URL sanitizeURL(URL url) throws MalformedURLException {
-        return url;
-    }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p = Pattern.compile("^https?://[wm.]*xvideos\\.com/video([0-9]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
-            return m.group(1);
-        }
 
-        throw new MalformedURLException(
-                "Expected xvideo format:"
-                        + "xvideos.com/video####"
-                        + " Got: " + url);
+        if (m.matches())
+            return m.group(1);
+
+        throw new MalformedURLException("Expected xvideo format: xvideos.com/video#### Got: " + url);
     }
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url);
+        LOGGER.info("    Retrieving " + this.url);
         Document doc = Http.url(this.url).get();
         Elements embeds = doc.select("embed");
-        if (embeds.size() == 0) {
+
+        if (embeds.isEmpty())
             throw new IOException("Could not find Embed code at " + url);
-        }
+
         Element embed = embeds.get(0);
         String vars = embed.attr("flashvars");
+
         for (String var : vars.split("&")) {
             if (var.startsWith("flv_url=")) {
                 String vidUrl = var.substring("flv_url=".length());
-                vidUrl = URLDecoder.decode(vidUrl, "UTF-8");
+                vidUrl = URLDecoder.decode(vidUrl, StandardCharsets.UTF_8.name());
                 addURLToDownload(new URL(vidUrl), HOST + "_" + getGID(this.url));
             }
         }
         waitForThreads();
     }
+
 }

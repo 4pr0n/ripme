@@ -1,33 +1,26 @@
 package com.rarchives.ripme.ripper;
 
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Utils;
-
 public abstract class AlbumRipper extends AbstractRipper {
 
-    protected Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<URL, File>());
-    protected Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<URL, File>());
-    protected Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<URL, String>());
+    protected Map<URL, File> itemsPending = Collections.synchronizedMap(new HashMap<>());
+    protected Map<URL, File> itemsCompleted = Collections.synchronizedMap(new HashMap<>());
+    protected Map<URL, String> itemsErrored = Collections.synchronizedMap(new HashMap<>());
 
     public AlbumRipper(URL url) throws IOException {
         super(url);
     }
-
-    public abstract boolean canRip(URL url);
-    public abstract URL sanitizeURL(URL url) throws MalformedURLException;
-    public abstract void rip() throws IOException;
-    public abstract String getHost();
-    public abstract String getGID(URL url) throws MalformedURLException;
 
     public boolean allowDuplicates() {
         return false;
@@ -38,45 +31,43 @@ public abstract class AlbumRipper extends AbstractRipper {
         return itemsCompleted.size() + itemsErrored.size();
     }
 
-    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
+    @Override
+    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies) {
         // Only download one file if this is a test.
-        if (super.isThisATest() &&
-                (itemsPending.size() > 0 || itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
+        if (super.isThisATest() && (itemsPending.size() > 0 || itemsCompleted.size() > 0 || itemsErrored.size() > 0)) {
             stop();
             return false;
         }
-        if (!allowDuplicates()
-                && ( itemsPending.containsKey(url)
-                  || itemsCompleted.containsKey(url)
-                  || itemsErrored.containsKey(url) )) {
+
+        if (!allowDuplicates() && (itemsPending.containsKey(url) || itemsCompleted.containsKey(url) || itemsErrored.containsKey(url))) {
             // Item is already downloaded/downloading, skip it.
-            logger.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
+            LOGGER.info("[!] Skipping " + url + " -- already attempted: " + Utils.removeCWD(saveAs));
             return false;
         }
+
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
             String urlFile = this.workingDir + File.separator + "urls.txt";
-            try {
-                FileWriter fw = new FileWriter(urlFile, true);
+
+            try (FileWriter fw = new FileWriter(urlFile, true)) {
                 fw.write(url.toExternalForm());
                 fw.write("\n");
-                fw.close();
                 RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, urlFile);
                 itemsCompleted.put(url, new File(urlFile));
                 observer.update(this, msg);
             } catch (IOException e) {
-                logger.error("Error while writing to " + urlFile, e);
+                LOGGER.error("Error while writing to " + urlFile, e);
             }
-        }
-        else {
+        } else {
             itemsPending.put(url, saveAs);
-            DownloadFileThread dft = new DownloadFileThread(url,  saveAs,  this);
-            if (referrer != null) {
+            DownloadFileThread dft = new DownloadFileThread(url, saveAs, this);
+
+            if (referrer != null)
                 dft.setReferrer(referrer);
-            }
-            if (cookies != null) {
+
+            if (cookies != null)
                 dft.setCookies(cookies);
-            }
+
             threadPool.addThread(dft);
         }
         return true;
@@ -90,10 +81,9 @@ public abstract class AlbumRipper extends AbstractRipper {
     /**
      * Queues image to be downloaded and saved.
      * Uses filename from URL to decide filename.
-     * @param url
-     *      URL to download
-     * @return 
-     *      True on success
+     *
+     * @param url URL to download
+     * @return True on success
      */
     public boolean addURLToDownload(URL url) {
         // Use empty prefix and empty subdirectory
@@ -102,9 +92,9 @@ public abstract class AlbumRipper extends AbstractRipper {
 
     @Override
     public void downloadCompleted(URL url, File saveAs) {
-        if (observer == null) {
+        if (observer == null)
             return;
-        }
+
         try {
             String path = Utils.removeCWD(saveAs);
             RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
@@ -114,15 +104,15 @@ public abstract class AlbumRipper extends AbstractRipper {
 
             checkIfComplete();
         } catch (Exception e) {
-            logger.error("Exception while updating observer: ", e);
+            LOGGER.error("Exception while updating observer: ", e);
         }
     }
 
     @Override
     public void downloadErrored(URL url, String reason) {
-        if (observer == null) {
+        if (observer == null)
             return;
-        }
+
         itemsPending.remove(url);
         itemsErrored.put(url, reason);
         observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, url + " : " + reason));
@@ -132,14 +122,13 @@ public abstract class AlbumRipper extends AbstractRipper {
 
     @Override
     public void downloadExists(URL url, File file) {
-        if (observer == null) {
+        if (observer == null)
             return;
-        }
 
         itemsPending.remove(url);
         itemsCompleted.put(url, file);
         observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file.getAbsolutePath()));
-            
+
         checkIfComplete();
     }
 
@@ -148,66 +137,58 @@ public abstract class AlbumRipper extends AbstractRipper {
      */
     @Override
     protected void checkIfComplete() {
-        if (observer == null) {
+        if (observer == null)
             return;
-        }
-        if (itemsPending.isEmpty()) {
+
+        if (itemsPending.isEmpty())
             super.checkIfComplete();
-        }
     }
 
     /**
      * Sets directory to save all ripped files to.
-     * @param url
-     *      URL to define how the working directory should be saved.
-     * @throws 
-     *      IOException      
+     *
+     * @param url URL to define how the working directory should be saved.
+     * @throws IOException
      */
     @Override
     public void setWorkingDir(URL url) throws IOException {
         String path = Utils.getWorkingDirectory().getCanonicalPath();
-        if (!path.endsWith(File.separator)) {
+        if (!path.endsWith(File.separator))
             path += File.separator;
-        }
+
         String title;
-        if (Utils.getConfigBoolean("album_titles.save", true)) {
+        if (Utils.getConfigBoolean("album_titles.save", true))
             title = getAlbumTitle(this.url);
-        } else {
+        else
             title = super.getAlbumTitle(this.url);
-        }
-        logger.debug("Using album title '" + title + "'");
+
+        LOGGER.debug("Using album title '" + title + "'");
         title = Utils.filesystemSafe(title);
         path += title + File.separator;
         this.workingDir = new File(path);
+
         if (!this.workingDir.exists()) {
-            logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
             this.workingDir.mkdirs();
         }
-        logger.debug("Set working directory to: " + this.workingDir);
+        LOGGER.debug("Set working directory to: " + this.workingDir);
     }
 
     /**
-     * @return
-     *      Integer between 0 and 100 defining the progress of the album rip.
+     * @return Integer between 0 and 100 defining the progress of the album rip.
      */
     @Override
     public int getCompletionPercentage() {
-        double total = itemsPending.size()  + itemsErrored.size() + itemsCompleted.size();
-        return (int) (100 * ( (total - itemsPending.size()) / total));
+        double total = (double) itemsPending.size() + itemsErrored.size() + itemsCompleted.size();
+        return (int) (100 * ((total - itemsPending.size()) / total));
     }
 
     /**
-     * @return
-     *      Human-readable information on the status of the current rip.
+     * @return Human-readable information on the status of the current rip.
      */
     @Override
     public String getStatusText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getCompletionPercentage())
-          .append("% ")
-          .append("- Pending: "  ).append(itemsPending.size())
-          .append(", Completed: ").append(itemsCompleted.size())
-          .append(", Errored: "  ).append(itemsErrored.size());
-        return sb.toString();
+        return String.valueOf(getCompletionPercentage()) + "% - Pending: " + itemsPending.size() + ", Completed: " +
+                itemsCompleted.size() + ", Errored: " + itemsErrored.size();
     }
 }

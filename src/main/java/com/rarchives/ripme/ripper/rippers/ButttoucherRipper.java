@@ -1,5 +1,10 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,12 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class ButttoucherRipper extends AbstractHTMLRipper {
 
@@ -24,6 +23,7 @@ public class ButttoucherRipper extends AbstractHTMLRipper {
     public String getHost() {
         return "butttoucher";
     }
+
     @Override
     public String getDomain() {
         return "butttoucher.com";
@@ -31,17 +31,15 @@ public class ButttoucherRipper extends AbstractHTMLRipper {
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p; Matcher m;
+        Pattern p = Pattern.compile("^.*butttoucher.com/users/([a-zA-Z0-9_\\-]{1,}).*$");
+        Matcher m = p.matcher(url.toExternalForm());
 
-        p = Pattern.compile("^.*butttoucher.com/users/([a-zA-Z0-9_\\-]{1,}).*$");
-        m = p.matcher(url.toExternalForm());
-        if (m.matches()) {
+        if (m.matches())
             return m.group(1);
-        }
+
         throw new MalformedURLException(
-                "Expected butttoucher.com gallery format: "
-                        + "butttoucher.com/users/<username>"
-                        + " Got: " + url);
+                "Expected butttoucher.com gallery format: butttoucher.com/users/<username> Got: " + url
+        );
     }
 
     @Override
@@ -51,14 +49,16 @@ public class ButttoucherRipper extends AbstractHTMLRipper {
 
     @Override
     public List<String> getURLsFromPage(Document page) {
-        List<String> thumbs = new ArrayList<String>();
+        List<String> thumbs = new ArrayList<>();
+
         for (Element thumb : page.select(".thumb img")) {
-            if (!thumb.hasAttr("src")) {
+            if (!thumb.hasAttr("src"))
                 continue;
-            }
+
             String smallImage = thumb.attr("src");
             thumbs.add(smallImage.replace("m.", "."));
         }
+
         return thumbs;
     }
 
