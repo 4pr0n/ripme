@@ -50,6 +50,9 @@ public class XhamsterRipper extends AlbumRipper {
                         "https://upt.xhcdn\\.",
                         "http://up.xhamster.");
                 image = image.replaceAll("ept\\.xhcdn", "ep.xhamster");
+                image = image.replaceAll(
+                        "_160\\.",
+                        "_1000.");
                 // Xhamster has shitty cert management and uses the wrong cert for their ep.xhamster Domain
                 // so we change all https requests to http
                 image = image.replaceAll(
