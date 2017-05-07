@@ -1,3 +1,4 @@
+
 package com.rarchives.ripme.ripper.rippers;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
@@ -21,31 +22,33 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-public class SinnercomicsRipper extends AbstractHTMLRipper {
+public class ThechiveRipper extends AbstractHTMLRipper {
+    public static boolean isTag;
 
-    public SinnercomicsRipper(URL url) throws IOException {
+    public ThechiveRipper(URL url) throws IOException {
     super(url);
     }
 
     @Override
     public String getHost() {
-        return "sinnercomics";
+        return "thechive";
     }
 
     @Override
     public String getDomain() {
-        return "sinnercomics.com";
+        return "thechive.com";
     }
 
     @Override
     public String getGID(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^https?://sinnercomics.com/comic/([a-zA-Z0-9-]*)/?$");
+        Pattern p = Pattern.compile("^https?://thechive.com/[0-9]*/[0-9]*/[0-9]*/([a-zA-Z0-9_\\-]*)/?$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
+            isTag = false;
             return m.group(1);
         }
-        throw new MalformedURLException("Expected sinnercomics.com URL format: " +
-                        "sinnercomics.com/comic/albumName - got " + url + " instead");
+        throw new MalformedURLException("Expected thechive.com URL format: " +
+                        "thechive.com/YEAR/MONTH/DAY/POSTTITLE/ - got " + url + " instead");
     }
 
     @Override
@@ -55,28 +58,14 @@ public class SinnercomicsRipper extends AbstractHTMLRipper {
     }
 
     @Override
-    public Document getNextPage(Document doc) throws IOException {
-        // Find next page
-        String nextUrl = "";
-        // We use comic-nav-next to the find the next page
-        Element elem = doc.select("a.comic-nav-next").first();
-            if (elem == null) {
-                throw new IOException("No more pages");
-            }
-            String nextPage = elem.attr("href");
-            // Wait half a sec to avoid IP bans
-            sleep(500);
-            return Http.url(nextPage).get();
-        }
-
-    @Override
     public List<String> getURLsFromPage(Document doc) {
         List<String> result = new ArrayList<String>();
-        for (Element el : doc.select("meta[property=og:image]")) {
-            String imageSource = el.attr("content");
-            imageSource = imageSource.replace(" alt=", "");
+        for (Element el : doc.select("img.attachment-gallery-item-full")) {
+            String imageSource = el.attr("src");
+            // We replace thumbs with resizes so we can the full sized images
+            imageSource = imageSource.replace("thumbs", "resizes");
             result.add(imageSource);
-        }
+                }
         return result;
     }
 

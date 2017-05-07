@@ -13,3 +13,5 @@ history.json
 .settings/
 .classpath
 *.txt
+bin/
+.vscode/
