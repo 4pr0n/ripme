@@ -14,6 +14,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.jsoup.nodes.Element;
+
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
@@ -155,7 +157,7 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
     private String getUserID(String username) throws IOException {
         logger.info("Fetching user ID for " + username);
         JSONObject json = new Http("https://api.500px.com/v1/" +
-                    "users/show" + 
+                    "users/show" +
                     "?username=" + username +
                     "&consumer_key=" + CONSUMER_KEY)
                 .getJSON();
@@ -265,38 +267,44 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
             JSONObject photo = photos.getJSONObject(i);
             String imageURL = null;
             String rawUrl = "https://500px.com" + photo.getString("url");
+            logger.debug("Found image link at " + "https://500px.com" + photo.getString("url"));
             Document doc;
             Elements images = new Elements();
             try {
             	logger.debug("Loading " + rawUrl);
             	super.retrievingSource(rawUrl);
             	doc = Http.url(rawUrl).get();
-            	images = doc.select("div#preload img");
+                // Use og:image to avoid getting water marked images
+            	images = doc.select("meta[property=og:image]");
             }
             catch (IOException e) {
             	logger.error("Error fetching full-size image from " + rawUrl, e);
+                doc = null;
             }
             if (images.size() > 0) {
-            	imageURL = images.first().attr("src");
+            	imageURL = images.first().attr("content");
+                if (imageURL.contains("https://500px.com/graphics/nude/img_3")) {
+                    for (Element script : doc.select("head > script")) {
+                        if (script.html().contains("window.PxPreloadedData")) {
+                            String scriptString = script.html();
+                            scriptString = scriptString.replaceAll("window.PxPreloadedData = ", "");
+                            scriptString = scriptString.replaceAll(";", "");
+                            // logger.info(scriptString);
+                            JSONObject scriptJsonObject = new JSONObject(scriptString);
+                            JSONObject mainJsonObject = scriptJsonObject.getJSONObject("photo");
+                            JSONArray imageJsonArray = mainJsonObject.getJSONArray("images");
+                            for (int u = 0; u < imageJsonArray.length(); u++) {
+                                if (imageJsonArray.getJSONObject(u).getInt("size") == 2048) {
+                                    imageURLs.add(imageJsonArray.getJSONObject(u).getString("url"));
+                                }
+                            }
+                        }
+                    }
+                }
             	logger.debug("Found full-size non-watermarked image: " + imageURL);
             }
-            else {
-            	logger.debug("Falling back to image_url from API response");
-				imageURL = photo.getString("image_url");
-				imageURL = imageURL.replaceAll("/4\\.", "/5.");
-				// See if there's larger images
-				for (String imageSize : new String[] { "2048" } ) {
-					String fsURL = imageURL.replaceAll("/5\\.", "/" + imageSize + ".");
-					sleep(10);
-					if (urlExists(fsURL)) {
-						logger.info("Found larger image at " + fsURL);
-						imageURL = fsURL;
-						break;
-					}
-				}
-            }
             if (imageURL == null) {
-            	logger.error("Failed to find image for photo " + photo.toString());
+            	logger.error("Failed to find image for photo ");
             }
             else {
 				imageURLs.add(imageURL);
@@ -307,7 +315,7 @@ public class FivehundredpxRipper extends AbstractJSONRipper {
         }
         return imageURLs;
     }
-    
+
     private boolean urlExists(String url) {
         try {
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
