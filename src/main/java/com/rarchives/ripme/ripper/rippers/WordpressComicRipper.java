@@ -51,7 +51,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         @Override
         public boolean canRip(URL url) {
             String url_name = url.toExternalForm();
-            if (explicit_domains.contains(url_name.split("/")[2]) == true) {
+            if (explicit_domains.contains(url_name.split("/")[2])) {
 
                 Pattern totempole666Pat = Pattern.compile("https?://www\\.totempole666.com/comic/([a-zA-Z0-9_-]*)/?$");
                 Matcher totempole666Mat = totempole666Pat.matcher(url.toExternalForm());
@@ -169,7 +169,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         public String getGID(URL url) throws MalformedURLException {
             String url_name = url.toExternalForm();
             // We shouldn't need to return any GID
-            if (explicit_domains.contains(url_name.split("/")[2]) == true) {
+            if (explicit_domains.contains(url_name.split("/")[2])) {
                 return "";
             }
             throw new MalformedURLException("You should never see this error message");
@@ -186,8 +186,8 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             // Find next page
             String nextPage = "";
             Element elem = null;
-            if (getHost().contains("www.totempole666.com") == true
-            || getHost().contains("buttsmithy.com") == true
+            if (getHost().contains("www.totempole666.com")
+            || getHost().contains("buttsmithy.com")
             || getHost().contains("themonsterunderthebed.net")
             || getHost().contains("prismblush.com")
             || getHost().contains("www.konradokonski.com")
@@ -202,7 +202,6 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                     throw new IOException("No more pages");
                 }
                 else {
-                    sleep(500);
                     return Http.url(nextPage).get();
                 }
             }
@@ -210,8 +209,8 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
         @Override
         public List<String> getURLsFromPage(Document doc) {
             List<String> result = new ArrayList<String>();
-            if (getHost().contains("www.totempole666.com") == true
-            || getHost().contains("buttsmithy.com") == true
+            if (getHost().contains("www.totempole666.com")
+            || getHost().contains("buttsmithy.com")
             || getHost().contains("themonsterunderthebed.net")
             || getHost().contains("prismblush.com")
             || getHost().contains("www.konradokonski.com")
@@ -223,18 +222,18 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                     elem = doc.select("div.comic-table > div#comic > img").first();
                 }
                 // Check if this is a site where we can get the page number from the title
-                if (url.toExternalForm().contains("buttsmithy.com") == true) {
+                if (url.toExternalForm().contains("buttsmithy.com")) {
                     // Set the page title
                     pageTitle = doc.select("meta[property=og:title]").attr("content");
                     pageTitle = pageTitle.replace(" ", "");
                     pageTitle = pageTitle.replace("P", "p");
                 }
-                if (url.toExternalForm().contains("www.totempole666.com") == true) {
+                if (url.toExternalForm().contains("www.totempole666.com")) {
                     String postDate = doc.select("span.post-date").first().text().replaceAll("/", "_");
                     String postTitle = doc.select("h2.post-title").first().text().replaceAll("#", "");
                     pageTitle = postDate + "_" + postTitle;
                 }
-                if (url.toExternalForm().contains("themonsterunderthebed.net") == true) {
+                if (url.toExternalForm().contains("themonsterunderthebed.net")) {
                     pageTitle = doc.select("title").first().text().replaceAll("#", "");
                     pageTitle = pageTitle.replace("“", "");
                     pageTitle = pageTitle.replace("”", "");
@@ -249,13 +248,13 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
 
 
             // freeadultcomix gets it own if because it needs to add http://freeadultcomix.com to the start of each link
-            if (url.toExternalForm().contains("freeadultcomix.com") == true) {
+            if (url.toExternalForm().contains("freeadultcomix.com")) {
                 for (Element elem : doc.select("div.single-post > p > img.aligncenter")) {
                     result.add("http://freeadultcomix.com" + elem.attr("src"));
                 }
             }
 
-            if (url.toExternalForm().contains("comics-xxx.com") == true) {
+            if (url.toExternalForm().contains("comics-xxx.com")) {
                 for (Element elem : doc.select("div.single-post > center > p > img")) {
                     result.add(elem.attr("src"));
                 }
@@ -265,12 +264,11 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
 
         @Override
         public void downloadURL(URL url, int index) {
-            sleep(500);
             // Download the url with the page title as the prefix
             // so we can download them in any order (And don't have to rerip the whole site to update the local copy)
-            if (getHost().contains("buttsmithy.com") == true
-            || getHost().contains("www.totempole666.com") == true
-            || getHost().contains("themonsterunderthebed.net") == true) {
+            if (getHost().contains("buttsmithy.com")
+            || getHost().contains("www.totempole666.com")
+            || getHost().contains("themonsterunderthebed.net")) {
                 addURLToDownload(url, pageTitle + "_");
             }
             // If we're ripping a site where we can't get the page number/title we just rip normally
