@@ -129,6 +129,11 @@ public class Utils {
         }
         config.addProperty(key, list);
     }
+    
+    public static void clearConfigProperty(String key)
+    {
+    	config.clearProperty(key);
+    }
 
     public static void saveConfig() {
         try {
