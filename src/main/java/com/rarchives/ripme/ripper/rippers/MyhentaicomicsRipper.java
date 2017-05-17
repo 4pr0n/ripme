@@ -55,7 +55,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
             return ma.group(1);
         }
 
-        Pattern pat = Pattern.compile("^http://myhentaicomics.com/index.php/tag/([0-9]*)/?([a-zA-Z%0-9+\\?=:]*)?$");
+        Pattern pat = Pattern.compile("^https?://myhentaicomics.com/index.php/tag/([0-9]*)/?([a-zA-Z%0-9+\\?=:]*)?$");
         Matcher mat = pat.matcher(url.toExternalForm());
         if (mat.matches()) {
             isTag = true;
@@ -145,7 +145,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                 Document album_doc;
                 try {
                     logger.info("grabbing " + element + " with jsoup");
-                    boolean startsWithhttp = element.startsWith("http");
+                    boolean startsWithhttp = element.startsWith("http://");
                     if (startsWithhttp == false) {
                         album_doc = Http.url("http://myhentaicomics.com/" + element).get();
                     }
@@ -160,7 +160,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                 for (Element el :album_doc.select("img")) {
                     String imageSource = el.attr("src");
                     // This bool is here so we don't try and download the site logo
-                    boolean b = imageSource.startsWith("http");
+                    boolean b = imageSource.startsWith("http://");
                     if (b == false) {
                         // We replace thumbs with resizes so we can the full sized images
                         imageSource = imageSource.replace("thumbs", "resizes");
@@ -250,7 +250,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         for (Element el : doc.select("img")) {
             String imageSource = el.attr("src");
             // This bool is here so we don't try and download the site logo
-            boolean b = imageSource.startsWith("http");
+            boolean b = imageSource.startsWith("http://");
             if (b == false) {
             // We replace thumbs with resizes so we can the full sized images
             imageSource = imageSource.replace("thumbs", "resizes");
