@@ -129,9 +129,9 @@ public abstract class VideoRipper extends AbstractRipper {
 
     @Override
     public void downloadExists(URL url, File file) {
-        if (observer == null)
+        if (observer == null) {
             return;
-
+        }
         observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file));
         checkIfComplete();
     }
@@ -156,20 +156,24 @@ public abstract class VideoRipper extends AbstractRipper {
      */
     @Override
     protected void checkIfComplete() {
-        if (observer == null)
+        if (observer == null) {
             return;
-
-        if (bytesCompleted >= bytesTotal)
+        }
+        if (bytesCompleted >= bytesTotal) {
             super.checkIfComplete();
+        }
     }
 
     /**
      * Method to execute close on any object that belongs to closable class
+     *
      * @param closeable Object that belongs to closable class
      */
     private static void close(Closeable closeable) {
-        if (closeable == null)
+        if (closeable == null) {
             return;
+        }
+
         try {
             closeable.close();
         } catch (IOException e) {
