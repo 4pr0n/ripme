@@ -1,5 +1,13 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,15 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
 
 public class GifyoRipper extends AbstractHTMLRipper {
 
@@ -102,7 +101,7 @@ public class GifyoRipper extends AbstractHTMLRipper {
             imageUrl = imageUrl.replace("_s.gif", ".gif");
             imageURLs.add(imageUrl);
         }
-        logger.debug("Found " + imageURLs.size() + " images");
+        LOGGER.debug("Found " + imageURLs.size() + " images");
         return imageURLs;
     }
     

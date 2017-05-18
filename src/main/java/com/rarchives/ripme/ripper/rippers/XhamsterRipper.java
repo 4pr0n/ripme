@@ -1,17 +1,16 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class XhamsterRipper extends AlbumRipper {
 
@@ -38,7 +37,7 @@ public class XhamsterRipper extends AlbumRipper {
         int index = 0;
         String nextURL = this.url.toExternalForm();
         while (nextURL != null) {
-            logger.info("    Retrieving " + nextURL);
+            LOGGER.info("    Retrieving " + nextURL);
             Document doc = Http.url(nextURL).get();
             for (Element thumb : doc.select("table.iListing div.img img")) {
                 if (!thumb.hasAttr("src")) {

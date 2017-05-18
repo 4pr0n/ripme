@@ -1,5 +1,14 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.jsoup.nodes.Document;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,16 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.jsoup.nodes.Document;
-
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class TwitterRipper extends AlbumRipper {
 
@@ -104,13 +103,13 @@ public class TwitterRipper extends AlbumRipper {
                     .getJSONObject(resource)
                     .getJSONObject(api);
             int remaining = stats.getInt("remaining");
-            logger.info("    Twitter " + resource + " calls remaining: " + remaining);
+            LOGGER.info("    Twitter " + resource + " calls remaining: " + remaining);
             if (remaining < 20) {
-                logger.error("Twitter API calls exhausted: " + stats.toString());
+                LOGGER.error("Twitter API calls exhausted: " + stats.toString());
                 throw new IOException("Less than 20 API calls remaining; not enough to rip.");
             }
         } catch (JSONException e) {
-            logger.error("JSONException: ", e);
+            LOGGER.error("JSONException: ", e);
             throw new IOException("Error while parsing JSON: " + body, e);
         }
     }
@@ -143,7 +142,7 @@ public class TwitterRipper extends AlbumRipper {
 
     private List<JSONObject> getTweets(String url) throws IOException {
         List<JSONObject> tweets = new ArrayList<JSONObject>();
-        logger.info("    Retrieving " + url);
+        LOGGER.info("    Retrieving " + url);
         Document doc = Http.url(url)
                 .ignoreContentType()
                 .header("Authorization", "Bearer " + accessToken)
@@ -172,7 +171,7 @@ public class TwitterRipper extends AlbumRipper {
     private int parseTweet(JSONObject tweet) throws MalformedURLException {
         int parsedCount = 0;
         if (!tweet.has("extended_entities")) {
-            logger.error("XXX Tweet doesn't have entitites");
+            LOGGER.error("XXX Tweet doesn't have entitites");
             return 0;
         }
 
@@ -202,7 +201,7 @@ public class TwitterRipper extends AlbumRipper {
                         addURLToDownload(new URL(url));
                         parsedCount++;
                     } else {
-                        logger.debug("Unexpected media_url: " + url);
+                        LOGGER.debug("Unexpected media_url: " + url);
                     }
                 }
             }
@@ -230,14 +229,14 @@ public class TwitterRipper extends AlbumRipper {
         for (int i = 0; i < MAX_REQUESTS; i++) {
             List<JSONObject> tweets = getTweets(getApiURL(lastMaxID - 1));
             if (tweets.size() == 0) {
-                logger.info("   No more tweets found.");
+                LOGGER.info("   No more tweets found.");
                 break;
             }
-            logger.debug("Twitter response #" + (i + 1) + " Tweets:\n" + tweets);
+            LOGGER.debug("Twitter response #" + (i + 1) + " Tweets:\n" + tweets);
             if (tweets.size() == 1 &&
                     lastMaxID.equals(tweets.get(0).getString("id_str"))
                     ) {
-                logger.info("   No more tweet found.");
+                LOGGER.info("   No more tweet found.");
                 break;
             }
 
@@ -257,7 +256,7 @@ public class TwitterRipper extends AlbumRipper {
             try {
                 Thread.sleep(WAIT_TIME);
             } catch (InterruptedException e) {
-                logger.error("[!] Interrupted while waiting to load more results", e);
+                LOGGER.error("[!] Interrupted while waiting to load more results", e);
                 break;
             }
         }

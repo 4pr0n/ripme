@@ -1,5 +1,10 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,12 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class NatalieMuRipper extends AbstractHTMLRipper {
 
@@ -109,7 +108,7 @@ public class NatalieMuRipper extends AbstractHTMLRipper {
                 imgUrl = imgUrl.replace("list_thumb_inbox","xlarge");
                 // Don't download the same URL twice
                 if (imageURLs.contains(imgUrl)) {
-                    logger.debug("Already attempted: " + imgUrl);
+                    LOGGER.debug("Already attempted: " + imgUrl);
                     continue;
                 }
                 imageURLs.add(imgUrl);

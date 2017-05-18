@@ -1,19 +1,18 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
 import com.rarchives.ripme.ripper.AlbumRipper;
 import com.rarchives.ripme.ripper.DownloadThreadPool;
 import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MotherlessRipper extends AlbumRipper {
 
@@ -75,7 +74,7 @@ public class MotherlessRipper extends AlbumRipper {
             if (isStopped()) {
                 break;
             }
-            logger.info("Retrieving " + nextURL);
+            LOGGER.info("Retrieving " + nextURL);
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
             Document doc = Http.url(nextURL)
                                .referrer("http://motherless.com")
@@ -152,10 +151,10 @@ public class MotherlessRipper extends AlbumRipper {
                     }
                     addURLToDownload(new URL(file), prefix);
                 } else {
-                    logger.warn("[!] could not find '__fileurl' at " + url);
+                    LOGGER.warn("[!] could not find '__fileurl' at " + url);
                 }
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

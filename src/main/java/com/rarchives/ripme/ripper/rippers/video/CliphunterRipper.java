@@ -1,16 +1,15 @@
 package com.rarchives.ripme.ripper.rippers.video;
 
+import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Base64;
+import com.rarchives.ripme.utils.Http;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.json.JSONObject;
-
-import com.rarchives.ripme.ripper.VideoRipper;
-import com.rarchives.ripme.utils.Base64;
-import com.rarchives.ripme.utils.Http;
 
 public class CliphunterRipper extends VideoRipper {
 
@@ -55,7 +54,7 @@ public class CliphunterRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         String html = Http.url(url).get().html();
         String jsonString = html.substring(html.indexOf("var flashVars = {d: '") + 21);
         jsonString = jsonString.substring(0, jsonString.indexOf("'"));

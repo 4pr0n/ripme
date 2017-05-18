@@ -1,16 +1,15 @@
 package com.rarchives.ripme.ripper.rippers.video;
 
+import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.VideoRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class GfycatRipper extends VideoRipper {
 
@@ -63,7 +62,7 @@ public class GfycatRipper extends VideoRipper {
      * @throws IOException
      */
     public static String getVideoURL(URL url) throws IOException {
-        logger.info("Retrieving " + url.toExternalForm());
+        LOGGER.info("Retrieving " + url.toExternalForm());
         Document doc = Http.url(url).get();
         Elements videos = doc.select("source#mp4Source");
         if (videos.size() == 0) {

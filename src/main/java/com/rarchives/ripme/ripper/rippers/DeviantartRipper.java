@@ -1,5 +1,17 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Base64;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.safety.Whitelist;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -13,19 +25,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.safety.Whitelist;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Base64;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class DeviantartRipper extends AbstractHTMLRipper {
 
@@ -114,7 +113,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         try {
             cookies = loginToDeviantart();
         } catch (Exception e) {
-            logger.warn("Failed to login: ", e);
+            LOGGER.warn("Failed to login: ", e);
             cookies.put("agegate_state","1"); // Bypasses the age gate
         }
         return Http.url(this.url)
@@ -136,7 +135,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                     script = script.substring(script.indexOf("},\"src\":\"") + 9, script.indexOf("\",\"type\""));
                     return script.replace("\\/", "/");
                 } catch (StringIndexOutOfBoundsException e) {
-                    logger.debug("Unable to get json link from " + page.location());
+                    LOGGER.debug("Unable to get json link from " + page.location());
                 }
             }
         }
@@ -179,7 +178,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 }
             }
             if (triedURLs.contains(fullSize)) {
-                logger.warn("Already tried to download " + fullSize);
+                LOGGER.warn("Already tried to download " + fullSize);
                 continue;
             }
             triedURLs.add(fullSize);
@@ -197,7 +196,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         List<String> textURLs = new ArrayList<String>();
         // Iterate over all thumbnails
         for (Element thumb : page.select("div.zones-container span.thumb")) {
-            logger.info(thumb.attr("href"));
+            LOGGER.info(thumb.attr("href"));
             if (isStopped()) {
                 break;
             }
@@ -231,7 +230,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
         if (!sleep(PAGE_SLEEP_TIME)) {
             throw new IOException("Interrupted while waiting to load next page: " + nextPage);
         }
-        logger.info("Found next page: " + nextPage);
+        LOGGER.info("Found next page: " + nextPage);
         return Http.url(nextPage)
                    .cookies(cookies)
                    .get();
@@ -326,7 +325,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             return new String[] {Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false)),fullSize};
             // TODO Make this not make a newline if someone just types \n into the description.
         } catch (IOException ioe) {
-                logger.info("Failed to get description at " + url + ": '" + ioe.getMessage() + "'");
+                LOGGER.info("Failed to get description at " + url + ": '" + ioe.getMessage() + "'");
                 return null;
         }
     }
@@ -354,7 +353,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             if (els.size() > 0) {
                 // Large image
                 fsimage = els.get(0).attr("src");
-                logger.info("Found large-scale: " + fsimage);
+                LOGGER.info("Found large-scale: " + fsimage);
                 if (fsimage.contains("//orig")) {
                     return fsimage;
                 }
@@ -364,7 +363,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             if (els.size() > 0) {
                 // Full-size image
                 String downloadLink = els.get(0).attr("href");
-                logger.info("Found download button link: " + downloadLink);
+                LOGGER.info("Found download button link: " + downloadLink);
                 HttpURLConnection con = (HttpURLConnection) new URL(downloadLink).openConnection();
                 con.setRequestProperty("Referer",this.url.toString());
                 String cookieString = "";
@@ -381,7 +380,7 @@ public class DeviantartRipper extends AbstractHTMLRipper {
                 con.disconnect();
                 if (location.contains("//orig")) {
                     fsimage = location;
-                    logger.info("Found image download: " + location);
+                    LOGGER.info("Found image download: " + location);
                 }
             }
             if (fsimage != null) {
@@ -390,9 +389,9 @@ public class DeviantartRipper extends AbstractHTMLRipper {
             throw new IOException("No download page found");
         } catch (IOException ioe) {
             try {
-                logger.info("Failed to get full size download image at " + page + " : '" + ioe.getMessage() + "'");
+                LOGGER.info("Failed to get full size download image at " + page + " : '" + ioe.getMessage() + "'");
                 String lessThanFull = thumbToFull(thumb, false);
-                logger.info("Falling back to less-than-full-size image " + lessThanFull);
+                LOGGER.info("Falling back to less-than-full-size image " + lessThanFull);
                 return lessThanFull;
             } catch (Exception e) {
                 return null;

@@ -1,5 +1,13 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,15 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 class TapasticEpisode {
     protected int index, id;
@@ -56,7 +55,7 @@ public class TapasticRipper extends AbstractHTMLRipper {
         List<String> urls = new ArrayList<String>();
         String html = page.data();
         if (!html.contains("episodeList : ")) {
-            logger.error("No 'episodeList' found at " + this.url);
+            LOGGER.error("No 'episodeList' found at " + this.url);
             return urls;
         }
         String jsonString = Utils.between(html, "episodeList : ", ",\n").get(0);
@@ -93,7 +92,7 @@ public class TapasticRipper extends AbstractHTMLRipper {
                 }
             }
         } catch (IOException e) {
-            logger.error("[!] Exception while downloading " + url, e);
+            LOGGER.error("[!] Exception while downloading " + url, e);
         }
 
     }

@@ -1,5 +1,11 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractJSONRipper;
+import com.rarchives.ripme.utils.Http;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,13 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import com.rarchives.ripme.ripper.AbstractJSONRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class InstagramRipper extends AbstractJSONRipper {
 
@@ -98,7 +97,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             String nextMaxID        = last_item.getString("id");
 
             String baseURL = "http://instagram.com/" + userID + "/media/?max_id=" + nextMaxID;
-            logger.info("Loading " + baseURL);
+            LOGGER.info("Loading " + baseURL);
             sleep(1000);
 
             JSONObject nextJSON = Http.url(baseURL).getJSON();

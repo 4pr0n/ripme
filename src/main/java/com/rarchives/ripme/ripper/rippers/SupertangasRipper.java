@@ -1,19 +1,18 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
 import org.jsoup.HttpStatusException;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Appears to be broken as of 2015-02-11.
@@ -50,11 +49,11 @@ public class SupertangasRipper extends AlbumRipper {
                 theURL += "&plog_page=" + page;
             }
             try {
-                logger.info("    Retrieving " + theURL);
+                LOGGER.info("    Retrieving " + theURL);
                 sendUpdate(STATUS.LOADING_RESOURCE, theURL);
                 doc = Http.url(theURL).get();
             } catch (HttpStatusException e) {
-                logger.debug("Hit end of pages at page " + page, e);
+                LOGGER.debug("Hit end of pages at page " + page, e);
                 break;
             }
             Elements images = doc.select("li.thumbnail a");
@@ -69,7 +68,7 @@ public class SupertangasRipper extends AlbumRipper {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                logger.error("[!] Interrupted while waiting to load next page", e);
+                LOGGER.error("[!] Interrupted while waiting to load next page", e);
                 break;
             }
         }

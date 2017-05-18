@@ -1,5 +1,13 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,15 +15,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class ImagevenueRipper extends AbstractHTMLRipper {
 
@@ -102,7 +101,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                 // Find image
                 Elements images = doc.select("a > img");
                 if (images.size() == 0) {
-                    logger.warn("Image not found at " + this.url);
+                    LOGGER.warn("Image not found at " + this.url);
                     return;
                 }
                 Element image = images.first();
@@ -115,7 +114,7 @@ public class ImagevenueRipper extends AbstractHTMLRipper {
                 }
                 addURLToDownload(new URL(imgsrc), prefix);
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

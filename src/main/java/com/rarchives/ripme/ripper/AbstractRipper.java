@@ -1,9 +1,19 @@
 package com.rarchives.ripme.ripper;
 
+import com.rarchives.ripme.ui.RipStatusComplete;
+import com.rarchives.ripme.ui.RipStatusHandler;
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
+import org.apache.log4j.FileAppender;
+import org.apache.log4j.Logger;
+import org.jsoup.HttpStatusException;
+
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -11,22 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.Logger;
-import org.jsoup.HttpStatusException;
-
-import com.rarchives.ripme.ui.RipStatusComplete;
-import com.rarchives.ripme.ui.RipStatusHandler;
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Utils;
-import java.lang.reflect.InvocationTargetException;
-
 public abstract class AbstractRipper
                 extends Observable
                 implements RipperInterface, Runnable {
 
-    protected static final Logger logger = Logger.getLogger(AbstractRipper.class);
+    protected static final Logger LOGGER = Logger.getLogger(AbstractRipper.class);
 
     public static final String USER_AGENT =
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:36.0) Gecko/20100101 Firefox/36.0";
@@ -117,10 +116,10 @@ public abstract class AbstractRipper
         try {
             stopCheck();
         } catch (IOException e) {
-            logger.debug("Ripper has been stopped");
+            LOGGER.debug("Ripper has been stopped");
             return false;
         }
-        logger.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies);
+        LOGGER.debug("url: " + url + ", prefix: " + prefix + ", subdirectory" + subdirectory + ", referrer: " + referrer + ", cookies: " + cookies);
         String saveAs = url.toExternalForm();
         saveAs = saveAs.substring(saveAs.lastIndexOf('/')+1);
         if (saveAs.indexOf('?') >= 0) { saveAs = saveAs.substring(0, saveAs.indexOf('?')); }
@@ -139,12 +138,12 @@ public abstract class AbstractRipper
                     + prefix
                     + saveAs);
         } catch (IOException e) {
-            logger.error("[!] Error creating save file path for URL '" + url + "':", e);
+            LOGGER.error("[!] Error creating save file path for URL '" + url + "':", e);
             return false;
         }
-        logger.debug("Downloading " + url + " to " + saveFileAs);
+        LOGGER.debug("Downloading " + url + " to " + saveFileAs);
         if (!saveFileAs.getParentFile().exists()) {
-            logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
         return addURLToDownload(url, saveFileAs, referrer, cookies);
@@ -181,7 +180,7 @@ public abstract class AbstractRipper
      * Waits for downloading threads to complete.
      */
     protected void waitForThreads() {
-        logger.debug("Waiting for threads to finish");
+        LOGGER.debug("Waiting for threads to finish");
         completed = false;
         threadPool.waitForThreads();
         checkIfComplete();
@@ -233,13 +232,13 @@ public abstract class AbstractRipper
      */
     protected void checkIfComplete() {
         if (observer == null) {
-            logger.debug("observer is null");
+            LOGGER.debug("observer is null");
             return;
         }
 
         if (!completed) {
             completed = true;
-            logger.info("   Rip completed!");
+            LOGGER.info("   Rip completed!");
 
             RipStatusComplete rsc = new RipStatusComplete(workingDir, getCount());
             RipStatusMessage msg = new RipStatusMessage(STATUS.RIP_COMPLETE, rsc);
@@ -248,7 +247,7 @@ public abstract class AbstractRipper
             Logger rootLogger = Logger.getRootLogger();
             FileAppender fa = (FileAppender) rootLogger.getAppender("FILE");
             if (fa != null) {
-                logger.debug("Changing log file back to 'ripme.log'");
+                LOGGER.debug("Changing log file back to 'ripme.log'");
                 fa.setFile("ripme.log");
                 fa.activateOptions();
             }
@@ -257,7 +256,7 @@ public abstract class AbstractRipper
                 try {
                     Desktop.getDesktop().open(new File(urlFile));
                 } catch (IOException e) {
-                    logger.warn("Error while opening " + urlFile, e);
+                    LOGGER.warn("Error while opening " + urlFile, e);
                 }
             }
         }
@@ -295,7 +294,7 @@ public abstract class AbstractRipper
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers")) {
             try {
                 AlbumRipper ripper = (AlbumRipper) constructor.newInstance(url);
-                logger.debug("Found album ripper: " + ripper.getClass().getName());
+                LOGGER.debug("Found album ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (InstantiationException e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
@@ -310,7 +309,7 @@ public abstract class AbstractRipper
         for (Constructor<?> constructor : getRipperConstructors("com.rarchives.ripme.ripper.rippers.video")) {
             try {
                 VideoRipper ripper = (VideoRipper) constructor.newInstance(url);
-                logger.debug("Found video ripper: " + ripper.getClass().getName());
+                LOGGER.debug("Found video ripper: " + ripper.getClass().getName());
                 return ripper;
             } catch (InstantiationException e) {
                 // Incompatible rippers *will* throw exceptions during instantiation.
@@ -365,15 +364,15 @@ public abstract class AbstractRipper
         try {
             rip();
         } catch (HttpStatusException e) {
-            logger.error("Got exception while running ripper:", e);
+            LOGGER.error("Got exception while running ripper:", e);
             waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, "HTTP status code " + e.getStatusCode() + " for URL " + e.getUrl());
         } catch (IOException e) {
-            logger.error("Got exception while running ripper:", e);
+            LOGGER.error("Got exception while running ripper:", e);
             waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
         } catch (Exception e) {
-            logger.error("Got exception while running ripper:", e);
+            LOGGER.error("Got exception while running ripper:", e);
             waitForThreads();
             sendUpdate(STATUS.RIP_ERRORED, e.getMessage());
         } finally {
@@ -384,21 +383,21 @@ public abstract class AbstractRipper
     public void cleanup() {
         if (this.workingDir.list().length == 0) {
             // No files, delete the dir
-            logger.info("Deleting empty directory " + this.workingDir);
+            LOGGER.info("Deleting empty directory " + this.workingDir);
             boolean deleteResult = this.workingDir.delete();
             if (!deleteResult) {
-                logger.error("Unable to delete empty directory " +  this.workingDir);
+                LOGGER.error("Unable to delete empty directory " +  this.workingDir);
             }
         }
     }
 
     public boolean sleep(int milliseconds) {
         try {
-            logger.debug("Sleeping " + milliseconds + "ms");
+            LOGGER.debug("Sleeping " + milliseconds + "ms");
             Thread.sleep(milliseconds);
             return true;
         } catch (InterruptedException e) {
-            logger.error("Interrupted while waiting to load next page", e);
+            LOGGER.error("Interrupted while waiting to load next page", e);
             return false;
         }
     }
@@ -412,7 +411,7 @@ public abstract class AbstractRipper
 
     /** Methods for detecting when we're running a test. */
     public void markAsTest() {
-        logger.debug("THIS IS A TEST RIP");
+        LOGGER.debug("THIS IS A TEST RIP");
         thisIsATest = true;
     }
     public boolean isThisATest() {

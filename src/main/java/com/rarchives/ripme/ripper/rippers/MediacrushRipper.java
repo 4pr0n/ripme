@@ -1,5 +1,13 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractJSONRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import javax.net.ssl.SSLException;
+import javax.swing.JOptionPane;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -11,16 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.net.ssl.SSLException;
-import javax.swing.JOptionPane;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import com.rarchives.ripme.ripper.AbstractJSONRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
 
 public class MediacrushRipper extends AbstractJSONRipper {
 
@@ -122,7 +120,7 @@ public class MediacrushRipper extends AbstractJSONRipper {
             JSONArray subfiles = file.getJSONArray("files");
             String preferredUrl = getPreferredUrl(subfiles);
             if (preferredUrl == null) {
-                logger.warn("Could not find 'file' inside of " + file);
+                LOGGER.warn("Could not find 'file' inside of " + file);
                 sendUpdate(STATUS.DOWNLOAD_ERRORED, "Could not find file inside of " + file);
                 continue;
             }

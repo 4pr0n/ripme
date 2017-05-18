@@ -1,14 +1,13 @@
 package com.rarchives.ripme.ripper;
 
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
+import org.json.JSONObject;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-
-import org.json.JSONObject;
-
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Utils;
 
 /**
  * Simplified ripper, designed for ripping from sites by parsing JSON.
@@ -49,7 +48,7 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         int index = 0;
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         JSONObject json = getFirstPage();
 
@@ -71,7 +70,7 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
                     break;
                 }
                 index += 1;
-                logger.debug("Found image url #" + index+ ": " + imageURL);
+                LOGGER.debug("Found image url #" + index+ ": " + imageURL);
                 downloadURL(new URL(imageURL), index);
             }
 
@@ -83,14 +82,14 @@ public abstract class AbstractJSONRipper extends AlbumRipper {
                 sendUpdate(STATUS.LOADING_RESOURCE, "next page");
                 json = getNextPage(json);
             } catch (IOException e) {
-                logger.info("Can't get next page: " + e.getMessage());
+                LOGGER.info("Can't get next page: " + e.getMessage());
                 break;
             }
         }
 
         // If they're using a thread pool, wait for it.
         if (getThreadPool() != null) {
-            logger.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
+            LOGGER.debug("Waiting for threadpool " + getThreadPool().getClass().getName());
             getThreadPool().waitForThreads();
         }
         waitForThreads();

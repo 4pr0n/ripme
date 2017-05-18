@@ -1,5 +1,10 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,12 +13,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class WordpressComicRipper extends AbstractHTMLRipper {
     public WordpressComicRipper(URL url) throws IOException {
@@ -146,7 +145,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             // If doc is the last page in the comic then elem.attr("src") returns null
             // because there is no link <a> to the next page
             if (elem == null) {
-                logger.debug("Got last page in totempole666 comic");
+                LOGGER.debug("Got last page in totempole666 comic");
                 elem = doc.select("div.comic-table > div#comic > img").first();
             }
             result.add(elem.attr("src"));

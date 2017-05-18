@@ -1,14 +1,9 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -17,10 +12,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ImgurRipper extends AlbumRipper {
 
@@ -104,7 +103,7 @@ public class ImgurRipper extends AlbumRipper {
                 */
 
                 String title = null;
-                logger.info("Trying to get album title");
+                LOGGER.info("Trying to get album title");
                 elems = albumDoc.select("meta[property=og:title]");
                 if (elems!=null) {
                     title = elems.attr("content");
@@ -136,25 +135,25 @@ public class ImgurRipper extends AlbumRipper {
         case ALBUM:
             // Fall-through
         case USER_ALBUM:
-            logger.info("Album type is USER_ALBUM");
+            LOGGER.info("Album type is USER_ALBUM");
             // Don't call getAlbumTitle(this.url) with this
             // as it seems to cause the album to be downloaded to a subdir.
             ripAlbum(this.url);
             break;
         case SERIES_OF_IMAGES:
-            logger.info("Album type is SERIES_OF_IMAGES");
+            LOGGER.info("Album type is SERIES_OF_IMAGES");
             ripAlbum(this.url);
             break;
         case USER:
-            logger.info("Album type is USER");
+            LOGGER.info("Album type is USER");
             ripUserAccount(url);
             break;
         case SUBREDDIT:
-            logger.info("Album type is SUBREDDIT");
+            LOGGER.info("Album type is SUBREDDIT");
             ripSubreddit(url);
             break;
         case USER_IMAGES:
-            logger.info("Album type is USER_IMAGES");
+            LOGGER.info("Album type is USER_IMAGES");
             ripUserImages(url);
             break;
         }
@@ -203,7 +202,7 @@ public class ImgurRipper extends AlbumRipper {
             String[] imageIds = m.group(1).split(",");
             for (String imageId : imageIds) {
                 // TODO: Fetch image with ID imageId
-                logger.debug("Fetching image info for ID " + imageId);;
+                LOGGER.debug("Fetching image info for ID " + imageId);;
                 try {
                     JSONObject json = Http.url("https://api.imgur.com/2/image/" + imageId + ".json").getJSON();
                     if (!json.has("image")) {
@@ -221,7 +220,7 @@ public class ImgurRipper extends AlbumRipper {
                     ImgurImage theImage = new ImgurImage(new URL(original));
                     album.addImage(theImage);
                 } catch (Exception e) {
-                    logger.error("Got exception while fetching imgur ID " + imageId, e);
+                    LOGGER.error("Got exception while fetching imgur ID " + imageId, e);
                 }
             }
         }
@@ -233,7 +232,7 @@ public class ImgurRipper extends AlbumRipper {
         if (!strUrl.contains(",")) {
             strUrl += "/all";
         }
-        logger.info("    Retrieving " + strUrl);
+        LOGGER.info("    Retrieving " + strUrl);
         Document doc = Jsoup.connect(strUrl)
                             .userAgent(USER_AGENT)
                             .timeout(10 * 1000)
@@ -275,7 +274,7 @@ public class ImgurRipper extends AlbumRipper {
                 }
                 return imgurAlbum;
             } catch (JSONException e) {
-                logger.debug("Error while parsing JSON at " + strUrl + ", continuing", e);
+                LOGGER.debug("Error while parsing JSON at " + strUrl + ", continuing", e);
             }
         }
         p = Pattern.compile("^.*widgetFactory.mergeConfig\\('gallery', (.*?)\\);.*$", Pattern.DOTALL);
@@ -304,7 +303,7 @@ public class ImgurRipper extends AlbumRipper {
                 }
                 return imgurAlbum;
             } catch (JSONException e) {
-                logger.debug("Error while parsing JSON at " + url + ", continuing", e);
+                LOGGER.debug("Error while parsing JSON at " + url + ", continuing", e);
             }
         }
 
@@ -312,10 +311,10 @@ public class ImgurRipper extends AlbumRipper {
         // http://i.rarchives.com/search.cgi?cache=http://imgur.com/a/albumID
         // At the least, get the thumbnails.
 
-        logger.info("[!] Falling back to /noscript method");
+        LOGGER.info("[!] Falling back to /noscript method");
 
         String newUrl = url.toExternalForm() + "/noscript";
-        logger.info("    Retrieving " + newUrl);
+        LOGGER.info("    Retrieving " + newUrl);
         doc = Jsoup.connect(newUrl)
                             .userAgent(USER_AGENT)
                             .get();
@@ -332,7 +331,7 @@ public class ImgurRipper extends AlbumRipper {
                 image = "http:" + thumb.select("img").attr("src");
             } else {
                 // Unable to find image in this div
-                logger.error("[!] Unable to find image in div: " + thumb.toString());
+                LOGGER.error("[!] Unable to find image in div: " + thumb.toString());
                 continue;
             }
             if (image.endsWith(".gif") && Utils.getConfigBoolean("prefer.mp4", false)) {
@@ -351,7 +350,7 @@ public class ImgurRipper extends AlbumRipper {
      * @throws IOException
      */
     private void ripUserAccount(URL url) throws IOException {
-        logger.info("Retrieving " + url);
+        LOGGER.info("Retrieving " + url);
         sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
         Document doc = Http.url(url).get();
         for (Element album : doc.select("div.cover a")) {
@@ -366,7 +365,7 @@ public class ImgurRipper extends AlbumRipper {
                 ripAlbum(albumURL, albumID);
                 Thread.sleep(SLEEP_BETWEEN_ALBUMS * 1000);
             } catch (Exception e) {
-                logger.error("Error while ripping album: " + e.getMessage(), e);
+                LOGGER.error("Error while ripping album: " + e.getMessage(), e);
                 continue;
             }
         }
@@ -404,7 +403,7 @@ public class ImgurRipper extends AlbumRipper {
                 }
                 Thread.sleep(1000);
             } catch (Exception e) {
-                logger.error("Error while ripping user images: " + e.getMessage(), e);
+                LOGGER.error("Error while ripping user images: " + e.getMessage(), e);
                 break;
             }
         }
@@ -419,7 +418,7 @@ public class ImgurRipper extends AlbumRipper {
                 pageURL += "/";
             }
             pageURL += "page/" + page + "/miss?scrolled";
-            logger.info("    Retrieving " + pageURL);
+            LOGGER.info("    Retrieving " + pageURL);
             Document doc = Http.url(pageURL).get();
             Elements imgs = doc.select(".post img");
             for (Element img : imgs) {
@@ -440,7 +439,7 @@ public class ImgurRipper extends AlbumRipper {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                logger.error("Interrupted while waiting to load next album: ", e);
+                LOGGER.error("Interrupted while waiting to load next album: ", e);
                 break;
             }
         }

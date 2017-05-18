@@ -1,5 +1,12 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,14 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class HentaifoundryRipper extends AbstractHTMLRipper {
 
@@ -92,7 +91,7 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
             }
             Matcher imgMatcher = imgRegex.matcher(thumb.attr("href"));
             if (!imgMatcher.matches()) {
-                logger.info("Couldn't find user & image ID in " + thumb.attr("href"));
+                LOGGER.info("Couldn't find user & image ID in " + thumb.attr("href"));
                 continue;
             }
             Document imagePage;
@@ -105,13 +104,13 @@ public class HentaifoundryRipper extends AbstractHTMLRipper {
                            .response();
                 cookies.putAll(resp.cookies());
 
-                logger.info("grabbing " + "http://www.hentai-foundry.com" + thumb.attr("href"));
+                LOGGER.info("grabbing " + "http://www.hentai-foundry.com" + thumb.attr("href"));
                 imagePage = Http.url("http://www.hentai-foundry.com" + thumb.attr("href")).cookies(cookies).get();
             }
 
             catch (IOException e) {
-                logger.debug(e.getMessage());
-                logger.debug("Warning: imagePage is null!");
+                LOGGER.debug(e.getMessage());
+                LOGGER.debug("Warning: imagePage is null!");
                 imagePage = null;
             }
             // This is here for when the image is resized to a thumbnail because ripme doesn't report a screensize

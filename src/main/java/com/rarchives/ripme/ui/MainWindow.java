@@ -83,7 +83,7 @@ import javax.swing.UnsupportedLookAndFeelException;
  */
 public final class MainWindow implements Runnable, RipStatusHandler {
 
-    private static final Logger logger = Logger.getLogger(MainWindow.class);
+    private static final Logger LOGGER = Logger.getLogger(MainWindow.class);
 
     private boolean isRipping = false; // Flag to indicate if we're ripping something
 
@@ -258,13 +258,13 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         } catch (ClassNotFoundException e) {
-            logger.error("[!] Exception setting system theme:", e);
+            LOGGER.error("[!] Exception setting system theme:", e);
         } catch (InstantiationException e) {
-            logger.error("[!] Exception setting system theme:", e);
+            LOGGER.error("[!] Exception setting system theme:", e);
         } catch (IllegalAccessException e) {
-            logger.error("[!] Exception setting system theme:", e);
+            LOGGER.error("[!] Exception setting system theme:", e);
         } catch (UnsupportedLookAndFeelException e) {
-            logger.error("[!] Exception setting system theme:", e);
+            LOGGER.error("[!] Exception setting system theme:", e);
         }
 
         ripTextfield = new JTextField("", 20);
@@ -730,7 +730,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 try {
                     chosenPath = chosenFile.getCanonicalPath();
                 } catch (Exception e) {
-                    logger.error("Error while getting selected path: ", e);
+                    LOGGER.error("Error while getting selected path: ", e);
                     return;
                 }
                 configSaveDirLabel.setText(Utils.shortenPath(chosenPath));
@@ -835,7 +835,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             newLevel = Level.ERROR;
         }
         Logger.getRootLogger().setLevel(newLevel);
-        logger.setLevel(newLevel);
+        LOGGER.setLevel(newLevel);
         ConsoleAppender ca = (ConsoleAppender)Logger.getRootLogger().getAppender("stdout");
         if (ca != null) {
             ca.setThreshold(newLevel);
@@ -916,7 +916,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     try {
                         Desktop.getDesktop().browse(URI.create("http://github.com/4pr0n/ripme"));
                     } catch (IOException e) {
-                        logger.error("Exception while opening project home page", e);
+                        LOGGER.error("Exception while opening project home page", e);
                     }
                 }
             }
@@ -1002,10 +1002,10 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         HISTORY.clear();
         if (historyFile.exists()) {
             try {
-                logger.info("Loading history from history.json");
+                LOGGER.info("Loading history from history.json");
                 HISTORY.fromFile("history.json");
             } catch (IOException e) {
-                logger.error("Failed to load history from file " + historyFile, e);
+                LOGGER.error("Failed to load history from file " + historyFile, e);
                 JOptionPane.showMessageDialog(null,
                         "RipMe failed to load the history file at " + historyFile.getAbsolutePath() + "\n\n" +
                         "Error: " + e.getMessage() + "\n\n" +
@@ -1016,7 +1016,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             }
         }
         else {
-            logger.info("Loading history from configuration");
+            LOGGER.info("Loading history from configuration");
             HISTORY.fromList(Utils.getConfigList("download.history"));
             if (HISTORY.toList().size() == 0) {
                 // Loaded from config, still no entries.
@@ -1045,7 +1045,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             HISTORY.toFile("history.json");
             Utils.setConfigList("download.history", Collections.emptyList());
         } catch (IOException e) {
-            logger.error("Failed to save history to file history.json", e);
+            LOGGER.error("Failed to save history to file history.json", e);
         }
     }
 
@@ -1072,7 +1072,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException ie) {
-                logger.error("Interrupted while waiting to rip next album", ie);
+                LOGGER.error("Interrupted while waiting to rip next album", ie);
             }
             ripNextAlbum();
         }
@@ -1097,7 +1097,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         try {
             url = new URL(urlString);
         } catch (MalformedURLException e) {
-            logger.error("[!] Could not generate URL for '" + urlString + "'", e);
+            LOGGER.error("[!] Could not generate URL for '" + urlString + "'", e);
             error("Given URL is not valid, expecting http://website.com/page/...");
             return null;
         }
@@ -1112,7 +1112,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             ripper.setup();
         } catch (Exception e) {
             failed = true;
-            logger.error("Could not find ripper for URL " + url, e);
+            LOGGER.error("Could not find ripper for URL " + url, e);
             error(e.getMessage());
         }
         if (!failed) {
@@ -1130,7 +1130,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                 }
                 return t;
             } catch (Exception e) {
-                logger.error("[!] Error while ripping: " + e.getMessage(), e);
+                LOGGER.error("[!] Error while ripping: " + e.getMessage(), e);
                 error("Unable to rip this URL: " + e.getMessage());
             }
         }
@@ -1182,7 +1182,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         switch(msg.getStatus()) {
         case LOADING_RESOURCE:
         case DOWNLOAD_STARTED:
-            if (logger.isEnabledFor(Level.INFO)) {
+            if (LOGGER.isEnabledFor(Level.INFO)) {
                 appendLog( "Downloading " + (String) msg.getObject(), Color.BLACK);
             }
             break;
@@ -1190,7 +1190,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             appendLog( "Downloaded " + (String) msg.getObject(), Color.GREEN);
             break;
         case DOWNLOAD_ERRORED:
-            if (logger.isEnabledFor(Level.ERROR)) {
+            if (LOGGER.isEnabledFor(Level.ERROR)) {
                 appendLog((String) msg.getObject(), Color.RED);
             }
             break;
@@ -1199,7 +1199,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             break;
 
         case RIP_ERRORED:
-            if (logger.isEnabledFor(Level.ERROR)) {
+            if (LOGGER.isEnabledFor(Level.ERROR)) {
                 appendLog((String) msg.getObject(), Color.RED);
             }
             stopButton.setEnabled(false);
@@ -1254,7 +1254,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
                     try {
                         Desktop.getDesktop().open(new File(event.getActionCommand()));
                     } catch (Exception e) {
-                        logger.error(e);
+                        LOGGER.error(e);
                     }
                 }
             });
@@ -1327,7 +1327,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
         Utils.setConfigInteger("window.y", y);
         Utils.setConfigInteger("window.w", w);
         Utils.setConfigInteger("window.h", h);
-        logger.debug("Saved window position (x=" + x + ", y=" + y + ", w=" + w + ", h=" + h + ")");
+        LOGGER.debug("Saved window position (x=" + x + ", y=" + y + ", w=" + w + ", h=" + h + ")");
     }
 
     public static void restoreWindowPosition(Frame frame) {
@@ -1341,7 +1341,7 @@ public final class MainWindow implements Runnable, RipStatusHandler {
             int w = Utils.getConfigInteger("window.w", -1);
             int h = Utils.getConfigInteger("window.h", -1);
             if (x < 0 || y < 0 || w <= 0 || h <= 0) {
-                logger.debug("UNUSUAL: One or more of: x, y, w, or h was still less than 0 after reading config");
+                LOGGER.debug("UNUSUAL: One or more of: x, y, w, or h was still less than 0 after reading config");
                 mainFrame.setLocationRelativeTo(null); // default to middle of screen
                 return;
             }

@@ -1,5 +1,11 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,13 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class ZizkiRipper extends AbstractHTMLRipper {
 
@@ -55,11 +54,11 @@ public class ZizkiRipper extends AbstractHTMLRipper {
 
             Element authorSpan = getFirstPage().select("span[class=creator]").first();
             String author = authorSpan.select("a").first().text();
-            logger.debug("Author: " + author);
+            LOGGER.debug("Author: " + author);
             return getHost() + "_" + author + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
-            logger.info("Unable to find title at " + url);
+            LOGGER.info("Unable to find title at " + url);
         }
         return super.getAlbumTitle(url);
     }
@@ -78,9 +77,9 @@ public class ZizkiRipper extends AbstractHTMLRipper {
     public List<String> getURLsFromPage(Document page) {
         List<String> imageURLs = new ArrayList<String>();
         // Page contains images
-        logger.info("Look for images.");
+        LOGGER.info("Look for images.");
         for (Element thumb : page.select("img")) {
-            logger.info("Img");
+            LOGGER.info("Img");
             if (super.isStopped()) break;
             // Find thumbnail image source
             String image = null;
@@ -89,7 +88,7 @@ public class ZizkiRipper extends AbstractHTMLRipper {
             if (thumb.hasAttr("typeof")) {
                 img_type = thumb.attr("typeof");
                 if (img_type.equals("foaf:Image")) {
-                  logger.debug("Found image with " + img_type);
+                  LOGGER.debug("Found image with " + img_type);
                   if (thumb.parent() != null &&
                       thumb.parent().parent() != null &&
                       thumb.parent().parent().attr("class") != null &&
@@ -97,7 +96,7 @@ public class ZizkiRipper extends AbstractHTMLRipper {
                      )
                   {
                      src = thumb.attr("src");
-                     logger.debug("Found url with " + src);
+                     LOGGER.debug("Found url with " + src);
                      if (!src.contains("zizki.com")) {
                        continue;
                      } else {

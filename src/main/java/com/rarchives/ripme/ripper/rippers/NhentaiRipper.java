@@ -103,7 +103,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
         try {
             Thread.sleep(IMAGE_SLEEP_TIME);
         } catch (InterruptedException e) {
-            logger.warn("Interrupted while waiting to load next image", e);
+            LOGGER.warn("Interrupted while waiting to load next image", e);
         }
     }
 
@@ -136,13 +136,13 @@ public class NhentaiRipper extends AbstractHTMLRipper {
                     // Attempt to find image elsewise (Issue #41)
                     images = doc.select("img#img");
                     if (images.size() == 0) {
-                        logger.warn("Image not found at " + this.url);
+                        LOGGER.warn("Image not found at " + this.url);
                         return;
                     }
                 }
                 Element image = images.first();
                 String imgsrc = image.attr("src");
-                logger.info("Found URL " + imgsrc + " via " + images.get(0));
+                LOGGER.info("Found URL " + imgsrc + " via " + images.get(0));
 
                 Pattern p = Pattern.compile("^https?://i.nhentai.net/galleries/\\d+/(.+)$");
                 Matcher m = p.matcher(imgsrc);
@@ -163,7 +163,7 @@ public class NhentaiRipper extends AbstractHTMLRipper {
                     addURLToDownload(new URL(imgsrc), prefix);
                 }
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
 

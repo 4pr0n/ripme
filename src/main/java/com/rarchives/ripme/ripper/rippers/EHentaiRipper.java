@@ -1,5 +1,14 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -10,16 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class EHentaiRipper extends AbstractHTMLRipper {
     // All sleep times are in milliseconds
@@ -69,7 +68,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
             return getHost() + "_" + elems.first().text();
         } catch (Exception e) {
             // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
+            LOGGER.warn("Failed to get album title from " + url, e);
         }
         return super.getAlbumTitle(url);
     }
@@ -102,7 +101,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         int retries = 3;
         while (true) {
             sendUpdate(STATUS.LOADING_RESOURCE, url.toExternalForm());
-            logger.info("Retrieving " + url);
+            LOGGER.info("Retrieving " + url);
             doc = Http.url(url)
                       .referrer(this.url)
                       .cookies(cookies)
@@ -111,7 +110,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                 if (retries == 0) {
                     throw new IOException("Hit rate limit and maximum number of retries, giving up");
                 }
-                logger.warn("Hit rate limit while loading " + url + ", sleeping for " + IP_BLOCK_SLEEP_TIME + "ms, " + retries + " retries remaining");
+                LOGGER.warn("Hit rate limit while loading " + url + ", sleeping for " + IP_BLOCK_SLEEP_TIME + "ms, " + retries + " retries remaining");
                 retries--;
                 try {
                     Thread.sleep(IP_BLOCK_SLEEP_TIME);
@@ -143,13 +142,13 @@ public class EHentaiRipper extends AbstractHTMLRipper {
         // Find next page
         Elements hrefs = doc.select(".ptt a");
         if (hrefs.size() == 0) {
-            logger.info("doc: " + doc.html());
+            LOGGER.info("doc: " + doc.html());
             throw new IOException("No navigation links found");
         }
         // Ensure next page is different from the current page
         String nextURL = hrefs.last().attr("href");
         if (nextURL.equals(this.lastURL)) {
-            logger.info("lastURL = nextURL : " + nextURL);
+            LOGGER.info("lastURL = nextURL : " + nextURL);
             throw new IOException("Reached last page of results");
         }
         // Sleep before loading next page
@@ -179,7 +178,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
             Thread.sleep(IMAGE_SLEEP_TIME);
         }
         catch (InterruptedException e) {
-            logger.warn("Interrupted while waiting to load next image", e);
+            LOGGER.warn("Interrupted while waiting to load next image", e);
         }
     }
 
@@ -215,13 +214,13 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                     // Attempt to find image elsewise (Issue #41)
                     images = doc.select("img#img");
                     if (images.size() == 0) {
-                        logger.warn("Image not found at " + this.url);
+                        LOGGER.warn("Image not found at " + this.url);
                         return;
                     }
                 }
                 Element image = images.first();
                 String imgsrc = image.attr("src");
-                logger.info("Found URL " + imgsrc + " via " + images.get(0));
+                LOGGER.info("Found URL " + imgsrc + " via " + images.get(0));
                 Pattern p = Pattern.compile("^http://.*/ehg/image.php.*&n=([^&]+).*$");
                 Matcher m = p.matcher(imgsrc);
                 if (m.matches()) {
@@ -242,7 +241,7 @@ public class EHentaiRipper extends AbstractHTMLRipper {
                     addURLToDownload(new URL(imgsrc), prefix);
                 }
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

@@ -1,5 +1,13 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,15 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
 
 public class EightmusesRipper extends AbstractHTMLRipper {
 
@@ -59,7 +58,7 @@ public class EightmusesRipper extends AbstractHTMLRipper {
             return getHost() + "_" + title.trim();
         } catch (IOException e) {
             // Fall back to default album naming convention
-            logger.info("Unable to find title at " + url);
+            LOGGER.info("Unable to find title at " + url);
         }
         return super.getAlbumTitle(url);
     }
@@ -93,15 +92,15 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                     subUrl = "http://www.8muses.com/" + subUrl;
                 }
                 try {
-                    logger.info("Retrieving " + subUrl);
+                    LOGGER.info("Retrieving " + subUrl);
                     sendUpdate(STATUS.LOADING_RESOURCE, subUrl);
                     Document subPage = Http.url(subUrl).get();
                     // Get all images in subalbum, add to list.
                     List<String> subalbumImages = getURLsFromPage(subPage);
-                    logger.info("Found " + subalbumImages.size() + " images in subalbum");
+                    LOGGER.info("Found " + subalbumImages.size() + " images in subalbum");
                     imageURLs.addAll(subalbumImages);
                 } catch (IOException e) {
-                    logger.warn("Error while loading subalbum " + subUrl, e);
+                    LOGGER.warn("Error while loading subalbum " + subUrl, e);
                     continue;
                 }
             }
@@ -122,10 +121,10 @@ public class EightmusesRipper extends AbstractHTMLRipper {
                         parentHref = "https://www.8muses.com" + parentHref;
                     }
                     try {
-                        logger.info("Retrieving full-size image location from " + parentHref);
+                        LOGGER.info("Retrieving full-size image location from " + parentHref);
                         image = getFullSizeImage(parentHref);
                     } catch (IOException e) {
-                        logger.error("Failed to get full-size image from " + parentHref);
+                        LOGGER.error("Failed to get full-size image from " + parentHref);
                         continue;
                     }
                 }

@@ -1,5 +1,10 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Document;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
@@ -9,12 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class FuskatorRipper extends AbstractHTMLRipper {
 
@@ -67,7 +66,7 @@ public class FuskatorRipper extends AbstractHTMLRipper {
         try {
             baseUrl = URLDecoder.decode(baseUrl, "UTF-8");
         } catch (UnsupportedEncodingException e) {
-            logger.warn("Error while decoding " + baseUrl, e);
+            LOGGER.warn("Error while decoding " + baseUrl, e);
         }
         if (baseUrl.startsWith("//")) {
             baseUrl = "http:" + baseUrl;

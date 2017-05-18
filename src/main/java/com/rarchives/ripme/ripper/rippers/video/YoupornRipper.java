@@ -1,17 +1,16 @@
 package com.rarchives.ripme.ripper.rippers.video;
 
+import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.VideoRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class YoupornRipper extends VideoRipper {
 
@@ -54,7 +53,7 @@ public class YoupornRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url);
+        LOGGER.info("    Retrieving " + this.url);
         Document doc = Http.url(this.url).get();
         Elements videos = doc.select("video");
         if (videos.size() == 0) {
