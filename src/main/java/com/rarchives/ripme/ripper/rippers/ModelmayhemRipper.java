@@ -1,13 +1,8 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Connection.Method;
@@ -15,9 +10,13 @@ import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Utils;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ModelmayhemRipper extends AlbumRipper {
 
@@ -47,7 +46,7 @@ public class ModelmayhemRipper extends AlbumRipper {
 
         Response resp = null;
         String theurl = "http://www.modelmayhem.com/" + gid;
-        logger.info("Loading " + theurl);
+        LOGGER.info("Loading " + theurl);
         resp = Jsoup.connect(theurl)
                     .timeout(5000)
                     .referrer("")
@@ -83,7 +82,7 @@ public class ModelmayhemRipper extends AlbumRipper {
 
         theurl = "http://www.modelmayhem.com/services/photo_viewer/pictures/" + gid + "/0/0/1/0";
         this.sendUpdate(STATUS.LOADING_RESOURCE, theurl);
-        logger.info("Loading " + theurl);
+        LOGGER.info("Loading " + theurl);
         resp = Jsoup.connect(theurl)
                     .data(postData)
                     .cookies(cookies)
@@ -102,7 +101,7 @@ public class ModelmayhemRipper extends AlbumRipper {
             JSONObject picture = pictures.getJSONObject(i);
             String bigImage = picture.getString("big_image");
             if (bigImage.trim().equals("")) {
-                logger.info("Got empty image for " + picture.toString(2));
+                LOGGER.info("Got empty image for " + picture.toString(2));
                 continue;
             }
             String prefix = "";

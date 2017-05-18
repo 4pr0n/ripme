@@ -1,5 +1,11 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,13 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class GirlsOfDesireRipper extends AbstractHTMLRipper {
     // Current HTML document
@@ -40,7 +39,7 @@ public class GirlsOfDesireRipper extends AbstractHTMLRipper {
             return getHost() + "_" + elems.first().text();
         } catch (Exception e) {
             // Fall back to default album naming convention
-            logger.warn("Failed to get album title from " + url, e);
+            LOGGER.warn("Failed to get album title from " + url, e);
         }
         return super.getAlbumTitle(url);
     }

@@ -1,15 +1,14 @@
 package com.rarchives.ripme.ripper.rippers.video;
 
+import com.rarchives.ripme.ripper.VideoRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-
-import com.rarchives.ripme.ripper.VideoRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class VkRipper extends VideoRipper {
 
@@ -52,7 +51,7 @@ public class VkRipper extends VideoRipper {
 
     @Override
     public void rip() throws IOException {
-        logger.info("    Retrieving " + this.url);
+        LOGGER.info("    Retrieving " + this.url);
         String videoURL = getVideoURLAtPage(this.url.toExternalForm());
         addURLToDownload(new URL(videoURL), HOST + "_" + getGID(this.url));
         waitForThreads();

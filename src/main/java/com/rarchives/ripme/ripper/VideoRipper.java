@@ -52,7 +52,7 @@ public abstract class VideoRipper extends AbstractRipper {
                 RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, urlFile);
                 observer.update(this, msg);
             } catch (IOException e) {
-                logger.error("Error while writing to " + urlFile, e);
+                LOGGER.error("Error while writing to " + urlFile, e);
                 return false;
             }
         }
@@ -60,7 +60,7 @@ public abstract class VideoRipper extends AbstractRipper {
             if (isThisATest()) {
                 // Tests shouldn't download the whole video
                 // Just change this.url to the download URL so the test knows we found it.
-                logger.debug("Test rip, found URL: " + url);
+                LOGGER.debug("Test rip, found URL: " + url);
                 this.url = url;
                 return true;
             }
@@ -83,10 +83,10 @@ public abstract class VideoRipper extends AbstractRipper {
         path += "videos" + File.separator;
         this.workingDir = new File(path);
         if (!this.workingDir.exists()) {
-            logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
             this.workingDir.mkdirs();
         }
-        logger.debug("Set working directory to: " + this.workingDir);
+        LOGGER.debug("Set working directory to: " + this.workingDir);
     }
 
     @Override
@@ -106,7 +106,7 @@ public abstract class VideoRipper extends AbstractRipper {
 
             checkIfComplete();
         } catch (Exception e) {
-            logger.error("Exception while updating observer: ", e);
+            LOGGER.error("Exception while updating observer: ", e);
         }
     }
     @Override

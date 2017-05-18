@@ -1,20 +1,17 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class JagodibujaRipper extends AbstractHTMLRipper {
 
@@ -56,16 +53,16 @@ public class JagodibujaRipper extends AbstractHTMLRipper {
                 sleep(500);
                 Document comicPage = Http.url(comicPageUrl.attr("href")).get();
                 Element elem = comicPage.select("span.full-size-link > a").first();
-                logger.info("Got link " + elem.attr("href"));
+                LOGGER.info("Got link " + elem.attr("href"));
                 try {
                     addURLToDownload(new URL(elem.attr("href")), "");
                 } catch (MalformedURLException e) {
-                    logger.warn("Malformed URL");
+                    LOGGER.warn("Malformed URL");
                     e.printStackTrace();
                 }
                 result.add(elem.attr("href"));
             } catch (IOException e) {
-                logger.info("Error loading " + comicPageUrl);
+                LOGGER.info("Error loading " + comicPageUrl);
             }
         }
         return result;

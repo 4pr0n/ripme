@@ -1,19 +1,18 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class TeenplanetRipper extends AlbumRipper {
 
@@ -69,7 +68,7 @@ public class TeenplanetRipper extends AlbumRipper {
     @Override
     public void rip() throws IOException {
         int index = 0;
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         if (albumDoc == null) {
             albumDoc = Http.url(url).get();

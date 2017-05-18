@@ -1,5 +1,13 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Base64;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,15 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Base64;
-import com.rarchives.ripme.utils.Http;
 
 public class TwodgalleriesRipper extends AbstractHTMLRipper {
 
@@ -66,7 +65,7 @@ public class TwodgalleriesRipper extends AbstractHTMLRipper {
         try {
             login();
         } catch (IOException e) {
-            logger.error("Failed to login", e);
+            LOGGER.error("Failed to login", e);
         }
         String url = getURL(getGID(this.url), offset);
         return Http.url(url)

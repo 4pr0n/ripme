@@ -1,26 +1,5 @@
 package com.rarchives.ripme;
 
-import java.io.File;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileNotFoundException;
-
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.swing.SwingUtilities;
-
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
-import org.apache.log4j.Logger;
-
 import com.rarchives.ripme.ripper.AbstractRipper;
 import com.rarchives.ripme.ui.History;
 import com.rarchives.ripme.ui.HistoryEntry;
@@ -28,6 +7,24 @@ import com.rarchives.ripme.ui.MainWindow;
 import com.rarchives.ripme.ui.UpdateUtils;
 import com.rarchives.ripme.utils.RipUtils;
 import com.rarchives.ripme.utils.Utils;
+import org.apache.commons.cli.BasicParser;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.log4j.Logger;
+
+import javax.swing.SwingUtilities;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Entry point to application.
@@ -35,15 +32,15 @@ import com.rarchives.ripme.utils.Utils;
  */
 public class App {
 
-    public static Logger logger;
+    public static final Logger LOGGER = Logger.getLogger(App.class);
     private static final History HISTORY = new History();
 
     public static void main(String[] args) throws MalformedURLException {
         Utils.configureLogger();
         System.setProperty("apple.laf.useScreenMenuBar", "true");
         System.setProperty("com.apple.mrj.application.apple.menu.about.name", "RipMe");
-        logger = Logger.getLogger(App.class);
-        logger.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
+
+        LOGGER.info("Initialized ripme v" + UpdateUtils.getThisJarVersion());
 
         if (args.length > 0) {
             handleArguments(args);
@@ -83,13 +80,13 @@ public class App {
                     URL url = new URL(urlString.trim());
                     rip(url);
                 } catch (Exception e) {
-                    logger.error("[!] Failed to rip URL " + urlString, e);
+                    LOGGER.error("[!] Failed to rip URL " + urlString, e);
                     continue;
                 }
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
-                    logger.warn("[!] Interrupted while re-ripping history");
+                    LOGGER.warn("[!] Interrupted while re-ripping history");
                     System.exit(-1);
                 }
             }
@@ -110,13 +107,13 @@ public class App {
                         URL url = new URL(entry.url);
                         rip(url);
                     } catch (Exception e) {
-                        logger.error("[!] Failed to rip URL " + entry.url, e);
+                        LOGGER.error("[!] Failed to rip URL " + entry.url, e);
                         continue;
                     }
                     try {
                         Thread.sleep(500);
                     } catch (InterruptedException e) {
-                        logger.warn("[!] Interrupted while re-ripping history");
+                        LOGGER.warn("[!] Interrupted while re-ripping history");
                         System.exit(-1);
                     }
                 }
@@ -151,9 +148,9 @@ public class App {
                     ripURL(url.trim(), cl.hasOption("n"));
                 }
             } catch (FileNotFoundException fne) {
-                logger.error("[!] File containing list of URLs not found. Cannot continue.");
+                LOGGER.error("[!] File containing list of URLs not found. Cannot continue.");
             } catch (IOException ioe) {
-                logger.error("[!] Failed reading file containing list of URLs. Cannot continue.");
+                LOGGER.error("[!] Failed reading file containing list of URLs. Cannot continue.");
             }
         }
         if (cl.hasOption('u')) {
@@ -176,10 +173,10 @@ public class App {
                 }
             }
         } catch (MalformedURLException e) {
-            logger.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
+            LOGGER.error("[!] Given URL is not valid. Expected URL format is http://domain.com/...");
             // System.exit(-1);
         } catch (Exception e) {
-            logger.error("[!] Error while ripping URL " + targetURL, e);
+            LOGGER.error("[!] Error while ripping URL " + targetURL, e);
             // System.exit(-1);
         }
     }
@@ -207,7 +204,7 @@ public class App {
             CommandLine cl = parser.parse(getOptions(), args, false);
             return cl;
         } catch (ParseException e) {
-            logger.error("[!] Error while parsing command-line arguments: " + Arrays.toString(args), e);
+            LOGGER.error("[!] Error while parsing command-line arguments: " + Arrays.toString(args), e);
             System.exit(-1);
             return null;
         }
@@ -218,10 +215,10 @@ public class App {
         HISTORY.clear();
         if (historyFile.exists()) {
             try {
-                logger.info("Loading history from history.json");
+                LOGGER.info("Loading history from history.json");
                 HISTORY.fromFile("history.json");
             } catch (IOException e) {
-                logger.error("Failed to load history from file " + historyFile, e);
+                LOGGER.error("Failed to load history from file " + historyFile, e);
                 System.out.println(
                         "RipMe failed to load the history file at " + historyFile.getAbsolutePath() + "\n\n" +
                         "Error: " + e.getMessage() + "\n\n" +
@@ -229,7 +226,7 @@ public class App {
                         "so you may want to back the file up before closing RipMe!");
             }
         } else {
-            logger.info("Loading history from configuration");
+            LOGGER.info("Loading history from configuration");
             HISTORY.fromList(Utils.getConfigList("download.history"));
             if (HISTORY.toList().size() == 0) {
                 // Loaded from config, still no entries.

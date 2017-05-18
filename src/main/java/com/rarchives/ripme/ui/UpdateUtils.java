@@ -20,7 +20,7 @@ import com.rarchives.ripme.utils.Utils;
 
 public class UpdateUtils {
 
-    private static final Logger logger = Logger.getLogger(UpdateUtils.class);
+    private static final Logger LOGGER = Logger.getLogger(UpdateUtils.class);
     private static final String DEFAULT_VERSION = "1.4.16";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/4pr0n/ripme/master/ripme.json";
     private static final String mainFileName = "ripme.jar";
@@ -44,13 +44,13 @@ public class UpdateUtils {
 
         Document doc = null;
         try {
-            logger.debug("Retrieving " + UpdateUtils.updateJsonURL);
+            LOGGER.debug("Retrieving " + UpdateUtils.updateJsonURL);
             doc = Jsoup.connect(UpdateUtils.updateJsonURL)
                        .timeout(10 * 1000)
                        .ignoreContentType(true)
                        .get();
         } catch (IOException e) {
-            logger.error("Error while fetching update: ", e);
+            LOGGER.error("Error while fetching update: ", e);
             JOptionPane.showMessageDialog(null,
                     "<html><font color=\"red\">Error while fetching update: " + e.getMessage() + "</font></html>",
                     "RipMe Updater",
@@ -73,7 +73,7 @@ public class UpdateUtils {
 
         String latestVersion = json.getString("latestVersion");
         if (UpdateUtils.isNewerVersion(latestVersion)) {
-            logger.info("Found newer version: " + latestVersion);
+            LOGGER.info("Found newer version: " + latestVersion);
             int result = JOptionPane.showConfirmDialog(
                     null,
                     "<html><font color=\"green\">New version (" + latestVersion + ") is available!</font>"
@@ -87,7 +87,7 @@ public class UpdateUtils {
                 return;
             }
             configUpdateLabel.setText("<html><font color=\"green\">Downloading new version...</font></html>");
-            logger.info("New version found, downloading...");
+            LOGGER.info("New version found, downloading...");
             try {
                 UpdateUtils.downloadJarAndLaunch(getUpdateJarURL(latestVersion));
             } catch (IOException e) {
@@ -96,14 +96,14 @@ public class UpdateUtils {
                     "RipMe Updater",
                     JOptionPane.ERROR_MESSAGE);
             configUpdateLabel.setText("");
-                logger.error("Error while updating: ", e);
+                LOGGER.error("Error while updating: ", e);
                 return;
             }
         } else {
-            logger.debug("This version (" + UpdateUtils.getThisJarVersion() +
+            LOGGER.debug("This version (" + UpdateUtils.getThisJarVersion() +
                         ") is the same or newer than the website's version (" + latestVersion + ")");
             configUpdateLabel.setText("<html><font color=\"green\">v" + UpdateUtils.getThisJarVersion() + " is the latest version</font></html>");
-            logger.debug("Running latest version: " + UpdateUtils.getThisJarVersion());
+            LOGGER.debug("Running latest version: " + UpdateUtils.getThisJarVersion());
         }
     }
 
@@ -117,11 +117,11 @@ public class UpdateUtils {
 
         for (int i = 0; i < oldVersions.length; i++) {
             if (newVersions[i] > oldVersions[i]) {
-                logger.debug("oldVersion " + getThisJarVersion() + " < latestVersion" + latestVersion);
+                LOGGER.debug("oldVersion " + getThisJarVersion() + " < latestVersion" + latestVersion);
                 return true;
             }
             else if (newVersions[i] < oldVersions[i]) {
-                logger.debug("oldVersion " + getThisJarVersion() + " > latestVersion " + latestVersion);
+                LOGGER.debug("oldVersion " + getThisJarVersion() + " > latestVersion " + latestVersion);
                 return false;
             }
         }
@@ -152,7 +152,7 @@ public class UpdateUtils {
         FileOutputStream out = new FileOutputStream(updateFileName);
         out.write(response.bodyAsBytes());
         out.close();
-        logger.info("Download of new version complete; saved to " + updateFileName);
+        LOGGER.info("Download of new version complete; saved to " + updateFileName);
 
         // Setup updater script
         final String batchFile, script;
@@ -190,13 +190,13 @@ public class UpdateUtils {
         bw.write(script);
         bw.flush();
         bw.close();
-        logger.info("Saved update script to " + batchFile);
+        LOGGER.info("Saved update script to " + batchFile);
         // Run updater script on exit
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 try {
-                    logger.info("Executing: " + batchFile);
+                    LOGGER.info("Executing: " + batchFile);
                     Runtime.getRuntime().exec(batchExec);
                 } catch (IOException e) {
                     //TODO implement proper stack trace handling this is really just intented as a placeholder until you implement proper error handling
@@ -204,7 +204,7 @@ public class UpdateUtils {
                 }
             }
         });
-        logger.info("Exiting older version, should execute update script (" + batchFile + ") during exit");
+        LOGGER.info("Exiting older version, should execute update script (" + batchFile + ") during exit");
         System.exit(0);
     }
 

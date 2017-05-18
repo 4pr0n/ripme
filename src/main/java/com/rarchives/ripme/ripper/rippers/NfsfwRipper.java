@@ -1,5 +1,14 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,16 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class NfsfwRipper extends AlbumRipper {
 
@@ -86,7 +85,7 @@ public class NfsfwRipper extends AlbumRipper {
             String nextURL = nextAlbum.first;
             String nextSubalbum = nextAlbum.second;
             sendUpdate(STATUS.LOADING_RESOURCE, nextURL);
-            logger.info("    Retrieving " + nextURL);
+            LOGGER.info("    Retrieving " + nextURL);
             if (albumDoc == null) {
                 albumDoc = Http.url(nextURL).get();
             }
@@ -116,7 +115,7 @@ public class NfsfwRipper extends AlbumRipper {
                         break;
                     }
                 } catch (MalformedURLException mue) {
-                    logger.warn("Invalid URL: " + imagePage);
+                    LOGGER.warn("Invalid URL: " + imagePage);
                 }
             }
             if (isThisATest()) {
@@ -133,7 +132,7 @@ public class NfsfwRipper extends AlbumRipper {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                logger.error("Interrupted while waiting to load next page", e);
+                LOGGER.error("Interrupted while waiting to load next page", e);
                 throw new IOException(e);
             }
         }
@@ -168,7 +167,7 @@ public class NfsfwRipper extends AlbumRipper {
                                    .get();
                 Elements images = doc.select(".gbBlock img");
                 if (images.size() == 0) {
-                    logger.error("Failed to find image at " + this.url);
+                    LOGGER.error("Failed to find image at " + this.url);
                     return;
                 }
                 String file = images.first().attr("src");
@@ -181,7 +180,7 @@ public class NfsfwRipper extends AlbumRipper {
                 }
                 addURLToDownload(new URL(file), prefix, this.subdir);
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

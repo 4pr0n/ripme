@@ -1,18 +1,17 @@
 package com.rarchives.ripme.ripper.rippers;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.rarchives.ripme.ripper.AlbumRipper;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import com.rarchives.ripme.ripper.AlbumRipper;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class NewsfilterRipper extends AlbumRipper {
     private static final String HOST = "newsfilter";
@@ -43,7 +42,7 @@ public class NewsfilterRipper extends AlbumRipper {
     public void rip() throws IOException {
         String gid = getGID(this.url);
         String theurl = "http://newsfilter.org/gallery/" + gid;
-        logger.info("Loading " + theurl);
+        LOGGER.info("Loading " + theurl);
 
         Connection.Response resp = Jsoup.connect(theurl)
             .timeout(5000)

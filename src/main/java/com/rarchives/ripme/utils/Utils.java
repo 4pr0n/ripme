@@ -1,5 +1,17 @@
 package com.rarchives.ripme.utils;
 
+import com.rarchives.ripme.ripper.AbstractRipper;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.Line;
+import javax.sound.sampled.LineEvent;
+import javax.sound.sampled.LineListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,27 +28,13 @@ import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.Line;
-import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.LineListener;
-
-import org.apache.commons.configuration.ConfigurationException;
-import org.apache.commons.configuration.PropertiesConfiguration;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-
-import com.rarchives.ripme.ripper.AbstractRipper;
-
 /**
  * Common utility functions used in various places throughout the project.
  */
 public class Utils {
     public  static final String RIP_DIRECTORY = "rips";
     private static final String configFile = "rip.properties";
-    private static final Logger logger = Logger.getLogger(Utils.class);
+    private static final Logger LOGGER = Logger.getLogger(Utils.class);
 
     private static PropertiesConfiguration config;
     static {
@@ -48,7 +46,7 @@ public class Utils {
                 configPath = configFile;
             }
             config = new PropertiesConfiguration(configPath);
-            logger.info("Loaded " + config.getPath());
+            LOGGER.info("Loaded " + config.getPath());
             if (f.exists()) {
                 // Config was loaded from file
                 if ( !config.containsKey("twitter.auth")
@@ -62,14 +60,14 @@ public class Utils {
                     // Config is missing key fields
                     // Need to reload the default config
                     // See https://github.com/4pr0n/ripme/issues/158
-                    logger.warn("Config does not contain key fields, deleting old config");
+                    LOGGER.warn("Config does not contain key fields, deleting old config");
                     f.delete();
                     config = new PropertiesConfiguration(configFile);
-                    logger.info("Loaded " + config.getPath());
+                    LOGGER.info("Loaded " + config.getPath());
                 }
             }
         } catch (Exception e) {
-            logger.error("[!] Failed to load properties file from " + configFile, e);
+            LOGGER.error("[!] Failed to load properties file from " + configFile, e);
         }
     }
 
@@ -84,7 +82,7 @@ public class Utils {
         try {
             currentDir = new File(".").getCanonicalPath() + File.separator + RIP_DIRECTORY + File.separator;
         } catch (IOException e) {
-            logger.error("Error while finding working dir: ", e);
+            LOGGER.error("Error while finding working dir: ", e);
         }
         if (config != null) {
             currentDir = getConfigString("rips.directory", currentDir);
@@ -133,9 +131,9 @@ public class Utils {
     public static void saveConfig() {
         try {
             config.save(getConfigPath());
-            logger.info("Saved configuration to " + getConfigPath());
+            LOGGER.info("Saved configuration to " + getConfigPath());
         } catch (ConfigurationException e) {
-            logger.error("Error while saving configuration: ", e);
+            LOGGER.error("Error while saving configuration: ", e);
         }
     }
     private static String getConfigPath() {
@@ -162,7 +160,7 @@ public class Utils {
                     cwd,
                     "." + File.separator);
         } catch (Exception e) {
-            logger.error("Exception: ", e);
+            LOGGER.error("Exception: ", e);
         }
         return prettySaveAs;
     }
@@ -261,7 +259,7 @@ public class Utils {
                         try {
                             classes.add(Class.forName(className));
                         } catch (ClassNotFoundException e) {
-                            logger.error("ClassNotFoundException loading " + className);
+                            LOGGER.error("ClassNotFoundException loading " + className);
                             jarFile.close(); // Resource leak fix?
                             throw new RuntimeException("ClassNotFoundException loading " + className);
                         }
@@ -269,7 +267,7 @@ public class Utils {
                 }
                 jarFile.close(); // Eclipse said not closing it would have a resource leak
             } catch (IOException e) {
-                logger.error("Error while loading jar file:", e);
+                LOGGER.error("Error while loading jar file:", e);
                 throw new RuntimeException(pkgname + " (" + directory + ") does not appear to be a valid package", e);
             }
         }
@@ -341,12 +339,12 @@ public class Utils {
             clip.open(AudioSystem.getAudioInputStream(resource));
             clip.start();
         } catch (Exception e) {
-            logger.error("Failed to play sound " + filename, e);
+            LOGGER.error("Failed to play sound " + filename, e);
         }
     }
 
     /**
-     * Configures root logger, either for FILE output or just console.
+     * Configures root LOGGER, either for FILE output or just console.
      */
     public static void configureLogger() {
         LogManager.shutdown();
@@ -363,7 +361,7 @@ public class Utils {
         } else {
             PropertyConfigurator.configure(stream);
         }
-        logger.info("Loaded " + logFile);
+        LOGGER.info("Loaded " + logFile);
         try {
             stream.close();
         } catch (IOException e) { }

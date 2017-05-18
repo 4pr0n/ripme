@@ -1,5 +1,17 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ripper.DownloadThreadPool;
+import com.rarchives.ripme.utils.Base64;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import org.jsoup.Connection.Method;
+import org.jsoup.Connection.Response;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -11,19 +23,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.Connection.Method;
-import org.jsoup.Connection.Response;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ripper.DownloadThreadPool;
-import com.rarchives.ripme.utils.Base64;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class FlickrRipper extends AbstractHTMLRipper {
 
@@ -251,7 +250,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
                 Document doc = getLargestImagePageDocument(this.url);
                 Elements fullsizeImages = doc.select("div#allsizes-photo img");
                 if (fullsizeImages.size() == 0) {
-                    logger.error("Could not find flickr image at " + doc.location() + " - missing 'div#allsizes-photo img'");
+                    LOGGER.error("Could not find flickr image at " + doc.location() + " - missing 'div#allsizes-photo img'");
                     return;
                 }
                 else {
@@ -264,7 +263,7 @@ public class FlickrRipper extends AbstractHTMLRipper {
                     }
                 }
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
         

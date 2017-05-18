@@ -1,5 +1,10 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,12 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class ImagearnRipper extends AbstractHTMLRipper {
 
@@ -50,7 +49,7 @@ public class ImagearnRipper extends AbstractHTMLRipper {
             try {
                 url = getGalleryFromImage(url);
             } catch (Exception e) {
-                logger.error("[!] " + e.getMessage(), e);
+                LOGGER.error("[!] " + e.getMessage(), e);
             }
         }
         return url;
@@ -59,11 +58,11 @@ public class ImagearnRipper extends AbstractHTMLRipper {
     private URL getGalleryFromImage(URL url) throws IOException {
         Document doc = Http.url(url).get();
         for (Element link : doc.select("a[href~=^gallery\\.php.*$]")) {
-            logger.info("LINK: " + link.toString());
+            LOGGER.info("LINK: " + link.toString());
             if (link.hasAttr("href")
                     && link.attr("href").contains("gallery.php")) {
                 url = new URL("http://imagearn.com/" + link.attr("href"));
-                logger.info("[!] Found gallery from given link: " + url);
+                LOGGER.info("[!] Found gallery from given link: " + url);
                 return url;
             }
         }

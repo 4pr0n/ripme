@@ -125,7 +125,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
         Elements urlElements = page.select("figure.t-image > b > u > a");
         for (Element e : urlElements) {
             urls.add(urlBase + e.select("a").first().attr("href"));
-            logger.debug("Desc2 " + urlBase + e.select("a").first().attr("href"));
+            LOGGER.debug("Desc2 " + urlBase + e.select("a").first().attr("href"));
         }
         return urls;
     }
@@ -145,23 +145,23 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
             // Try to find the description
             Elements els = resp.parse().select("td[class=alt1][width=\"70%\"]");
             if (els.size() == 0) {
-                logger.debug("No description at " + page);
+                LOGGER.debug("No description at " + page);
                 throw new IOException("No description found");
             }
-            logger.debug("Description found!");
+            LOGGER.debug("Description found!");
             Document documentz = resp.parse();
             Element ele = documentz.select("td[class=alt1][width=\"70%\"]").get(0); // This is where the description is.
             // Would break completely if FurAffinity changed site layout.
             documentz.outputSettings(new Document.OutputSettings().prettyPrint(false));
             ele.select("br").append("\\n");
             ele.select("p").prepend("\\n\\n");
-            logger.debug("Returning description at " + page);
+            LOGGER.debug("Returning description at " + page);
             String tempPage = Jsoup.clean(ele.html().replaceAll("\\\\n", System.getProperty("line.separator")), "", Whitelist.none(), new Document.OutputSettings().prettyPrint(false));
             String title = documentz.select("meta[property=og:title]").attr("content");
             String tempText = title;
             return tempText + "\n" + tempPage; // Overridden saveText takes first line and makes it the file name.
         } catch (IOException ioe) {
-            logger.info("Failed to get description " + page + " : '" + ioe.getMessage() + "'");
+            LOGGER.info("Failed to get description " + page + " : '" + ioe.getMessage() + "'");
             return null;
         }
     }
@@ -200,12 +200,12 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
             out.write(text.getBytes());
             out.close();
         } catch (IOException e) {
-            logger.error("[!] Error creating save file path for description '" + url + "':", e);
+            LOGGER.error("[!] Error creating save file path for description '" + url + "':", e);
             return false;
         }
-        logger.debug("Downloading " + url + "'s description to " + saveFileAs);
+        LOGGER.debug("Downloading " + url + "'s description to " + saveFileAs);
         if (!saveFileAs.getParentFile().exists()) {
-            logger.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
+            LOGGER.info("[+] Creating directory: " + Utils.removeCWD(saveFileAs.getParent()));
             saveFileAs.getParentFile().mkdirs();
         }
         return true;
@@ -244,11 +244,11 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
                 // Find image
                 Elements donwloadLink = doc.select("div.alt1 b a[href^=//d.facdn.net/]");
                 if (donwloadLink.size() == 0) {
-                    logger.warn("Could not download " + this.url);
+                    LOGGER.warn("Could not download " + this.url);
                     return;
                 }
                 String link = "http:" + donwloadLink.first().attr("href");
-                logger.info("Found URL " + link);
+                LOGGER.info("Found URL " + link);
                 String[] fileNameSplit = link.split("/");
                 String fileName = fileNameSplit[fileNameSplit.length -1];
                 fileName = fileName.replaceAll("[0-9]*\\.", "");
@@ -265,7 +265,7 @@ public class FuraffinityRipper extends AbstractHTMLRipper {
                             + fileExt);
                 addURLToDownload(new URL(link),saveAS,"",cookies);
             } catch (IOException e) {
-                logger.error("[!] Exception while loading/parsing " + this.url, e);
+                LOGGER.error("[!] Exception while loading/parsing " + this.url, e);
             }
         }
     }

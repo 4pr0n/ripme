@@ -1,5 +1,10 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,12 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.utils.Http;
 
 public class ImagefapRipper extends AbstractHTMLRipper {
 
@@ -43,7 +42,7 @@ public class ImagefapRipper extends AbstractHTMLRipper {
             newURL += "p";
         }
         newURL += "gid=" + gid + "&view=2";
-        logger.debug("Changed URL from " + url + " to " + newURL);
+        LOGGER.debug("Changed URL from " + url + " to " + newURL);
         return new URL(newURL);
     }
 

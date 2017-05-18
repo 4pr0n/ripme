@@ -1,5 +1,18 @@
 package com.rarchives.ripme.utils;
 
+import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.ripper.rippers.EroShareRipper;
+import com.rarchives.ripme.ripper.rippers.ImgurRipper;
+import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
+import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurImage;
+import com.rarchives.ripme.ripper.rippers.VidbleRipper;
+import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
+import org.apache.commons.lang.math.NumberUtils;
+import org.apache.log4j.Logger;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -9,84 +22,70 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.lang.math.NumberUtils;
-import org.apache.log4j.Logger;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractRipper;
-import com.rarchives.ripme.ripper.rippers.ImgurRipper;
-import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurAlbum;
-import com.rarchives.ripme.ripper.rippers.ImgurRipper.ImgurImage;
-import com.rarchives.ripme.ripper.rippers.VidbleRipper;
-import com.rarchives.ripme.ripper.rippers.video.GfycatRipper;
-import com.rarchives.ripme.ripper.rippers.EroShareRipper;
-
 public class RipUtils {
-    private static final Logger logger = Logger.getLogger(RipUtils.class);
+    private static final Logger LOGGER = Logger.getLogger(RipUtils.class);
 
     public static List<URL> getFilesFromURL(URL url) {
         List<URL> result = new ArrayList<URL>();
 
-        logger.debug("Checking " + url);
+        LOGGER.debug("Checking " + url);
         // Imgur album
         if ((url.getHost().endsWith("imgur.com"))
                 && url.toExternalForm().contains("imgur.com/a/")) {
             try {
-                logger.debug("Fetching imgur album at " + url);
+                LOGGER.debug("Fetching imgur album at " + url);
                 ImgurAlbum imgurAlbum = ImgurRipper.getImgurAlbum(url);
                 for (ImgurImage imgurImage : imgurAlbum.images) {
-                    logger.debug("Got imgur image: " + imgurImage.url);
+                    LOGGER.debug("Got imgur image: " + imgurImage.url);
                     result.add(imgurImage.url);
                 }
             } catch (IOException e) {
-                logger.error("[!] Exception while loading album " + url, e);
+                LOGGER.error("[!] Exception while loading album " + url, e);
             }
             return result;
         }
         else if (url.getHost().endsWith("imgur.com") && url.toExternalForm().contains(",")) {
             // Imgur image series.
             try {
-                logger.debug("Fetching imgur series at " + url);
+                LOGGER.debug("Fetching imgur series at " + url);
                 ImgurAlbum imgurAlbum = ImgurRipper.getImgurSeries(url);
                 for (ImgurImage imgurImage : imgurAlbum.images) {
-                    logger.debug("Got imgur image: " + imgurImage.url);
+                    LOGGER.debug("Got imgur image: " + imgurImage.url);
                     result.add(imgurImage.url);
                 }
             } catch (IOException e) {
-                logger.error("[!] Exception while loading album " + url, e);
+                LOGGER.error("[!] Exception while loading album " + url, e);
             }
         }
         else if (url.getHost().endsWith("gfycat.com")) {
             try {
-                logger.debug("Fetching gfycat page " + url);
+                LOGGER.debug("Fetching gfycat page " + url);
                 String videoURL = GfycatRipper.getVideoURL(url);
-                logger.debug("Got gfycat URL: " + videoURL);
+                LOGGER.debug("Got gfycat URL: " + videoURL);
                 result.add(new URL(videoURL));
             } catch (IOException e) {
                 // Do nothing
-                logger.warn("Exception while retrieving gfycat page:", e);
+                LOGGER.warn("Exception while retrieving gfycat page:", e);
             }
             return result;
         }
         else if (url.toExternalForm().contains("vidble.com/album/") || url.toExternalForm().contains("vidble.com/show/")) {
             try {
-                logger.info("Getting vidble album " + url);
+                LOGGER.info("Getting vidble album " + url);
                 result.addAll(VidbleRipper.getURLsFromPage(url));
             } catch (IOException e) {
                 // Do nothing
-                logger.warn("Exception while retrieving vidble page:", e);
+                LOGGER.warn("Exception while retrieving vidble page:", e);
             }
             return result;
         }
         else if (url.toExternalForm().contains("eroshare.com")) {
             try {
-                logger.info("Getting eroshare album " + url);
+                LOGGER.info("Getting eroshare album " + url);
                 result.addAll(EroShareRipper.getURLs(url));
             } catch (IOException e) {
                 // Do nothing
-                logger.warn("Exception while retrieving eroshare page:", e);
+                LOGGER.warn("Exception while retrieving eroshare page:", e);
             }
             return result;
         }
@@ -109,11 +108,11 @@ public class RipUtils {
         if (m.matches()) {
             try {
                 URL singleURL = new URL(m.group(1));
-                logger.debug("Found single URL: " + singleURL);
+                LOGGER.debug("Found single URL: " + singleURL);
                 result.add(singleURL);
                 return result;
             } catch (MalformedURLException e) {
-                logger.error("[!] Not a valid URL: '" + url + "'", e);
+                LOGGER.error("[!] Not a valid URL: '" + url + "'", e);
             }
         }
 
@@ -135,12 +134,12 @@ public class RipUtils {
                     }
                 }
             } catch (IOException ex) {
-                logger.error("[!] Error", ex);
+                LOGGER.error("[!] Error", ex);
             }
 
         }
 
-        logger.error("[!] Unable to rip URL: " + url);
+        LOGGER.error("[!] Unable to rip URL: " + url);
         return result;
     }
 

@@ -1,18 +1,17 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.jsoup.HttpStatusException;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.jsoup.HttpStatusException;
-
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
 
 public class VineRipper extends AlbumRipper {
 
@@ -45,11 +44,11 @@ public class VineRipper extends AlbumRipper {
                 theURL += "?page=" + page;
             }
             try {
-                logger.info("    Retrieving " + theURL);
+                LOGGER.info("    Retrieving " + theURL);
                 sendUpdate(STATUS.LOADING_RESOURCE, theURL);
                 json = Http.url(theURL).getJSON();
             } catch (HttpStatusException e) {
-                logger.debug("Hit end of pages at page " + page, e);
+                LOGGER.debug("Hit end of pages at page " + page, e);
                 break;
             }
             JSONArray records = json.getJSONObject("data").getJSONArray("records");
@@ -64,13 +63,13 @@ public class VineRipper extends AlbumRipper {
                 break;
             }
             if (records.length() == 0) {
-                logger.info("Zero records returned");
+                LOGGER.info("Zero records returned");
                 break;
             }
             try {
                 Thread.sleep(2000);
             } catch (InterruptedException e) {
-                logger.error("[!] Interrupted while waiting to load next page", e);
+                LOGGER.error("[!] Interrupted while waiting to load next page", e);
                 break;
             }
         }

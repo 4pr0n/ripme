@@ -1,24 +1,21 @@
 package com.rarchives.ripme.tst.ripper.rippers;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
-
+import com.rarchives.ripme.ripper.AbstractRipper;
+import com.rarchives.ripme.utils.Utils;
 import junit.framework.TestCase;
-
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 
-import com.rarchives.ripme.ripper.AbstractRipper;
-import com.rarchives.ripme.utils.Utils;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Contains helper methods for testing rippers.
  */
 public class RippersTest extends TestCase {
 
-    public final Logger logger = Logger.getLogger(RippersTest.class);
+    private static final Logger LOGGER = Logger.getLogger(RippersTest.class);
 
     /** Dummy test to make JUnit not complain */
     public void test() {
@@ -87,10 +84,10 @@ public class RippersTest extends TestCase {
         for (File f : workingDir.listFiles()) {
             if (f.isDirectory()) {
                 for (File sf : f.listFiles()) {
-                    logger.debug("Deleting " + sf);
+                    LOGGER.debug("Deleting " + sf);
                     sf.delete();
                 }
-                logger.debug("Deleting " + f);
+                LOGGER.debug("Deleting " + f);
                 f.delete();
             }
         }

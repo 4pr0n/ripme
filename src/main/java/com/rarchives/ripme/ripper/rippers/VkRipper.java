@@ -1,5 +1,14 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.Utils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -10,16 +19,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.utils.Http;
-import com.rarchives.ripme.utils.Utils;
 
 public class VkRipper extends AlbumRipper {
 
@@ -75,7 +74,7 @@ public class VkRipper extends AlbumRipper {
         String[] jsonStrings = doc.toString().split("<!>");
         JSONObject json = new JSONObject(jsonStrings[jsonStrings.length - 1]);
         JSONArray videos = json.getJSONArray("all");
-        logger.info("Found " + videos.length() + " videos");
+        LOGGER.info("Found " + videos.length() + " videos");
         for (int i = 0; i < videos.length(); i++) {
             JSONArray jsonVideo = videos.getJSONArray(i);
             int vidid = jsonVideo.getInt(1);
@@ -89,7 +88,7 @@ public class VkRipper extends AlbumRipper {
             try {
                 Thread.sleep(500);
             } catch (InterruptedException e) {
-                logger.error("Interrupted while waiting to fetch next video URL", e);
+                LOGGER.error("Interrupted while waiting to fetch next video URL", e);
                 break;
             }
         }
@@ -100,7 +99,7 @@ public class VkRipper extends AlbumRipper {
         Map<String,String> photoIDsToURLs = new HashMap<String,String>();
         int offset = 0;
         while (true) {
-            logger.info("    Retrieving " + this.url);
+            LOGGER.info("    Retrieving " + this.url);
 
             // al=1&offset=80&part=1
             Map<String,String> postData = new HashMap<String,String>();
@@ -123,7 +122,7 @@ public class VkRipper extends AlbumRipper {
             Set<String> photoIDsToGet = new HashSet<String>();
             for (Element a : elements) {
                 if (!a.attr("onclick").contains("showPhoto('")) {
-                    logger.error("a: " + a);
+                    LOGGER.error("a: " + a);
                     continue;
                 }
                 String photoID = a.attr("onclick");
@@ -138,12 +137,12 @@ public class VkRipper extends AlbumRipper {
                     try {
                         photoIDsToURLs.putAll(getPhotoIDsToURLs(photoID));
                     } catch (IOException e) {
-                        logger.error("Exception while retrieving photo id " + photoID, e);
+                        LOGGER.error("Exception while retrieving photo id " + photoID, e);
                         continue;
                     }
                 }
                 if (!photoIDsToURLs.containsKey(photoID)) {
-                    logger.error("Could not find URL for photo ID: " + photoID);
+                    LOGGER.error("Could not find URL for photo ID: " + photoID);
                     continue;
                 }
                 String url = photoIDsToURLs.get(photoID);

@@ -1,17 +1,16 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AlbumRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AlbumRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
 
 /**
  * Appears to be broken as of 2015-02-11.
@@ -51,7 +50,7 @@ public class SmuttyRipper extends AlbumRipper {
             page++;
             url = "http://smutty.com/h/" + tag + "/?q=%23" + tag + "&page=" + page + "&sort=date&lazy=1";
             this.sendUpdate(STATUS.LOADING_RESOURCE, url);
-            logger.info("    Retrieving " + url);
+            LOGGER.info("    Retrieving " + url);
             Document doc;
             try {
                 doc = Http.url(url)
@@ -59,9 +58,9 @@ public class SmuttyRipper extends AlbumRipper {
                           .get();
             } catch (IOException e) {
                 if (e.toString().contains("Status=404")) {
-                    logger.info("No more pages to load");
+                    LOGGER.info("No more pages to load");
                 } else {
-                    logger.warn("Exception while loading " + url, e);
+                    LOGGER.warn("Exception while loading " + url, e);
                 }
                 break;
             }
@@ -93,7 +92,7 @@ public class SmuttyRipper extends AlbumRipper {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                logger.error("[!] Interrupted while waiting to load next album:", e);
+                LOGGER.error("[!] Interrupted while waiting to load next album:", e);
                 break;
             }
         }

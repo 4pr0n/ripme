@@ -1,5 +1,11 @@
 package com.rarchives.ripme.ripper.rippers;
 
+import com.rarchives.ripme.ripper.AbstractHTMLRipper;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Http;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -10,13 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-
-import com.rarchives.ripme.ripper.AbstractHTMLRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Http;
 
 public class CheebyRipper extends AbstractHTMLRipper {
 
@@ -112,7 +111,7 @@ public class CheebyRipper extends AbstractHTMLRipper {
     
     @Override
     public void rip() throws IOException {
-        logger.info("Retrieving " + this.url);
+        LOGGER.info("Retrieving " + this.url);
         sendUpdate(STATUS.LOADING_RESOURCE, this.url.toExternalForm());
         Document doc = getFirstPage();
         
@@ -144,7 +143,7 @@ public class CheebyRipper extends AbstractHTMLRipper {
                 sendUpdate(STATUS.LOADING_RESOURCE, "next page");
                 doc = getNextPage(doc);
             } catch (IOException e) {
-                logger.info("Can't get next page: " + e.getMessage());
+                LOGGER.info("Can't get next page: " + e.getMessage());
                 break;
             }
         }
@@ -162,7 +161,7 @@ public class CheebyRipper extends AbstractHTMLRipper {
             }
             File f = new File(this.workingDir, prefix);
             if (f.list() != null && f.list().length == 0) {
-                logger.info("Deleting empty directory: " + f.getAbsolutePath());
+                LOGGER.info("Deleting empty directory: " + f.getAbsolutePath());
                 f.delete();
             }
         }
