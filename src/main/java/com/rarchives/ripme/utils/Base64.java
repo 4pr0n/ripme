@@ -57,7 +57,7 @@ public class Base64 {
      * @return the byte array (not null)
      */
     public static byte[] decode(String s) {
-        int delta = s.endsWith("==") ? 2 : endsWithEqualSymbol(s);
+        int delta = s.endsWith("==") ? 2 : (s.endsWith("=") ? 1 : 0);
         byte[] buffer = new byte[s.length() * 3 / 4 - delta];
         int mask = 0xFF;
         int index = 0;
@@ -67,24 +67,20 @@ public class Base64 {
             int c1 = toInt[s.charAt(i + 1)];
             buffer[index++] = (byte) (((c0 << 2) | (c1 >> 4)) & mask);
 
-            if (index >= buffer.length)
+            if (index >= buffer.length) {
                 return buffer;
-
+            }
             int c2 = toInt[s.charAt(i + 2)];
             buffer[index++] = (byte) (((c1 << 4) | (c2 >> 2)) & mask);
 
-            if (index >= buffer.length)
+            if (index >= buffer.length) {
                 return buffer;
-
+            }
             int c3 = toInt[s.charAt(i + 3)];
             buffer[index++] = (byte) (((c2 << 6) | c3) & mask);
         }
 
         return buffer;
-    }
-
-    private static int endsWithEqualSymbol(String s) {
-        return s.endsWith("=") ? 1 : 0;
     }
 
 }
