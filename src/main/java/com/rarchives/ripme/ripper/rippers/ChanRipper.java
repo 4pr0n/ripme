@@ -11,11 +11,11 @@ import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import com.rarchives.ripme.ripper.AbstractHTMLRipper;
 import com.rarchives.ripme.ripper.rippers.ripperhelpers.ChanSite;
 import com.rarchives.ripme.utils.Http;
+import com.rarchives.ripme.utils.RipUtils;
 
 public class ChanRipper extends AbstractHTMLRipper {
     public static List<ChanSite> explicit_domains = Arrays.asList(
@@ -90,7 +90,11 @@ public class ChanRipper extends AbstractHTMLRipper {
      * For example the archives are all known. (Check 4chan-x)
      * Should be based on the software the specific chan uses.
      * FoolFuuka uses the same (url) layout as 4chan
-     * */
+     *
+     * @param url
+     * @return
+     *      The thread id in string form
+     * @throws java.net.MalformedURLException */
     @Override
     public String getGID(URL url) throws MalformedURLException {
         Pattern p;
@@ -154,13 +158,13 @@ public class ChanRipper extends AbstractHTMLRipper {
             Boolean self_hosted = false;
             if (!generalChanSite) {
                 for (String cdnDomain : chanSite.cdnDomains) {
-                    if (href.contains(cdnDomain)){
+                    if (href.contains(cdnDomain)) {
                         self_hosted = true;
                     }
                 }
             }
 
-            if (self_hosted || generalChanSite){
+            if (self_hosted || generalChanSite) {
                 p = Pattern.compile("^.*\\.(jpg|jpeg|png|gif|apng|webp|tif|tiff|webm)$", Pattern.CASE_INSENSITIVE);
                 m = p.matcher(href);
                 if (m.matches()) {
@@ -181,7 +185,18 @@ public class ChanRipper extends AbstractHTMLRipper {
                     }
                 }
             } else {
-                //TODO also grab imgur/flickr albums (And all other supported rippers) Maybe add a setting?
+                //Copied code from RedditRipper, getFilesFromURL should also implement stuff like flickr albums
+                URL originalURL;
+                try {
+                    originalURL = new URL(href);
+                } catch (MalformedURLException e) {
+                    continue;
+                }
+
+                List<URL> urls = RipUtils.getFilesFromURL(originalURL);
+                for (URL imageurl : urls) {
+                    imageURLs.add(imageurl.toString());
+                }
             }
 
             if (isStopped()) {

@@ -11,11 +11,8 @@ import java.util.regex.Pattern;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 
 import com.rarchives.ripme.ripper.AbstractJSONRipper;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
 import com.rarchives.ripme.utils.Http;
 
 public class InstagramRipper extends AbstractJSONRipper {
@@ -60,18 +57,18 @@ public class InstagramRipper extends AbstractJSONRipper {
 
         throw new MalformedURLException("Expected username in URL (instagram.com/username and not " + url);
     }
-    
+
     private String getUserID(URL url) throws IOException {
 
         Pattern p = Pattern.compile("^https?://instagram\\.com/([^/]+)");
         Matcher m = p.matcher(url.toExternalForm());
-        if(m.matches()) {
+        if (m.matches()) {
             return m.group(1);
         }
 
         throw new IOException("Unable to find userID at " + this.url);
     }
-    
+
     @Override
     public JSONObject getFirstPage() throws IOException {
         userID = getUserID(url);
@@ -95,7 +92,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             throw new IOException("No additional pages found");
         }
 
-        if(nextPageAvailable) {
+        if (nextPageAvailable) {
             JSONArray items         = json.getJSONArray("items");
             JSONObject last_item    = items.getJSONObject(items.length() - 1);
             String nextMaxID        = last_item.getString("id");
@@ -111,7 +108,7 @@ public class InstagramRipper extends AbstractJSONRipper {
             throw new IOException("No more images found");
         }
     }
-    
+
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
         List<String> imageURLs = new ArrayList<String>();
@@ -128,6 +125,12 @@ public class InstagramRipper extends AbstractJSONRipper {
             }
             imageURL = imageURL.replaceAll("scontent.cdninstagram.com/hphotos-", "igcdn-photos-d-a.akamaihd.net/hphotos-ak-");
             imageURL = imageURL.replaceAll("s640x640/", "");
+
+            // it appears ig now allows higher resolution images to be uploaded but are artifically cropping the images to
+            // 1080x1080 to preserve legacy support. the cropping string below isnt present on ig website and removing it
+            // displays the uncropped image.
+            imageURL = imageURL.replaceAll("c0.114.1080.1080/", "");
+
             imageURL = imageURL.replaceAll("\\?ig_cache_key.+$", "");
             imageURLs.add(imageURL);
             if (isThisATest()) {
@@ -136,7 +139,7 @@ public class InstagramRipper extends AbstractJSONRipper {
         }
         return imageURLs;
     }
-    
+
     @Override
     public void downloadURL(URL url, int index) {
         addURLToDownload(url);

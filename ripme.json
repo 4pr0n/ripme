@@ -1,6 +1,12 @@
 {
-  "latestVersion" : "1.4.9",
+  "latestVersion" : "1.4.15",
   "changeList" : [
+    "1.4.15: Fixed DeviantArt Ripper",
+    "1.4.14: Improvements to ChanRipper (rip external links), MyHentaiComics, and Twitter (video and albums)",
+    "1.4.13: Fixed furaffinity ripper.",
+    "1.4.12: Fixed Crash on Win10 CU; Fixed SSL error on xHamster.",
+    "1.4.11: Instagram: fixed cropped images issue.",
+    "1.4.10: Add WordPressComicRipper (various sites supported)",
     "1.4.9: Fixed HentaiFoundry ripper",
     "1.4.8: Added Jagodibuja comics ripper",
     "1.4.7: Fixed NewsFilter, XHamster; added TheChiveRipper",

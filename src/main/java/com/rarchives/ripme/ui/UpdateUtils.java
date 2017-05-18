@@ -21,7 +21,7 @@ import com.rarchives.ripme.utils.Utils;
 public class UpdateUtils {
 
     private static final Logger logger = Logger.getLogger(UpdateUtils.class);
-    private static final String DEFAULT_VERSION = "1.4.9";
+    private static final String DEFAULT_VERSION = "1.4.15";
     private static final String updateJsonURL = "https://raw.githubusercontent.com/4pr0n/ripme/master/ripme.json";
     private static final String mainFileName = "ripme.jar";
     private static final String updateFileName = "ripme.jar.update";
@@ -68,7 +68,7 @@ public class UpdateUtils {
             if (change.startsWith(UpdateUtils.getThisJarVersion() + ":")) {
                 break;
             }
-            changeList.append("<br>  + " + change);
+            changeList.append("<br>  + ").append(change);
         }
 
         String latestVersion = json.getString("latestVersion");
@@ -111,7 +111,7 @@ public class UpdateUtils {
         int[] oldVersions = versionStringToInt(getThisJarVersion());
         int[] newVersions = versionStringToInt(latestVersion);
         if (oldVersions.length < newVersions.length) {
-            System.err.println("Calculated: " + oldVersions + " < " + latestVersion);
+            System.err.println("Calculated: " + getThisJarVersion() + " < " + latestVersion);
             return true;
         }
 
@@ -123,9 +123,6 @@ public class UpdateUtils {
             else if (newVersions[i] < oldVersions[i]) {
                 logger.debug("oldVersion " + getThisJarVersion() + " > latestVersion " + latestVersion);
                 return false;
-            }
-            else {
-                continue;
             }
         }
 
@@ -202,6 +199,7 @@ public class UpdateUtils {
                     logger.info("Executing: " + batchFile);
                     Runtime.getRuntime().exec(batchExec);
                 } catch (IOException e) {
+                    //TODO implement proper stack trace handling this is really just intented as a placeholder until you implement proper error handling
                     e.printStackTrace();
                 }
             }
