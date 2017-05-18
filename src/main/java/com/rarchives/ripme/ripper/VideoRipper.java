@@ -1,5 +1,10 @@
 package com.rarchives.ripme.ripper;
 
+import com.rarchives.ripme.ui.RipStatusMessage;
+import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
+import com.rarchives.ripme.utils.Utils;
+
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -7,28 +12,26 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
-import com.rarchives.ripme.ui.RipStatusMessage;
-import com.rarchives.ripme.ui.RipStatusMessage.STATUS;
-import com.rarchives.ripme.utils.Utils;
-
 public abstract class VideoRipper extends AbstractRipper {
 
-    private int bytesTotal = 1,
-                 bytesCompleted = 1;
+    private int bytesTotal = 1;
+    private int bytesCompleted = 1;
 
     public VideoRipper(URL url) throws IOException {
         super(url);
     }
 
-    public abstract boolean canRip(URL url);
     public abstract void rip() throws IOException;
+
     public abstract String getHost();
+
     public abstract String getGID(URL url) throws MalformedURLException;
 
     @Override
     public void setBytesTotal(int bytes) {
         this.bytesTotal = bytes;
     }
+
     @Override
     public void setBytesCompleted(int bytes) {
         this.bytesCompleted = bytes;
@@ -44,19 +47,22 @@ public abstract class VideoRipper extends AbstractRipper {
         if (Utils.getConfigBoolean("urls_only.save", false)) {
             // Output URL to file
             String urlFile = this.workingDir + File.separator + "urls.txt";
+
+            FileWriter fw = null;
             try {
-                FileWriter fw = new FileWriter(urlFile, true);
+                fw = new FileWriter(urlFile, true);
                 fw.write(url.toExternalForm());
                 fw.write("\n");
-                fw.close();
+
                 RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, urlFile);
                 observer.update(this, msg);
             } catch (IOException e) {
                 logger.error("Error while writing to " + urlFile, e);
                 return false;
+            } finally {
+                close(fw);
             }
-        }
-        else {
+        } else {
             if (isThisATest()) {
                 // Tests shouldn't download the whole video
                 // Just change this.url to the download URL so the test knows we found it.
@@ -70,22 +76,24 @@ public abstract class VideoRipper extends AbstractRipper {
     }
 
     @Override
-    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String,String> cookies) {
+    public boolean addURLToDownload(URL url, File saveAs, String referrer, Map<String, String> cookies) {
         return addURLToDownload(url, saveAs);
     }
 
     @Override
     public void setWorkingDir(URL url) throws IOException {
         String path = Utils.getWorkingDirectory().getCanonicalPath();
-        if (!path.endsWith(File.separator)) {
+        if (!path.endsWith(File.separator))
             path += File.separator;
-        }
+
         path += "videos" + File.separator;
         this.workingDir = new File(path);
+
         if (!this.workingDir.exists()) {
             logger.info("[+] Creating directory: " + Utils.removeCWD(this.workingDir));
             this.workingDir.mkdirs();
         }
+
         logger.debug("Set working directory to: " + this.workingDir);
     }
 
@@ -96,9 +104,9 @@ public abstract class VideoRipper extends AbstractRipper {
 
     @Override
     public void downloadCompleted(URL url, File saveAs) {
-        if (observer == null) {
+        if (observer == null)
             return;
-        }
+
         try {
             String path = Utils.removeCWD(saveAs);
             RipStatusMessage msg = new RipStatusMessage(STATUS.DOWNLOAD_COMPLETE, path);
@@ -109,33 +117,33 @@ public abstract class VideoRipper extends AbstractRipper {
             logger.error("Exception while updating observer: ", e);
         }
     }
+
     @Override
     public void downloadErrored(URL url, String reason) {
-        if (observer == null) {
+        if (observer == null)
             return;
-        }
+
         observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_ERRORED, url + " : " + reason));
         checkIfComplete();
     }
+
     @Override
     public void downloadExists(URL url, File file) {
-        if (observer == null) {
+        if (observer == null)
             return;
-        }
+
         observer.update(this, new RipStatusMessage(STATUS.DOWNLOAD_WARN, url + " already saved as " + file));
         checkIfComplete();
     }
 
     @Override
     public String getStatusText() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getCompletionPercentage())
-          .append("% ")
-          .append(" - ")
-          .append(Utils.bytesToHumanReadable(bytesCompleted))
-          .append(" / ")
-          .append(Utils.bytesToHumanReadable(bytesTotal));
-        return sb.toString();
+        return String.valueOf(getCompletionPercentage()) +
+                "% " +
+                " - " +
+                Utils.bytesToHumanReadable(bytesCompleted) +
+                " / " +
+                Utils.bytesToHumanReadable(bytesTotal);
     }
 
     @Override
@@ -148,11 +156,25 @@ public abstract class VideoRipper extends AbstractRipper {
      */
     @Override
     protected void checkIfComplete() {
-        if (observer == null) {
+        if (observer == null)
             return;
-        }
-        if (bytesCompleted >= bytesTotal) {
+
+        if (bytesCompleted >= bytesTotal)
             super.checkIfComplete();
+    }
+
+    /**
+     * Method to execute close on any object that belongs to closable class
+     * @param closeable Object that belongs to closable class
+     */
+    private static void close(Closeable closeable) {
+        if (closeable == null)
+            return;
+        try {
+            closeable.close();
+        } catch (IOException e) {
+            logger.error(e.getMessage(), e);
         }
     }
+
 }
