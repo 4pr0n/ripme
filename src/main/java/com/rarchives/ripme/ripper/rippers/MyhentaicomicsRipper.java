@@ -145,8 +145,8 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                 Document album_doc;
                 try {
                     logger.info("grabbing " + element + " with jsoup");
-                    boolean startsWithhttp = element.startsWith("http://");
-                    if (startsWithhttp == false) {
+                    boolean startsWithHttp = element.startsWith("http://");
+                    if (!startsWithHttp) {
                         album_doc = Http.url("http://myhentaicomics.com/" + element).get();
                     }
                     else {
@@ -160,8 +160,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
                 for (Element el :album_doc.select("img")) {
                     String imageSource = el.attr("src");
                     // This bool is here so we don't try and download the site logo
-                    boolean b = imageSource.startsWith("http://");
-                    if (b == false) {
+                    if (!imageSource.startsWith("http://")) {
                         // We replace thumbs with resizes so we can the full sized images
                         imageSource = imageSource.replace("thumbs", "resizes");
                         String url_string = "http://myhentaicomics.com/" + imageSource;
@@ -250,8 +249,7 @@ public class MyhentaicomicsRipper extends AbstractHTMLRipper {
         for (Element el : doc.select("img")) {
             String imageSource = el.attr("src");
             // This bool is here so we don't try and download the site logo
-            boolean b = imageSource.startsWith("http://");
-            if (b == false) {
+            if (!imageSource.startsWith("http://")) {
             // We replace thumbs with resizes so we can the full sized images
             imageSource = imageSource.replace("thumbs", "resizes");
             result.add("http://myhentaicomics.com/" + imageSource);
