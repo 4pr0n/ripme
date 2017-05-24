@@ -141,6 +141,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             return getHost() + "_" + "Delve";
         }
 
+        Pattern prismblushPat = Pattern.compile("https?://prismblush.com/comic/([a-zA-Z0-9_-]*)/?$");
+        Matcher prismblushMat = prismblushPat.matcher(url.toExternalForm());
+        if (prismblushMat.matches()) {
+            return getHost() + "_" + prismblushMat.group(1);
+        }
+
         Pattern comicsxxxPat = Pattern.compile("https?://comics-xxx.com/([a-zA-Z0-9_\\-]*)/?$");
         Matcher comicsxxxMat = comicsxxxPat.matcher(url.toExternalForm());
         if (comicsxxxMat.matches()) {
