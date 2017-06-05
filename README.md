@@ -3,6 +3,8 @@
 [![Build Status](https://travis-ci.org/4pr0n/ripme.svg?branch=master)](https://travis-ci.org/4pr0n/ripme)
 [![Join the chat at https://gitter.im/4pr0n-ripme/Lobby](https://badges.gitter.im/4pr0n-ripme/Lobby.svg)](https://gitter.im/4pr0n-ripme/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+[![Join the chat at https://gitter.im/4pr0n-ripme/Lobby](https://badges.gitter.im/4pr0n-ripme/Lobby.svg)](https://gitter.im/4pr0n-ripme/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Album ripper for various websites. Runs on your computer. Requires Java 1.6
 
 ![Screenshot](http://i.imgur.com/kWzhsIu.png)
