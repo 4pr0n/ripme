@@ -235,7 +235,7 @@ public class TwitterRipper extends AlbumRipper {
             }
             logger.debug("Twitter response #" + (i + 1) + " Tweets:\n" + tweets);
             if (tweets.size() == 1 &&
-                    lastMaxID.equals(tweets.get(0).getString("id_str"))
+                    lastMaxID== Long.parseLong(tweets.get(0).getString("id_str"))
                     ) {
                 logger.info("   No more tweet found.");
                 break;
