@@ -49,7 +49,7 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     @Override
     public URL sanitizeURL(URL url) throws MalformedURLException {
-        Pattern p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]{3,}).*$");
+        Pattern p = Pattern.compile("^.*instagram\\.com/([a-zA-Z0-9\\-_.]+).*$");
         Matcher m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             return new URL("http://instagram.com/" + m.group(1));
@@ -121,7 +121,7 @@ public class InstagramRipper extends AbstractJSONRipper {
         imageURL = imageURL.replaceAll("\\?ig_cache_key.+$", "");
         return imageURL;
     }
-    
+
     private String getMedia(JSONObject data) {
         String imageURL = "";
         if (data.has("videos")) {
@@ -131,14 +131,14 @@ public class InstagramRipper extends AbstractJSONRipper {
         }
         return imageURL;
     }
-	
+
     @Override
     public List<String> getURLsFromJSON(JSONObject json) {
         List<String> imageURLs = new ArrayList<String>();
         JSONArray datas = json.getJSONArray("items");
         for (int i = 0; i < datas.length(); i++) {
             JSONObject data = (JSONObject) datas.get(i);
-			
+
             String dataType = data.getString("type");
             if (dataType.equals("carousel")) {
                 JSONArray carouselMedias = data.getJSONArray("carousel_media");
