@@ -1,6 +1,9 @@
 {
-  "latestVersion" : "1.4.16",
+  "latestVersion" : "1.4.19",
   "changeList" : [
+    "1.4.19: WordpressComicRipper supports more rippers; improvements to Instagram and code quality",
+    "1.4.18: Fix video rippers (broken in 1.4.14)",
+    "1.4.17: MyHentaiComics improvements",
     "1.4.16: Fix Eightmuses; Add Instagram album support",
     "1.4.15: Fixed DeviantArt Ripper",
     "1.4.14: Improvements to ChanRipper (rip external links), MyHentaiComics, and Twitter (video and albums)",
