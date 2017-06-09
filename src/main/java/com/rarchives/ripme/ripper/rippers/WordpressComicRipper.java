@@ -35,7 +35,7 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
 
     public static List<String> explicit_domains = Arrays.asList("www.totempole666.com",
     "buttsmithy.com", "themonsterunderthebed.net", "prismblush.com", "www.konradokonski.com", "freeadultcomix.com",
-    "thisis.delvecomic.com", "comics-xxx.com", "tnbtu.com");
+    "thisis.delvecomic.com", "comics-xxx.com", "tnbtu.com", "shipinbottle.pepsaga.com");
         @Override
         public String getHost() {
             String host = url.toExternalForm().split("/")[2];
@@ -107,6 +107,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                     return true;
                 }
 
+                Pattern shipinbottlePat = Pattern.compile("https?://shipinbottle.pepsaga.com/\\?p=([0-9]*)/?$");
+                Matcher shipinbottleMat =shipinbottlePat.matcher(url.toExternalForm());
+                if (shipinbottleMat.matches()) {
+                    return true;
+                }
+
             }
             return false;
         }
@@ -166,6 +172,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             return getHost() + "_" + "The_Night_Belongs_to_Us";
         }
 
+        Pattern shipinbottlePat = Pattern.compile("https?://shipinbottle.pepsaga.com/\\?p=([0-9]*)/?$");
+        Matcher shipinbottleMat =shipinbottlePat.matcher(url.toExternalForm());
+        if (shipinbottleMat.matches()) {
+            return getHost() + "_" + "Ship_in_bottle";
+        }
+
         return super.getAlbumTitle(url);
 }
 
@@ -197,12 +209,19 @@ public String getGID(URL url) throws MalformedURLException {
                 }
                 nextPage = elem.attr("href");
             }
-                if (nextPage == "") {
+            else if (getHost().contains("shipinbottle.pepsaga.com")) {
+                elem = doc.select("td.comic_navi_right > a.navi-next").first();
+                if (elem == null) {
                     throw new IOException("No more pages");
                 }
-                else {
-                    return Http.url(nextPage).get();
-                }
+                nextPage = elem.attr("href");
+            }
+            if (nextPage == "") {
+                throw new IOException("No more pages");
+            }
+            else {
+                return Http.url(nextPage).get();
+            }
             }
 
         @Override
@@ -256,6 +275,12 @@ public String getGID(URL url) throws MalformedURLException {
 
             if (url.toExternalForm().contains("comics-xxx.com")) {
                 for (Element elem : doc.select("div.single-post > center > p > img")) {
+                    result.add(elem.attr("src"));
+                }
+            }
+
+            if (url.toExternalForm().contains("shipinbottle.pepsaga.com")) {
+                for (Element elem : doc.select("div#comic > div.comicpane > a > img")) {
                     result.add(elem.attr("src"));
                 }
             }
