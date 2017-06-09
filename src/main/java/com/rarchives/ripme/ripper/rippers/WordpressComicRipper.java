@@ -31,10 +31,11 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
     // http://www.konradokonski.com/wiory/
     // http://freeadultcomix.com/finders-feepaid-in-full-sparrow/
     // http://comics-xxx.com/republic-rendezvous-palcomix-star-wars-xxx/
+    // http://tnbtu.com/comic/01-00/
 
     public static List<String> explicit_domains = Arrays.asList("www.totempole666.com",
     "buttsmithy.com", "themonsterunderthebed.net", "prismblush.com", "www.konradokonski.com", "freeadultcomix.com",
-    "thisis.delvecomic.com", "comics-xxx.com");
+    "thisis.delvecomic.com", "comics-xxx.com", "tnbtu.com");
         @Override
         public String getHost() {
             String host = url.toExternalForm().split("/")[2];
@@ -100,6 +101,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
                     return true;
                 }
 
+                Pattern tnbtuPat = Pattern.compile("https?://tnbtu.com/comic/([0-9_\\-]*)/?$");
+                Matcher tnbtuMat = tnbtuPat.matcher(url.toExternalForm());
+                if (tnbtuMat.matches()) {
+                    return true;
+                }
+
             }
             return false;
         }
@@ -153,6 +160,12 @@ public class WordpressComicRipper extends AbstractHTMLRipper {
             return getHost() + "_" + comicsxxxMat.group(1);
         }
 
+        Pattern tnbtuPat = Pattern.compile("https?://tnbtu.com/comic/([0-9_\\-]*)/?$");
+        Matcher tnbtuMat = tnbtuPat.matcher(url.toExternalForm());
+        if (tnbtuMat.matches()) {
+            return getHost() + "_" + "The_Night_Belongs_to_Us";
+        }
+
         return super.getAlbumTitle(url);
 }
 
@@ -176,7 +189,8 @@ public String getGID(URL url) throws MalformedURLException {
             || getHost().contains("themonsterunderthebed.net")
             || getHost().contains("prismblush.com")
             || getHost().contains("www.konradokonski.com")
-            || getHost().contains("thisis.delvecomic.com")) {
+            || getHost().contains("thisis.delvecomic.com")
+            || getHost().contains("tnbtu.com")) {
                 elem = doc.select("a.comic-nav-next").first();
                 if (elem == null) {
                     throw new IOException("No more pages");
@@ -199,7 +213,8 @@ public String getGID(URL url) throws MalformedURLException {
             || getHost().contains("themonsterunderthebed.net")
             || getHost().contains("prismblush.com")
             || getHost().contains("www.konradokonski.com")
-            || getHost().contains("thisis.delvecomic.com")) {
+            || getHost().contains("thisis.delvecomic.com")
+            || getHost().contains("tnbtu.com")) {
                 Element elem = doc.select("div.comic-table > div#comic > a > img").first();
                 // If doc is the last page in the comic then elem.attr("src") returns null
                 // because there is no link <a> to the next page
