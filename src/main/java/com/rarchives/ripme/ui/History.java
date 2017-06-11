@@ -16,8 +16,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class History {
-
-    private List<HistoryEntry> list = new ArrayList<HistoryEntry>();
+    private final List<HistoryEntry> list;
     private static final String[] COLUMNS = new String[] {
         "URL",
         "created",
@@ -25,6 +24,10 @@ public class History {
         "#",
         ""
     };
+
+    public History() {
+        this.list = new ArrayList<HistoryEntry>();
+    }
 
     public void add(HistoryEntry entry) {
         list.add(entry);
@@ -94,7 +97,7 @@ public class History {
             list.add(new HistoryEntry().fromJSON(json));
         }
     }
-    
+
     public void fromFile(String filename) throws IOException {
         InputStream is = new FileInputStream(filename);
         try {
@@ -107,7 +110,7 @@ public class History {
             is.close();
         }
     }
-    
+
     public void fromList(List<String> stringList) {
         for (String item : stringList) {
             HistoryEntry entry = new HistoryEntry();
@@ -123,11 +126,15 @@ public class History {
         }
         return jsonArray;
     }
-    
+
     public List<HistoryEntry> toList() {
         return list;
     }
-    
+
+    public boolean isEmpty() {
+        return list.isEmpty();
+    }
+
     public void toFile(String filename) throws IOException {
         OutputStream os = new FileOutputStream(filename);
         try {
@@ -136,5 +143,4 @@ public class History {
             os.close();
         }
     }
-
 }
