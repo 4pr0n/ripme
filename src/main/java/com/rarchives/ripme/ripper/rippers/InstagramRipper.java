@@ -116,7 +116,7 @@ public class InstagramRipper extends AbstractJSONRipper {
         // Instagram returns cropped images to unauthenticated applications to maintain legacy support. 
         // To retrieve the uncropped image, remove this segment from the URL. 
         // Segment format: cX.Y.W.H
-        imageURL = imageURL.replaceAll("\/c\\d{1,4}\\.\\d{1,4}\\.\\d{1,4}\\.\\d{1,4}", "");
+        imageURL = imageURL.replaceAll("\\/c\\d{1,4}\\.\\d{1,4}\\.\\d{1,4}\\.\\d{1,4}", "");
 
         imageURL = imageURL.replaceAll("\\?ig_cache_key.+$", "");
         return imageURL;
