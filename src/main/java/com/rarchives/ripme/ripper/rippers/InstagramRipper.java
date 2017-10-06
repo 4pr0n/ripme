@@ -124,10 +124,17 @@ public class InstagramRipper extends AbstractJSONRipper {
 
     private String getMedia(JSONObject data) {
         String imageURL = "";
+		JSONObject mediaObject;
         if (data.has("videos")) {
-            imageURL = data.getJSONObject("videos").getJSONObject("standard_resolution").getString("url");
+        	mediaObject = data.getJSONObject("videos");
+			if (!videosObject.isNull("standard_resolution")) {
+        		imageURL = videosObject.getJSONObject("standard_resolution").getString("url");
+        	}
         } else if (data.has("images")) {
-           imageURL = data.getJSONObject("images").getJSONObject("standard_resolution").getString("url");
+        	mediaObject = data.getJSONObject("images");
+			if (!imagesObject.isNull("standard_resolution")) {
+        		imageURL = imagesObject.getJSONObject("standard_resolution").getString("url");
+        	}
         }
         return imageURL;
     }
@@ -145,14 +152,14 @@ public class InstagramRipper extends AbstractJSONRipper {
                 for (int carouselIndex = 0; carouselIndex < carouselMedias.length(); carouselIndex++) {
                     JSONObject carouselMedia = (JSONObject) carouselMedias.get(carouselIndex);
                     String imageURL = getMedia(carouselMedia);
-                    if (!imageURL.equals("")) {
+                    if (!"".equals(imageURL)) {
                         imageURL = getOriginalUrl(imageURL);
                         imageURLs.add(imageURL);
                     }
                 }
             } else {
                 String imageURL = getMedia(data);
-                if (!imageURL.equals("")) {
+                if (!"".equals(imageURL)) {
                     imageURL = getOriginalUrl(imageURL);
                     imageURLs.add(imageURL);
                 }
