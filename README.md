@@ -73,7 +73,7 @@ mvn test
 # Dependencies
 
 * junit-3.8.1
-* jsoup-1.7.3
+* jsoup-1.8.1
 * json-20140107
 * apache-commons-configuration-1.7
 * log4j-1.2.17
