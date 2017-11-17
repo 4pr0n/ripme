@@ -1,3 +1,5 @@
+# We've moved to [ripmeapp/ripme](https://github.com/ripmeapp/ripme)!
+
 # RipMe
 
 [![Build Status](https://travis-ci.org/4pr0n/ripme.svg?branch=master)](https://travis-ci.org/4pr0n/ripme)
