@@ -5,6 +5,10 @@ https://github.com/RipMeApp/ripme/
 To help us verify your change, please fill out the information below.
 -->
 
+# We've moved to [ripmeapp/ripme](https://github.com/RipMeApp/ripme)!
+
+Please consider opening your Pull Request there!
+
 # Category
 
 This change is exactly one of the following (please change `[ ]` to `[x]`) to indicate which:
