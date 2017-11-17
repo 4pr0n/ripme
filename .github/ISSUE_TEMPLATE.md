@@ -7,6 +7,12 @@ Please include any additional information that would help us fix the bug.
 If this is a feature request or other type of issue, provide whatever information you feel is appropriate.
 -->
 
+# We've moved to [ripmeapp/ripme](https://github.com/RipMeApp/ripme)!
+
+Please consider opening your issue at https://github.com/RipMeApp/ripme/issues/new instead!
+
+# Issue Details
+
 * Ripme version:
 * Java version (output of `java -version`):
 * Operating system:
