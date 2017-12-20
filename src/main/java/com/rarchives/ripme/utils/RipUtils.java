@@ -104,11 +104,12 @@ public class RipUtils {
         }
 
         // Direct link to image
-        p = Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*)\\.(jpg|jpeg|gif|png|mp4)(\\?.*)?)");
+        p = Pattern.compile("(https?://[a-zA-Z0-9\\-\\.]+\\.[a-zA-Z]{2,3}(/\\S*)\\.(jpg|jpeg|gif|gifv|png|mp4)(\\?.*)?)");
         m = p.matcher(url.toExternalForm());
         if (m.matches()) {
             try {
-                URL singleURL = new URL(m.group(1));
+                String u = m.group(1).replace(".gifv",".gif");
+                URL singleURL = new URL(u);
                 logger.debug("Found single URL: " + singleURL);
                 result.add(singleURL);
                 return result;
